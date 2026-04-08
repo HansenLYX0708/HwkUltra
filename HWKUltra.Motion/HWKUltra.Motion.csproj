@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HWKUltra.Core\HWKUltra.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ElmoMotionControlComponents.GMAS.MMCLibDotNET">
+      <HintPath>..\Package\elmonet2.9.0.1\ElmoMotionControlComponents.GMAS.MMCLibDotNET.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
