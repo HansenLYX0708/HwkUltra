@@ -42,11 +42,9 @@ namespace HWKUltra.Builder
             }
             else
             {
-                _config = JsonSerializer.Deserialize<TConfig>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    TypeInfoResolver = MotionJsonContext.Default // 使用源生成器
-                });
+                throw new InvalidOperationException(
+                    "Json deserializer not configured. " +
+                    "Call WithJsonDeserializer() or use dedicated builder (MotionBuilder/GtsMotionBuilder).");
             }
             return this;
         }
@@ -70,6 +68,21 @@ namespace HWKUltra.Builder
             return this;
         }
 
+        private Dictionary<string, string[]> _groupAxesMap = new();
+        private Func<TConfig, Dictionary<string, string[]>>? _groupAxesMapExtractor;
+
+        public MotionBuilder<TConfig> WithGroupAxesMap(Dictionary<string, string[]> groupAxesMap)
+        {
+            _groupAxesMap = groupAxesMap;
+            return this;
+        }
+
+        public MotionBuilder<TConfig> WithGroupAxesExtractor(Func<TConfig, Dictionary<string, string[]>> extractor)
+        {
+            _groupAxesMapExtractor = extractor;
+            return this;
+        }
+
         public IMotionController BuildController()
         {
             if (_config == null)
@@ -84,7 +97,10 @@ namespace HWKUltra.Builder
             var axisMap = _axisMapExtractor != null
                 ? _axisMapExtractor(_config!)
                 : _axisMap;
-            return new MotionRouter(controller, axisMap, _singleAxes);
+            var groupAxesMap = _groupAxesMapExtractor != null
+                ? _groupAxesMapExtractor(_config!)
+                : _groupAxesMap;
+            return new MotionRouter(controller, axisMap, _singleAxes, groupAxesMap);
         }
     }
 
@@ -105,6 +121,10 @@ namespace HWKUltra.Builder
             // 使用源生成器进行JSON反序列化
             _inner.WithJsonDeserializer(json =>
                 JsonSerializer.Deserialize(json, MotionJsonContext.Default.ElmoMotionControllerConfig)!);
+
+            // 配置组轴映射提取器
+            _inner.WithGroupAxesExtractor(cfg =>
+                cfg.Groups.ToDictionary(g => g.Name, g => g.Axes.ToArray()));
         }
 
         public MotionBuilder FromJson(string json)
@@ -147,6 +167,10 @@ namespace HWKUltra.Builder
             // 使用源生成器进行JSON反序列化
             _inner.WithJsonDeserializer(json =>
                 JsonSerializer.Deserialize(json, MotionJsonContext.Default.GtsMotionControllerConfig)!);
+
+            // 配置组轴映射提取器
+            _inner.WithGroupAxesExtractor(cfg =>
+                cfg.Groups.ToDictionary(g => g.Name, g => g.Axes.ToArray()));
         }
 
         public GtsMotionBuilder FromJson(string json)

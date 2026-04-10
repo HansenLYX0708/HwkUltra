@@ -1,12 +1,13 @@
 // 泛型构建器测试 - 验证可同时用于Elmo和GTS
 using System.Text.Json;
+using HWKUltra.Builder;
 using HWKUltra.Motion;
 using HWKUltra.Motion.Abstractions;
 using HWKUltra.Motion.Core;
 using HWKUltra.Motion.Implementations.elmo;
 using HWKUltra.Motion.Implementations.gts;
 
-namespace HWKUltra.Builder.Tests
+namespace HWKUltra.UnitTest
 {
     public class MotionBuilderTest
     {

@@ -6,7 +6,8 @@ namespace HWKUltra.UnitTest
     {
         static void Main(string[] args)
         {
-            MotionBuilderTest.RunAllTests();
+            // MotionBuilderTest.RunAllTests();
+            MotionRouterTest.RunAllTests();
         }
     }
 }
