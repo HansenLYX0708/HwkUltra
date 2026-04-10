@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.37027.9 d17.14
+VisualStudioVersion = 17.14.37027.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HWKUltra.Motion", "HWKUltra.Motion\HWKUltra.Motion.csproj", "{67444EAF-898C-4DE9-9EFE-8565D8CFC534}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HWKUltra.Builder", "HWKUltra.builder\HWKUltra.Builder.csproj", "{123784F8-0872-4245-8764-FBB0B171A013}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HWKUltra.Core", "HWKUltra.Core\HWKUltra.Core.csproj", "{878F23C6-3AF2-4FE5-8F50-F7D751157E72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HWKUltra.UnitTest", "HWKUltra.UnitTest\HWKUltra.UnitTest.csproj", "{CBD7F2CA-1A5A-49FF-9F90-E3249BE625D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{878F23C6-3AF2-4FE5-8F50-F7D751157E72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{878F23C6-3AF2-4FE5-8F50-F7D751157E72}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{878F23C6-3AF2-4FE5-8F50-F7D751157E72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBD7F2CA-1A5A-49FF-9F90-E3249BE625D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBD7F2CA-1A5A-49FF-9F90-E3249BE625D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBD7F2CA-1A5A-49FF-9F90-E3249BE625D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBD7F2CA-1A5A-49FF-9F90-E3249BE625D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

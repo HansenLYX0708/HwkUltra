@@ -1,0 +1,76 @@
+{
+  "CardId": 0,
+  "ConfigFilePath": "gts.cfg",
+  "DefaultVel": 100000,
+  "DefaultAcc": 1000000,
+  "DefaultDec": 1000000,
+  "Axes": [
+    {
+      "Name": "X",
+      "AxisId": 1,
+      "PulsePerUnit": 10000,
+      "EncoderReverse": false,
+      "IsStepper": false,
+      "Limit": {
+        "MaxVel": 50000,
+        "MaxAcc": 1000000,
+        "MaxDec": 1000000,
+        "MaxJerk": 5000000
+      }
+    },
+    {
+      "Name": "Y",
+      "AxisId": 2,
+      "PulsePerUnit": 10000,
+      "EncoderReverse": false,
+      "IsStepper": false,
+      "Limit": {
+        "MaxVel": 50000,
+        "MaxAcc": 1000000,
+        "MaxDec": 1000000,
+        "MaxJerk": 5000000
+      }
+    },
+    {
+      "Name": "Z",
+      "AxisId": 3,
+      "PulsePerUnit": 10000,
+      "EncoderReverse": false,
+      "IsStepper": false,
+      "Limit": {
+        "MaxVel": 30000,
+        "MaxAcc": 500000,
+        "MaxDec": 500000,
+        "MaxJerk": 2500000
+      }
+    }
+  ],
+  "Groups": [
+    {
+      "Name": "XY",
+      "CrdId": 1,
+      "Axes": [ "X", "Y" ],
+      "Dimension": 2
+    },
+    {
+      "Name": "XYZ",
+      "CrdId": 2,
+      "Axes": [ "X", "Y", "Z" ],
+      "Dimension": 3
+    }
+  ],
+  "CrdParams": [
+    {
+      "CrdId": 1,
+      "Dimension": 2,
+      "LeadAxis": 1,
+      "Axes": [ 1, 2 ]
+    },
+    {
+      "CrdId": 2,
+      "Dimension": 3,
+      "LeadAxis": 1,
+      "Axes": [ 1, 2, 3 ]
+    }
+  ]
+}
