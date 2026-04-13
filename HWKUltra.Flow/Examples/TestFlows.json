@@ -1,0 +1,425 @@
+{
+  "flows": [
+    {
+      "id": "aoi-basic-flow",
+      "name": "Basic AOI Inspection Flow",
+      "description": "Simple motion -> capture -> inspect workflow",
+      "createdAt": "2026-04-13T09:00:00",
+      "modifiedAt": "2026-04-13T09:00:00",
+      "version": "1.0.0",
+      "startNodeId": "move_home",
+      "nodes": [
+        {
+          "id": "move_home",
+          "type": "AxisHome",
+          "name": "Home X Axis",
+          "x": 100,
+          "y": 100,
+          "properties": {
+            "AxisName": "X",
+            "HomeMode": "Auto"
+          }
+        },
+        {
+          "id": "move_pos1",
+          "type": "AxisMoveAbs",
+          "name": "Move to Position 1",
+          "x": 300,
+          "y": 100,
+          "properties": {
+            "AxisName": "X",
+            "Position": "100",
+            "Velocity": "50000"
+          }
+        },
+        {
+          "id": "wait_stable",
+          "type": "Delay",
+          "name": "Wait Stabilization",
+          "x": 500,
+          "y": 100,
+          "properties": {
+            "Duration": "500"
+          }
+        },
+        {
+          "id": "capture1",
+          "type": "Camera",
+          "name": "Capture Image 1",
+          "x": 700,
+          "y": 100,
+          "properties": {
+            "CameraId": "Cam1",
+            "ExposureTime": "10000"
+          }
+        },
+        {
+          "id": "inspect1",
+          "type": "Inspection",
+          "name": "Inspect Image 1",
+          "x": 900,
+          "y": 100,
+          "properties": {
+            "RecipeName": "PCB_Inspect_V1"
+          }
+        },
+        {
+          "id": "ok_signal",
+          "type": "IoOutput",
+          "name": "OK Signal Output",
+          "x": 1100,
+          "y": 50,
+          "properties": {
+            "Port": "1",
+            "Value": "true",
+            "Duration": "100"
+          }
+        },
+        {
+          "id": "ng_signal",
+          "type": "IoOutput",
+          "name": "NG Signal Output",
+          "x": 1100,
+          "y": 150,
+          "properties": {
+            "Port": "2",
+            "Value": "true",
+            "Duration": "100"
+          }
+        }
+      ],
+      "connections": [
+        { "id": "conn1", "sourceNodeId": "move_home", "targetNodeId": "move_pos1" },
+        { "id": "conn2", "sourceNodeId": "move_pos1", "targetNodeId": "wait_stable" },
+        { "id": "conn3", "sourceNodeId": "wait_stable", "targetNodeId": "capture1" },
+        { "id": "conn4", "sourceNodeId": "capture1", "targetNodeId": "inspect1" },
+        { "id": "conn5", "sourceNodeId": "inspect1", "targetNodeId": "ok_signal", "condition": "OK" },
+        { "id": "conn6", "sourceNodeId": "inspect1", "targetNodeId": "ng_signal", "condition": "NG" }
+      ],
+      "globalVariables": [
+        { "name": "InspectionCount", "type": "int", "defaultValue": "0" },
+        { "name": "LastResult", "type": "bool", "defaultValue": "false" }
+      ]
+    },
+    {
+      "id": "multi-point-inspection",
+      "name": "Multi-Point Inspection Flow",
+      "description": "Inspect multiple positions with loop",
+      "createdAt": "2026-04-13T09:10:00",
+      "modifiedAt": "2026-04-13T09:10:00",
+      "version": "1.1.0",
+      "startNodeId": "init_vars",
+      "nodes": [
+        {
+          "id": "init_vars",
+          "type": "Delay",
+          "name": "Initialize Variables",
+          "x": 100,
+          "y": 100,
+          "properties": {
+            "Duration": "100"
+          }
+        },
+        {
+          "id": "loop_start",
+          "type": "Loop",
+          "name": "Loop Positions",
+          "x": 300,
+          "y": 100,
+          "properties": {
+            "Iterations": "3",
+            "ConditionVariable": "ContinueLoop"
+          }
+        },
+        {
+          "id": "move_to_point",
+          "type": "AxisMoveAbs",
+          "name": "Move to Inspection Point",
+          "x": 500,
+          "y": 100,
+          "properties": {
+            "AxisName": "XY",
+            "Position": "100",
+            "Velocity": "30000"
+          }
+        },
+        {
+          "id": "wait_inpos",
+          "type": "AxisWaitInPos",
+          "name": "Wait In Position",
+          "x": 700,
+          "y": 100,
+          "properties": {
+            "AxisName": "XY",
+            "Tolerance": "0.01",
+            "Timeout": "5000"
+          }
+        },
+        {
+          "id": "trigger_camera",
+          "type": "CameraTrigger",
+          "name": "Trigger Capture",
+          "x": 900,
+          "y": 100,
+          "properties": {
+            "CameraId": "Cam1",
+            "TriggerMode": "Software"
+          }
+        },
+        {
+          "id": "inspect_point",
+          "type": "Inspection",
+          "name": "Inspect Point",
+          "x": 1100,
+          "y": 100,
+          "properties": {
+            "RecipeName": "MultiPoint_Inspect"
+          }
+        },
+        {
+          "id": "check_result",
+          "type": "Branch",
+          "name": "Check Result",
+          "x": 1300,
+          "y": 100,
+          "properties": {
+            "Condition": "Result",
+            "Operator": "True"
+          }
+        },
+        {
+          "id": "continue_loop",
+          "type": "Delay",
+          "name": "Continue Loop",
+          "x": 1500,
+          "y": 50,
+          "properties": {
+            "Duration": "100"
+          }
+        },
+        {
+          "id": "handle_ng",
+          "type": "IoOutput",
+          "name": "NG Output",
+          "x": 1500,
+          "y": 150,
+          "properties": {
+            "Port": "2",
+            "Value": "true",
+            "Duration": "200"
+          }
+        },
+        {
+          "id": "end_flow",
+          "type": "Delay",
+          "name": "End Flow",
+          "x": 1700,
+          "y": 100,
+          "properties": {
+            "Duration": "100"
+          }
+        }
+      ],
+      "connections": [
+        { "id": "c1", "sourceNodeId": "init_vars", "targetNodeId": "loop_start" },
+        { "id": "c2", "sourceNodeId": "loop_start", "targetNodeId": "move_to_point", "condition": "Continue" },
+        { "id": "c3", "sourceNodeId": "loop_start", "targetNodeId": "end_flow", "condition": "Exit" },
+        { "id": "c4", "sourceNodeId": "move_to_point", "targetNodeId": "wait_inpos" },
+        { "id": "c5", "sourceNodeId": "wait_inpos", "targetNodeId": "trigger_camera" },
+        { "id": "c6", "sourceNodeId": "trigger_camera", "targetNodeId": "inspect_point" },
+        { "id": "c7", "sourceNodeId": "inspect_point", "targetNodeId": "check_result" },
+        { "id": "c8", "sourceNodeId": "check_result", "targetNodeId": "continue_loop", "condition": "True" },
+        { "id": "c9", "sourceNodeId": "check_result", "targetNodeId": "handle_ng", "condition": "False" },
+        { "id": "c10", "sourceNodeId": "continue_loop", "targetNodeId": "loop_start" },
+        { "id": "c11", "sourceNodeId": "handle_ng", "targetNodeId": "end_flow" }
+      ],
+      "globalVariables": [
+        { "name": "CurrentPoint", "type": "int", "defaultValue": "0" },
+        { "name": "ContinueLoop", "type": "bool", "defaultValue": "true" }
+      ]
+    },
+    {
+      "id": "on-the-fly-capture",
+      "name": "On-The-Fly Capture Flow",
+      "description": "Continuous motion with position-triggered capture",
+      "createdAt": "2026-04-13T09:20:00",
+      "modifiedAt": "2026-04-13T09:20:00",
+      "version": "1.0.0",
+      "startNodeId": "prep_capture",
+      "nodes": [
+        {
+          "id": "prep_capture",
+          "type": "Delay",
+          "name": "Prepare Capture",
+          "x": 100,
+          "y": 100,
+          "properties": {
+            "Duration": "200"
+          }
+        },
+        {
+          "id": "fly_capture",
+          "type": "OnTheFlyCapture",
+          "name": "On-The-Fly Capture",
+          "x": 300,
+          "y": 100,
+          "properties": {
+            "AxisName": "X",
+            "TargetPosition": "500",
+            "Velocity": "10000",
+            "TriggerPositions": "100,200,300,400",
+            "CameraId": "Cam1",
+            "ExposureTime": "5000"
+          }
+        },
+        {
+          "id": "process_images",
+          "type": "Inspection",
+          "name": "Process Captured Images",
+          "x": 500,
+          "y": 100,
+          "properties": {
+            "RecipeName": "FlyCapture_Inspect"
+          }
+        },
+        {
+          "id": "output_result",
+          "type": "DigitalOutput",
+          "name": "Output Result",
+          "x": 700,
+          "y": 100,
+          "properties": {
+            "Port": "3",
+            "Value": "true",
+            "Duration": "100"
+          }
+        }
+      ],
+      "connections": [
+        { "id": "f1", "sourceNodeId": "prep_capture", "targetNodeId": "fly_capture" },
+        { "id": "f2", "sourceNodeId": "fly_capture", "targetNodeId": "process_images" },
+        { "id": "f3", "sourceNodeId": "process_images", "targetNodeId": "output_result" }
+      ],
+      "globalVariables": [
+        { "name": "ImagesCaptured", "type": "int", "defaultValue": "0" },
+        { "name": "CapturePositions", "type": "array", "defaultValue": "" }
+      ]
+    },
+    {
+      "id": "laser-scan-flow",
+      "name": "Laser Scan Height Flow",
+      "description": "Scan object height with laser during motion",
+      "createdAt": "2026-04-13T09:30:00",
+      "modifiedAt": "2026-04-13T09:30:00",
+      "version": "1.0.0",
+      "startNodeId": "home_xy",
+      "nodes": [
+        {
+          "id": "home_xy",
+          "type": "AxisHome",
+          "name": "Home XY Axes",
+          "x": 100,
+          "y": 100,
+          "properties": {
+            "AxisName": "XY",
+            "HomeMode": "Auto"
+          }
+        },
+        {
+          "id": "move_scan_start",
+          "type": "AxisMoveAbs",
+          "name": "Move to Scan Start",
+          "x": 300,
+          "y": 100,
+          "properties": {
+            "AxisName": "X",
+            "Position": "0",
+            "Velocity": "20000"
+          }
+        },
+        {
+          "id": "trigger_laser",
+          "type": "LaserTrigger",
+          "name": "Start Laser Measurement",
+          "x": 500,
+          "y": 100,
+          "properties": {
+            "LaserId": "Laser1",
+            "TriggerMode": "Continuous"
+          }
+        },
+        {
+          "id": "scan_motion",
+          "type": "AxisMoveVelocity",
+          "name": "Scan Motion",
+          "x": 700,
+          "y": 100,
+          "properties": {
+            "AxisName": "X",
+            "Velocity": "5000",
+            "Duration": "2000"
+          }
+        },
+        {
+          "id": "read_laser",
+          "type": "LaserTrigger",
+          "name": "Read Height Data",
+          "x": 900,
+          "y": 100,
+          "properties": {
+            "LaserId": "Laser1",
+            "TriggerMode": "Single",
+            "AverageCount": "10"
+          }
+        },
+        {
+          "id": "check_height",
+          "type": "Branch",
+          "name": "Check Height",
+          "x": 1100,
+          "y": 100,
+          "properties": {
+            "Condition": "Height",
+            "Operator": "GreaterThan",
+            "CompareValue": "0.45"
+          }
+        },
+        {
+          "id": "height_ok",
+          "type": "DigitalOutput",
+          "name": "Height OK Signal",
+          "x": 1300,
+          "y": 50,
+          "properties": {
+            "Port": "1",
+            "Value": "true"
+          }
+        },
+        {
+          "id": "height_ng",
+          "type": "DigitalOutput",
+          "name": "Height NG Signal",
+          "x": 1300,
+          "y": 150,
+          "properties": {
+            "Port": "2",
+            "Value": "true"
+          }
+        }
+      ],
+      "connections": [
+        { "id": "l1", "sourceNodeId": "home_xy", "targetNodeId": "move_scan_start" },
+        { "id": "l2", "sourceNodeId": "move_scan_start", "targetNodeId": "trigger_laser" },
+        { "id": "l3", "sourceNodeId": "trigger_laser", "targetNodeId": "scan_motion" },
+        { "id": "l4", "sourceNodeId": "scan_motion", "targetNodeId": "read_laser" },
+        { "id": "l5", "sourceNodeId": "read_laser", "targetNodeId": "check_height" },
+        { "id": "l6", "sourceNodeId": "check_height", "targetNodeId": "height_ok", "condition": "True" },
+        { "id": "l7", "sourceNodeId": "check_height", "targetNodeId": "height_ng", "condition": "False" }
+      ],
+      "globalVariables": [
+        { "name": "MaxHeight", "type": "double", "defaultValue": "0" },
+        { "name": "MinHeight", "type": "double", "defaultValue": "999" }
+      ]
+    }
+  ]
+}

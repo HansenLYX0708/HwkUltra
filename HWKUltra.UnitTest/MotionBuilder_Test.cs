@@ -1,4 +1,4 @@
-// 泛型构建器测试 - 验证可同时用于Elmo和GTS
+// Generic builder tests - validates both Elmo and GTS controllers
 using System.Text.Json;
 using HWKUltra.Builder;
 using HWKUltra.Motion;
@@ -6,13 +6,14 @@ using HWKUltra.Motion.Abstractions;
 using HWKUltra.Motion.Core;
 using HWKUltra.Motion.Implementations.elmo;
 using HWKUltra.Motion.Implementations.gts;
+using System.IO;
 
 namespace HWKUltra.UnitTest
 {
     public class MotionBuilderTest
     {
         /// <summary>
-        /// 测试1: 使用泛型构建器直接构建Elmo控制器
+        /// Test 1: Build Elmo controller using generic builder
         /// </summary>
         public static void Test_Elmo_GenericBuilder()
         {
@@ -47,7 +48,7 @@ namespace HWKUltra.UnitTest
                 ]
             }";
 
-            // 直接使用泛型构建器，配置源生成器进行反序列化
+            // Directly use generic builder, configure source generator for deserialization
             var elmoBuilder = new MotionBuilder<ElmoMotionControllerConfig>(
                 cfg => new ElmoMotionController(cfg),
                 cfg => cfg.Axes.Select((axis, index) => new { axis.Name, Index = index })
@@ -60,12 +61,12 @@ namespace HWKUltra.UnitTest
             IMotionController controller = elmoBuilder.BuildController();
             MotionRouter router = elmoBuilder.BuildRouter();
 
-            Console.WriteLine("Elmo泛型构建器测试通过");
-            Console.WriteLine($"Controller类型: {controller.GetType().Name}");
+            Console.WriteLine("✓ Elmo generic builder test passed");
+            Console.WriteLine($"  Controller type: {controller.GetType().Name}");
         }
 
         /// <summary>
-        /// 测试2: 使用泛型构建器直接构建GTS控制器
+        /// Test 2: Build GTS controller using generic builder
         /// </summary>
         public static void Test_GTS_GenericBuilder()
         {
@@ -105,7 +106,7 @@ namespace HWKUltra.UnitTest
                 ]
             }";
 
-            // 直接使用泛型构建器，配置源生成器进行反序列化
+            // Directly use generic builder, configure source generator for deserialization
             var gtsBuilder = new MotionBuilder<GtsMotionControllerConfig>(
                 cfg => new GtsMotionController(cfg),
                 cfg => cfg.Axes.ToDictionary(x => x.Name, x => (int)x.AxisId))
@@ -117,34 +118,34 @@ namespace HWKUltra.UnitTest
             IMotionController controller = gtsBuilder.BuildController();
             MotionRouter router = gtsBuilder.BuildRouter();
 
-            Console.WriteLine("GTS泛型构建器测试通过");
-            Console.WriteLine($"Controller类型: {controller.GetType().Name}");
+            Console.WriteLine("✓ GTS generic builder test passed");
+            Console.WriteLine($"  Controller type: {controller.GetType().Name}");
         }
 
         /// <summary>
-        /// 测试3: 使用专用构建器(语法糖)
+        /// Test 3: Dedicated builders (syntax sugar)
         /// </summary>
         public static void Test_DedicatedBuilders()
         {
-            // Elmo专用构建器
-            var elmoBuilder = new MotionBuilder();  // 后向兼容
-            Console.WriteLine("Elmo专用构建器创建成功");
+            // Elmo dedicated builder
+            var elmoBuilder = new MotionBuilder();  // Backward compatible
+            Console.WriteLine("✓ Elmo dedicated builder created");
 
-            // GTS专用构建器
+            // GTS dedicated builder
             var gtsBuilder = new GtsMotionBuilder();
-            Console.WriteLine("GTS专用构建器创建成功");
+            Console.WriteLine("✓ GTS dedicated builder created");
         }
 
         /// <summary>
-        /// 测试4: 统一接口处理
+        /// Test 4: Unified interface handling
         /// </summary>
         public static void Test_UnifiedInterface()
         {
-            // 创建两种控制器
+            // Create both controller types
             var elmoController = CreateElmoController();
             var gtsController = CreateGtsController();
 
-            // 通过统一接口使用
+            // Use through unified interface
             TestController(elmoController, "Elmo");
             TestController(gtsController, "GTS");
         }
@@ -179,20 +180,20 @@ namespace HWKUltra.UnitTest
         private static void TestController(IMotionController controller, string name)
         {
             Console.WriteLine($"[{name}] Controller: {controller.GetType().Name}");
-            // 统一调用接口
+            // Unified interface calls
             // controller.Open();
             // controller.MoveAxis("X", 100.0);
             // controller.Close();
         }
 
         /// <summary>
-        /// 测试5: 验证JSON反序列化详情
+        /// Test 5: Validate JSON deserialization details
         /// </summary>
         public static void Test_DeserializationValidation()
         {
-            Console.WriteLine("----- JSON反序列化详细验证 -----");
+            Console.WriteLine("----- JSON Deserialization Validation -----");
 
-            // 测试Elmo配置反序列化
+            // Test Elmo config deserialization
             var elmoJson = @"{
                 ""TargetIP"": ""192.168.1.100"",
                 ""TargetPort"": 502,
@@ -222,35 +223,35 @@ namespace HWKUltra.UnitTest
             var elmoConfig = JsonSerializer.Deserialize(elmoJson, MotionJsonContext.Default.ElmoMotionControllerConfig);
 
             if (elmoConfig == null)
-                throw new Exception("Elmo配置反序列化失败：返回null");
+                throw new Exception("Elmo config deserialization failed: returned null");
 
             if (elmoConfig.TargetIP != "192.168.1.100")
-                throw new Exception($"TargetIP不匹配: 期望 '192.168.1.100', 实际 '{elmoConfig.TargetIP}'");
+                throw new Exception($"TargetIP mismatch: expected '192.168.1.100', got '{elmoConfig.TargetIP}'");
 
             if (elmoConfig.TargetPort != 502)
-                throw new Exception($"TargetPort不匹配: 期望 502, 实际 {elmoConfig.TargetPort}");
+                throw new Exception($"TargetPort mismatch: expected 502, got {elmoConfig.TargetPort}");
 
             if (elmoConfig.Axes == null || elmoConfig.Axes.Count == 0)
-                throw new Exception("Axes列表为空或未正确反序列化");
+                throw new Exception("Axes list is empty or not properly deserialized");
 
             if (elmoConfig.Axes[0].Name != "X")
-                throw new Exception($"Axis名称不匹配: 期望 'X', 实际 '{elmoConfig.Axes[0].Name}'");
+                throw new Exception($"Axis name mismatch: expected 'X', got '{elmoConfig.Axes[0].Name}'");
 
             if (elmoConfig.Axes[0].DriverName != "LX")
-                throw new Exception($"DriverName不匹配: 期望 'LX', 实际 '{elmoConfig.Axes[0].DriverName}'");
+                throw new Exception($"DriverName mismatch: expected 'LX', got '{elmoConfig.Axes[0].DriverName}'");
 
             if (elmoConfig.Groups == null || elmoConfig.Groups.Count == 0)
-                throw new Exception("Groups列表为空或未正确反序列化");
+                throw new Exception("Groups list is empty or not properly deserialized");
 
             if (elmoConfig.Groups[0].Name != "XY")
-                throw new Exception($"Group名称不匹配: 期望 'XY', 实际 '{elmoConfig.Groups[0].Name}'");
+                throw new Exception($"Group name mismatch: expected 'XY', got '{elmoConfig.Groups[0].Name}'");
 
-            Console.WriteLine("✓ Elmo配置反序列化验证通过");
+            Console.WriteLine("✓ Elmo config deserialization validated");
             Console.WriteLine($"  - TargetIP: {elmoConfig.TargetIP}");
-            Console.WriteLine($"  - Axes数量: {elmoConfig.Axes.Count}");
-            Console.WriteLine($"  - Groups数量: {elmoConfig.Groups.Count}");
+            Console.WriteLine($"  - Axes count: {elmoConfig.Axes.Count}");
+            Console.WriteLine($"  - Groups count: {elmoConfig.Groups.Count}");
 
-            // 测试GTS配置反序列化
+            // Test GTS config deserialization
             var gtsJson = @"{
                 ""CardId"": 0,
                 ""ConfigFilePath"": ""gts.cfg"",
@@ -283,44 +284,84 @@ namespace HWKUltra.UnitTest
             var gtsConfig = JsonSerializer.Deserialize(gtsJson, MotionJsonContext.Default.GtsMotionControllerConfig);
 
             if (gtsConfig == null)
-                throw new Exception("GTS配置反序列化失败：返回null");
+                throw new Exception("GTS config deserialization failed: returned null");
 
             if (gtsConfig.CardId != 0)
-                throw new Exception($"CardId不匹配: 期望 0, 实际 {gtsConfig.CardId}");
+                throw new Exception($"CardId mismatch: expected 0, got {gtsConfig.CardId}");
 
             if (gtsConfig.ConfigFilePath != "gts.cfg")
-                throw new Exception($"ConfigFilePath不匹配: 期望 'gts.cfg', 实际 '{gtsConfig.ConfigFilePath}'");
+                throw new Exception($"ConfigFilePath mismatch: expected 'gts.cfg', got '{gtsConfig.ConfigFilePath}'");
 
             if (gtsConfig.Axes == null || gtsConfig.Axes.Count == 0)
-                throw new Exception("GTS Axes列表为空");
+                throw new Exception("GTS Axes list is empty");
 
             if (gtsConfig.Axes[0].AxisId != 1)
-                throw new Exception($"AxisId不匹配: 期望 1, 实际 {gtsConfig.Axes[0].AxisId}");
+                throw new Exception($"AxisId mismatch: expected 1, got {gtsConfig.Axes[0].AxisId}");
 
             if (gtsConfig.CrdParams == null || gtsConfig.CrdParams.Count == 0)
-                throw new Exception("CrdParams列表为空");
+                throw new Exception("CrdParams list is empty");
 
-            Console.WriteLine("✓ GTS配置反序列化验证通过");
+            Console.WriteLine("✓ GTS config deserialization validated");
             Console.WriteLine($"  - CardId: {gtsConfig.CardId}");
             Console.WriteLine($"  - ConfigFilePath: {gtsConfig.ConfigFilePath}");
-            Console.WriteLine($"  - Axes数量: {gtsConfig.Axes.Count}");
-            Console.WriteLine($"  - CrdParams数量: {gtsConfig.CrdParams.Count}");
+            Console.WriteLine($"  - Axes count: {gtsConfig.Axes.Count}");
+            Console.WriteLine($"  - CrdParams count: {gtsConfig.CrdParams.Count}");
 
-            Console.WriteLine("----- JSON反序列化验证完成 -----");
+            Console.WriteLine("----- JSON Deserialization Validation Complete -----");
         }
 
         /// <summary>
-        /// 运行所有测试
+        /// Test 6: Build Elmo controller from actual Motion.json file
+        /// </summary>
+        public static void Test_FromMotionJsonFile()
+        {
+            Console.WriteLine("----- Build from Motion.json File -----");
+
+            var jsonPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "ConfigJson", "Motion", "Motion.json");
+            if (!File.Exists(jsonPath))
+            {
+                // Try source tree path
+                jsonPath = @"g:\projects\AOIPlatform\HwkUltra_g\ConfigJson\Motion\Motion.json";
+            }
+
+            if (!File.Exists(jsonPath))
+            {
+                Console.WriteLine("  ⚠ Motion.json not found, skipping file-based test");
+                return;
+            }
+
+            var json = File.ReadAllText(jsonPath);
+            Console.WriteLine($"  Loaded Motion.json ({json.Length} chars)");
+
+            var builder = new MotionBuilder<ElmoMotionControllerConfig>(
+                cfg => new ElmoMotionController(cfg),
+                cfg => cfg.Axes.Select((axis, index) => new { axis.Name, Index = index })
+                              .ToDictionary(x => x.Name, x => x.Index))
+                .WithJsonDeserializer(j =>
+                    JsonSerializer.Deserialize(j, MotionJsonContext.Default.ElmoMotionControllerConfig)!);
+
+            builder.FromJson(json);
+
+            IMotionController controller = builder.BuildController();
+            MotionRouter router = builder.BuildRouter();
+
+            Console.WriteLine($"  ✓ Controller built from Motion.json: {controller.GetType().Name}");
+            Console.WriteLine($"  ✓ Router built from Motion.json: {router.GetType().Name}");
+        }
+
+        /// <summary>
+        /// Run all tests
         /// </summary>
         public static void RunAllTests()
         {
-            Console.WriteLine("========== 泛型构建器测试开始 ==========");
+            Console.WriteLine("========== MotionBuilder Tests Start ==========");
             Test_DeserializationValidation();
             Test_Elmo_GenericBuilder();
             Test_GTS_GenericBuilder();
             Test_DedicatedBuilders();
             Test_UnifiedInterface();
-            Console.WriteLine("========== 泛型构建器测试完成 ==========");
+            Test_FromMotionJsonFile();
+            Console.WriteLine("========== MotionBuilder Tests Complete ==========");
         }
     }
 }

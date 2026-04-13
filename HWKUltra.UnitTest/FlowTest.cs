@@ -19,6 +19,16 @@ namespace HWKUltra.UnitTest
         }
 
         /// <summary>
+        /// Test 5: Multi-flow execution (async)
+        /// </summary>
+        public static async Task Test5_MultiFlowAsync()
+        {
+            Console.WriteLine("\n----- Test 5: Multi-Flow Execution -----");
+            await MultiFlowTest.RunMultiFlowTest();
+            Console.WriteLine("✓ Multi-flow test passed");
+        }
+
+        /// <summary>
         /// Test 1: Node templates
         /// </summary>
         static void Test1_NodeTemplates()

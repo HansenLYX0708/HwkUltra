@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using HWKUltra.Flow.Examples;
 using HWKUltra.Flow.Models;
 
 namespace HWKUltra.Flow
@@ -17,6 +18,7 @@ namespace HWKUltra.Flow
     [JsonSerializable(typeof(List<NodeDefinition>))]
     [JsonSerializable(typeof(List<ConnectionDefinition>))]
     [JsonSerializable(typeof(Dictionary<string, string>))]
+    [JsonSerializable(typeof(FlowCollection))]
     public partial class FlowJsonContext : JsonSerializerContext
     {
     }
