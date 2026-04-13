@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HWKUltra.builder\HWKUltra.Builder.csproj" />
+    <ProjectReference Include="..\HWKUltra.Flow\HWKUltra.Flow.csproj" />
   </ItemGroup>
 
 </Project>
