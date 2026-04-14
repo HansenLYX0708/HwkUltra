@@ -3,7 +3,8 @@ using HWKUltra.Flow.Nodes.Motion.Real;
 using HWKUltra.Flow.Nodes.Motion.Simulation;
 using HWKUltra.Flow.Nodes.Camera.Real;
 using HWKUltra.Flow.Nodes.Camera.Simulation;
-using HWKUltra.Flow.Nodes.Laser.Real;
+using HWKUltra.Flow.Nodes.Measurement.Real;
+using HWKUltra.Flow.Nodes.Measurement.Simulation;
 using HWKUltra.Flow.Nodes.IO.Real;
 using HWKUltra.Flow.Nodes.IO.Simulation;
 using HWKUltra.Flow.Nodes.LightSource.Real;
@@ -17,6 +18,7 @@ using HWKUltra.DeviceIO.Core;
 using HWKUltra.LightSource.Core;
 using HWKUltra.Camera.Core;
 using HWKUltra.AutoFocus.Core;
+using HWKUltra.Measurement.Core;
 
 namespace HWKUltra.Flow.Services
 {
@@ -31,7 +33,7 @@ namespace HWKUltra.Flow.Services
         private readonly LightSourceRouter? _lightSourceRouter;
         private readonly CameraRouter? _cameraRouter;
         private readonly AutoFocusRouter? _autoFocusRouter;
-        private readonly object? _laserService;   // TODO: Replace with ILaserService
+        private readonly MeasurementRouter? _measurementRouter;
 
         public bool UseSimulation { get; set; } = false;
 
@@ -41,14 +43,14 @@ namespace HWKUltra.Flow.Services
             LightSourceRouter? lightSourceRouter = null,
             CameraRouter? cameraRouter = null,
             AutoFocusRouter? autoFocusRouter = null,
-            object? laserService = null)
+            MeasurementRouter? measurementRouter = null)
         {
             _motionRouter = motionRouter;
             _ioRouter = ioRouter;
             _lightSourceRouter = lightSourceRouter;
             _cameraRouter = cameraRouter;
             _autoFocusRouter = autoFocusRouter;
-            _laserService = laserService;
+            _measurementRouter = measurementRouter;
         }
 
         public IFlowNode CreateNode(string type, Dictionary<string, string> properties)
@@ -101,8 +103,16 @@ namespace HWKUltra.Flow.Services
                 "CameraSetGain" => new CameraSetGainNode(_cameraRouter),
                 "CameraSetTriggerMode" => new CameraSetTriggerModeNode(_cameraRouter),
 
-                // Laser (null → auto simulation)
-                "LaserTrigger" or "Laser" => new LaserTriggerNode(_laserService),
+                // Measurement (null → auto simulation)
+                "MeasurementOpen" => new MeasurementOpenNode(_measurementRouter),
+                "MeasurementClose" => new MeasurementCloseNode(_measurementRouter),
+                "MeasurementGetData" or "LaserTrigger" or "Laser" => new MeasurementGetDataNode(_measurementRouter),
+                "MeasurementStartStorage" => new MeasurementStartStorageNode(_measurementRouter),
+                "MeasurementStopStorage" => new MeasurementStopStorageNode(_measurementRouter),
+                "MeasurementClearStorage" => new MeasurementClearStorageNode(_measurementRouter),
+                "MeasurementGetTrendData" => new MeasurementGetTrendDataNode(_measurementRouter),
+                "MeasurementSetSampling" => new MeasurementSetSamplingNode(_measurementRouter),
+                "MeasurementControl" => new MeasurementControlNode(_measurementRouter),
 
                 // IO (null → auto simulation)
                 "DigitalOutput" or "IoOutput" => new DigitalOutputNode(_ioRouter),
@@ -166,8 +176,16 @@ namespace HWKUltra.Flow.Services
                 "CameraSetGain" => new SimCameraSetGainNode(),
                 "CameraSetTriggerMode" => new SimCameraSetTriggerModeNode(),
 
-                // Laser Simulation (TODO: dedicated sim node)
-                "LaserTrigger" or "Laser" => new LaserTriggerNode(null),
+                // Measurement Simulation
+                "MeasurementOpen" => new SimMeasurementOpenNode(),
+                "MeasurementClose" => new SimMeasurementCloseNode(),
+                "MeasurementGetData" or "LaserTrigger" or "Laser" => new SimMeasurementGetDataNode(),
+                "MeasurementStartStorage" => new SimMeasurementStartStorageNode(),
+                "MeasurementStopStorage" => new SimMeasurementStopStorageNode(),
+                "MeasurementClearStorage" => new SimMeasurementClearStorageNode(),
+                "MeasurementGetTrendData" => new SimMeasurementGetTrendDataNode(),
+                "MeasurementSetSampling" => new SimMeasurementSetSamplingNode(),
+                "MeasurementControl" => new SimMeasurementControlNode(),
 
                 // IO Simulation
                 "DigitalOutput" or "IoOutput" => new SimDigitalOutputNode(),

@@ -19,10 +19,7 @@
     <ProjectReference Include="..\HWKUltra.LightSource\HWKUltra.LightSource.csproj" />
     <ProjectReference Include="..\HWKUltra.Camera\HWKUltra.Camera.csproj" />
     <ProjectReference Include="..\HWKUltra.AutoFocus\HWKUltra.AutoFocus.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Nodes\Laser\Real\" />
+    <ProjectReference Include="..\HWKUltra.Measurement\HWKUltra.Measurement.csproj" />
   </ItemGroup>
 
 </Project>

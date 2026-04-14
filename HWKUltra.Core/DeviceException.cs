@@ -65,4 +65,15 @@
             InstanceName = instanceName;
         }
     }
+
+    public class MeasurementException : DeviceException
+    {
+        public string InstanceName { get; }
+
+        public MeasurementException(string instanceName, string message, Exception inner = null)
+            : base("Measurement", message, inner)
+        {
+            InstanceName = instanceName;
+        }
+    }
 }

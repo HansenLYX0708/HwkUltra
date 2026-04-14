@@ -32,6 +32,10 @@ namespace HWKUltra.UnitTest
             Console.WriteLine("\n[Phase 3.7] AutoFocusBuilder Tests");
             await AutoFocusBuilderTest.RunAllTests();
 
+            // Phase 3.8: MeasurementBuilder Tests (JSON config)
+            Console.WriteLine("\n[Phase 3.8] MeasurementBuilder Tests");
+            await MeasurementBuilderTest.RunAllTests();
+
             //// Phase 4: Flow Engine Tests
             //Console.WriteLine("\n[Phase 4] Flow Engine Tests");
             //FlowTest.RunAllTests();

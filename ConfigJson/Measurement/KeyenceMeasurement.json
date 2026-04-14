@@ -1,0 +1,22 @@
+{
+    "Instances": [
+        {
+            "Name": "MainSensor",
+            "DeviceId": 0,
+            "ConnectionType": 0,
+            "TimeoutMs": 5000,
+            "DefaultSamplingCycleUs": 100,
+            "DefaultFilterAverage": 4,
+            "MaxRequestDataLength": 512000
+        },
+        {
+            "Name": "SubSensor",
+            "DeviceId": 1,
+            "ConnectionType": 0,
+            "TimeoutMs": 5000,
+            "DefaultSamplingCycleUs": 200,
+            "DefaultFilterAverage": 8,
+            "MaxRequestDataLength": 512000
+        }
+    ]
+}
