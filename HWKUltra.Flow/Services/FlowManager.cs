@@ -107,16 +107,17 @@ namespace HWKUltra.Flow.Services
                 engine.RegisterNode(node);
             }
 
-            // Create flow context, set node properties as default values
+            // Create flow context, inject node properties scoped by node ID
             context ??= new FlowContext();
             foreach (var nodeDef in executionDef.Nodes)
             {
                 foreach (var prop in nodeDef.Properties)
                 {
-                    // Only set undefined variables
-                    if (!context.Variables.ContainsKey(prop.Key))
+                    // Scope properties per node: "{nodeId}:{key}"
+                    var scopedKey = $"{nodeDef.Id}:{prop.Key}";
+                    if (!context.Variables.ContainsKey(scopedKey))
                     {
-                        context.SetVariable(prop.Key, prop.Value);
+                        context.Variables[scopedKey] = prop.Value;
                     }
                 }
             }

@@ -27,8 +27,8 @@ namespace HWKUltra.Flow.Nodes.Logic
         {
             try
             {
-                var duration = context.GetVariable<int>("Duration");
-                var canCancel = context.GetVariable<bool>("CanCancel");
+                var duration = context.GetNodeInput<int>(Id, "Duration");
+                var canCancel = context.GetNodeInput<string>(Id, "CanCancel") != "false";
 
                 if (duration <= 0)
                 {
@@ -50,16 +50,16 @@ namespace HWKUltra.Flow.Nodes.Logic
                     }
 
                     var actualDelay = (int)(DateTime.Now - startTime).TotalMilliseconds;
-                    context.SetVariable("ActualDelay", actualDelay);
-                    context.SetVariable("WasCancelled", false);
+                    context.SetNodeOutput(Id, "ActualDelay", actualDelay);
+                    context.SetNodeOutput(Id, "WasCancelled", false);
 
                     return FlowResult.Ok();
                 }
                 catch (OperationCanceledException)
                 {
                     var actualDelay = (int)(DateTime.Now - startTime).TotalMilliseconds;
-                    context.SetVariable("ActualDelay", actualDelay);
-                    context.SetVariable("WasCancelled", true);
+                    context.SetNodeOutput(Id, "ActualDelay", actualDelay);
+                    context.SetNodeOutput(Id, "WasCancelled", true);
 
                     Console.WriteLine($"[Delay] Cancelled after {actualDelay}ms");
                     throw;

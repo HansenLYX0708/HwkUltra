@@ -121,13 +121,16 @@ namespace HWKUltra.Flow.Engine
             if (string.IsNullOrEmpty(condition))
                 return true;
 
+            // Match against BranchLabel first (for Loop/Branch nodes)
+            if (!string.IsNullOrEmpty(result.BranchLabel))
+                return string.Equals(result.BranchLabel, condition, StringComparison.OrdinalIgnoreCase);
+
+            // Built-in conditions based on Success
             return condition switch
             {
-                "Success" => result.Success,
-                "Fail" => !result.Success,
-                "OK" => result.Success,
-                "NG" => !result.Success,
-                _ => true // Unknown condition treated as match
+                "Success" or "OK" => result.Success,
+                "Fail" or "NG" => !result.Success,
+                _ => false // Unmatched condition
             };
         }
     }

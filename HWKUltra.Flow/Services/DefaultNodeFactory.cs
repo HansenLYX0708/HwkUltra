@@ -1,47 +1,43 @@
 using HWKUltra.Flow.Abstractions;
-using HWKUltra.Flow.Nodes;
 using HWKUltra.Flow.Nodes.Motion.Real;
-using HWKUltra.Flow.Nodes.Motion.Simulated;
 using HWKUltra.Flow.Nodes.Camera.Real;
-using HWKUltra.Flow.Nodes.Camera.Simulated;
 using HWKUltra.Flow.Nodes.Laser.Real;
-using HWKUltra.Flow.Nodes.Laser.Simulated;
 using HWKUltra.Flow.Nodes.IO.Real;
-using HWKUltra.Flow.Nodes.IO.Simulated;
 using HWKUltra.Flow.Nodes.Logic;
 using HWKUltra.Flow.Nodes.Advanced.Real;
-using HWKUltra.Flow.Nodes.Advanced.Simulated;
-using HWKUltra.Motion.Abstractions;
+using HWKUltra.Motion.Core;
+using HWKUltra.DeviceIO.Core;
 
 namespace HWKUltra.Flow.Services
 {
     /// <summary>
-    /// Default node factory implementation - creates nodes based on type and simulation mode
+    /// Default node factory - creates nodes with service injection.
+    /// Simulation is handled automatically by DeviceNodeBase when service is null.
     /// </summary>
     public class DefaultNodeFactory : IFlowNodeFactory
     {
-        private readonly IMotionController? _motionController;
+        private readonly MotionRouter? _motionRouter;
+        private readonly IORouter? _ioRouter;
         private readonly object? _cameraService;  // TODO: Replace with ICameraService
         private readonly object? _laserService;   // TODO: Replace with ILaserService
-        private readonly object? _ioService;      // TODO: Replace with IIoService
 
         public bool UseSimulation { get; set; } = false;
 
         public DefaultNodeFactory(
-            IMotionController? motionController = null,
+            MotionRouter? motionRouter = null,
+            IORouter? ioRouter = null,
             object? cameraService = null,
-            object? laserService = null,
-            object? ioService = null)
+            object? laserService = null)
         {
-            _motionController = motionController;
+            _motionRouter = motionRouter;
+            _ioRouter = ioRouter;
             _cameraService = cameraService;
             _laserService = laserService;
-            _ioService = ioService;
         }
 
         public IFlowNode CreateNode(string type, Dictionary<string, string> properties)
         {
-            var node = CreateNodeInternal(type, UseSimulation);
+            var node = CreateNodeInternal(type);
 
             // Restore node general configuration from properties
             if (properties.TryGetValue("Name", out var name) && !string.IsNullOrEmpty(name))
@@ -53,13 +49,13 @@ namespace HWKUltra.Flow.Services
         }
 
         /// <summary>
-        /// Create node with explicit simulation mode
+        /// Create node with explicit simulation mode (for backward compatibility)
         /// </summary>
         public IFlowNode CreateNode(string type, Dictionary<string, string> properties, bool useSimulation)
         {
-            var node = CreateNodeInternal(type, useSimulation);
+            // When useSimulation is true, inject null services to force simulation in DeviceNodeBase
+            var node = useSimulation ? CreateNodeSimulated(type) : CreateNodeInternal(type);
 
-            // Restore node general configuration from properties
             if (properties.TryGetValue("Name", out var name) && !string.IsNullOrEmpty(name))
                 node.Name = name;
             if (properties.TryGetValue("Description", out var description))
@@ -68,68 +64,40 @@ namespace HWKUltra.Flow.Services
             return node;
         }
 
-        private IFlowNode CreateNodeInternal(string type, bool useSimulation)
+        private IFlowNode CreateNodeInternal(string type)
         {
-            // Legacy node types (backward compatibility)
-            var legacyNode = TryCreateLegacyNode(type, useSimulation);
-            if (legacyNode != null) return legacyNode;
-
-            // New categorized node types
             return type switch
             {
-                // Motion Control - Basic
-                "AxisHome" => useSimulation
-                    ? new SimulatedAxisHomeNode()
-                    : new AxisHomeNode(_motionController),
-                "AxisMoveAbs" => useSimulation
-                    ? new SimulatedAxisMoveNode { SimulatedDelayMs = 100 }
-                    : new AxisMoveAbsNode(_motionController),
-                "AxisMoveRel" => useSimulation
-                    ? new SimulatedAxisMoveNode { SimulatedDelayMs = 100 }
-                    : new AxisMoveRelNode(_motionController),
-                "AxisMoveVelocity" => useSimulation
-                    ? new SimulatedAxisMoveNode { SimulatedDelayMs = 50 }
-                    : new AxisMoveVelocityNode(_motionController),
-                "AxisWaitInPos" => useSimulation
-                    ? new SimulatedAxisMoveNode { Name = "Simulated Axis Wait", SimulatedDelayMs = 50 }
-                    : new AxisWaitInPosNode(_motionController),
-                "GroupInterpolation" => useSimulation
-                    ? new SimulatedAxisMoveNode { Name = "Simulated Group Move", SimulatedDelayMs = 200 }
-                    : new GroupInterpolationNode(_motionController),
+                // Motion Control - uses MotionRouter (null → auto simulation)
+                "AxisHome" => new AxisHomeNode(_motionRouter),
+                "AxisMoveAbs" => new AxisMoveAbsNode(_motionRouter),
+                "AxisMoveRel" => new AxisMoveRelNode(_motionRouter),
+                "AxisMoveVelocity" => new AxisMoveVelocityNode(_motionRouter),
+                "AxisWaitInPos" => new AxisWaitInPosNode(_motionRouter),
+                "GroupInterpolation" => new GroupInterpolationNode(_motionRouter),
 
-                // Camera
-                "CameraTrigger" => useSimulation
-                    ? new SimulatedCameraNode { SimulatedDelayMs = 50 }
-                    : new CameraTriggerNode(_cameraService),
-                "Camera" => useSimulation
-                    ? new SimulatedCameraNode()
-                    : throw new InvalidOperationException("Camera service not available. Use CameraTrigger or enable simulation."),
+                // Camera (null → auto simulation)
+                "CameraTrigger" or "Camera" => new CameraTriggerNode(_cameraService),
 
-                // Laser
-                "LaserTrigger" => useSimulation
-                    ? new SimulatedLaserNode { SimulatedDelayMs = 50 }
-                    : new LaserTriggerNode(_laserService),
-                "Laser" => useSimulation
-                    ? new SimulatedLaserNode()
-                    : throw new InvalidOperationException("Laser service not available. Use LaserTrigger or enable simulation."),
+                // Laser (null → auto simulation)
+                "LaserTrigger" or "Laser" => new LaserTriggerNode(_laserService),
 
-                // IO
-                "DigitalOutput" => useSimulation
-                    ? new SimulatedIoNode { SimulatedDelayMs = 50 }
-                    : new DigitalOutputNode(_ioService),
-                "IoOutput" => useSimulation
-                    ? new SimulatedIoNode()
-                    : new DigitalOutputNode(_ioService),
+                // IO (null → auto simulation)
+                "DigitalOutput" or "IoOutput" => new DigitalOutputNode(_ioRouter),
+                "DigitalInput" or "IoInput" => new DigitalInputNode(_ioRouter),
 
-                // Logic Control
+                // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),
                 "Branch" => new BranchNode(),
                 "Loop" => new LoopNode(),
 
                 // Advanced Features
-                "OnTheFlyCapture" => useSimulation
-                    ? new SimulatedOnTheFlyNode()
-                    : new OnTheFlyCaptureNode(_motionController, _cameraService, useSimulation),
+                "OnTheFlyCapture" => new OnTheFlyCaptureNode(_motionRouter, _cameraService),
+
+                // Legacy compatibility
+                "Motion" => new AxisMoveAbsNode(_motionRouter) { Name = "Motion (Legacy)" },
+                "MotionGroup" => new GroupInterpolationNode(_motionRouter) { Name = "MotionGroup (Legacy)" },
+                "WaitForAxis" => new AxisWaitInPosNode(_motionRouter) { Name = "WaitForAxis (Legacy)" },
 
                 // Default
                 _ => throw new ArgumentException($"Unknown node type: {type}")
@@ -137,45 +105,30 @@ namespace HWKUltra.Flow.Services
         }
 
         /// <summary>
-        /// Try to create legacy node types for backward compatibility
+        /// Create node with null services to force simulation mode
         /// </summary>
-        private IFlowNode? TryCreateLegacyNode(string type, bool useSimulation)
+        private IFlowNode CreateNodeSimulated(string type)
         {
-            if (useSimulation)
-            {
-                // In simulation mode, map legacy types to simulated versions
-                return type switch
-                {
-                    "Motion" => new SimulatedAxisMoveNode { Name = "Motion (Legacy Simulated)" },
-                    "MotionGroup" => new SimulatedAxisMoveNode { Name = "MotionGroup (Legacy Simulated)", SimulatedDelayMs = 200 },
-                    "WaitForAxis" => new SimulatedAxisMoveNode { Name = "WaitForAxis (Legacy Simulated)", SimulatedDelayMs = 50 },
-                    "Camera" => new SimulatedCameraNode(),
-                    "Inspection" => new InspectionNode(),  // TODO: Create SimulatedInspectionNode
-                    "Laser" => new SimulatedLaserNode(),
-                    "IoOutput" => new SimulatedIoNode(),
-                    "IoInput" => new SimulatedIoNode { Name = "IO Input (Simulated)" },
-                    "Delay" => new DelayNode(),
-                    _ => null
-                };
-            }
-
-            // Real hardware mode - legacy types mapped to new implementations
             return type switch
             {
-                "Motion" => _motionController != null
-                    ? new AxisMoveAbsNode(_motionController) { Name = "Motion (Legacy)" }
-                    : new SimulatedAxisMoveNode { Name = "Motion (Fallback Simulated)" },
-                "MotionGroup" => _motionController != null
-                    ? new GroupInterpolationNode(_motionController) { Name = "MotionGroup (Legacy)" }
-                    : new SimulatedAxisMoveNode { Name = "MotionGroup (Fallback Simulated)", SimulatedDelayMs = 200 },
-                "WaitForAxis" => new AxisWaitInPosNode(_motionController) { Name = "WaitForAxis (Legacy)" },
-                "Camera" => new SimulatedCameraNode { Name = "Camera (Legacy Simulated)" },
-                "Inspection" => new InspectionNode(),
-                "Laser" => new SimulatedLaserNode { Name = "Laser (Legacy Simulated)" },
-                "IoOutput" => new SimulatedIoNode { Name = "IO Output (Legacy Simulated)" },
-                "IoInput" => new SimulatedIoNode { Name = "IO Input (Legacy Simulated)" },
+                "AxisHome" => new AxisHomeNode(null),
+                "AxisMoveAbs" => new AxisMoveAbsNode(null),
+                "AxisMoveRel" => new AxisMoveRelNode(null),
+                "AxisMoveVelocity" => new AxisMoveVelocityNode(null),
+                "AxisWaitInPos" => new AxisWaitInPosNode(null),
+                "GroupInterpolation" => new GroupInterpolationNode(null),
+                "CameraTrigger" or "Camera" => new CameraTriggerNode(null),
+                "LaserTrigger" or "Laser" => new LaserTriggerNode(null),
+                "DigitalOutput" or "IoOutput" => new DigitalOutputNode(null),
+                "DigitalInput" or "IoInput" => new DigitalInputNode(null),
                 "Delay" => new DelayNode(),
-                _ => null
+                "Branch" => new BranchNode(),
+                "Loop" => new LoopNode(),
+                "OnTheFlyCapture" => new OnTheFlyCaptureNode(null, null, true),
+                "Motion" => new AxisMoveAbsNode(null) { Name = "Motion (Legacy)" },
+                "MotionGroup" => new GroupInterpolationNode(null) { Name = "MotionGroup (Legacy)" },
+                "WaitForAxis" => new AxisWaitInPosNode(null) { Name = "WaitForAxis (Legacy)" },
+                _ => throw new ArgumentException($"Unknown node type: {type}")
             };
         }
     }

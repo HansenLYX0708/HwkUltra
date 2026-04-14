@@ -1,0 +1,33 @@
+{
+  "CardId": 0,
+  "ConfigFilePath": "GtsMotion.json",
+  "DefaultVel": 100,
+  "DefaultAcc": 1000,
+  "Axes": [
+    {
+      "Name": "X",
+      "AxisId": 1,
+      "PulsePerUnit": 10000.0,
+    },
+    {
+      "Name": "Y",
+      "DriverName": "LY",
+      "PulsePerUnit": 10000.0
+    }
+  ],
+  "Groups": [
+    {
+      "Name": "XY",
+      "CrdId": 1,
+      "Axes": ["X", "Y"],
+      "Dimension": 2,
+    }
+  ]
+  "CrdParams": [
+    {
+      "CrdId": 1,
+      "Axes": [1, 2],
+      "Dimension": 2,
+    }
+  ]
+}

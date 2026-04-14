@@ -1,7 +1,6 @@
-using HWKUltra.Core;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
-using HWKUltra.Motion.Abstractions;
+using HWKUltra.Motion.Core;
 using HWKUltra.Motion.Implementations;
 
 namespace HWKUltra.Flow.Nodes.Motion.Real
@@ -9,7 +8,7 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
     /// <summary>
     /// Relative position motion node - moves axis by relative distance
     /// </summary>
-    public class AxisMoveRelNode : DeviceNodeBase<IMotionController>
+    public class AxisMoveRelNode : DeviceNodeBase<MotionRouter>
     {
         public override string Name { get; set; } = "Axis Move Relative";
         public override string NodeType => "AxisMoveRel";
@@ -28,28 +27,16 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
             new FlowParameter { Name = "DistanceTraveled", DisplayName = "Distance Traveled", Type = "double", Description = "Actual distance moved" }
         };
 
-        public AxisMoveRelNode(IMotionController? motionController) : base(motionController) { }
+        public AxisMoveRelNode(MotionRouter? router) : base(router) { }
 
-        public override async Task<FlowResult> ExecuteAsync(FlowContext context)
+        protected override async Task<FlowResult> ExecuteRealAsync(FlowContext context)
         {
             try
             {
-                var axisName = context.GetVariable<string>("AxisName") ?? "X";
-                var distance = context.GetVariable<double>("Distance");
-                var velocity = context.GetVariable<double>("Velocity");
-                var acceleration = context.GetVariable<double>("Acceleration");
-
-                if (IsSimulated)
-                {
-                    Console.WriteLine($"[AxisMoveRel] Simulating relative move {axisName} by {distance:F3}mm");
-                    await Task.Delay(100, context.CancellationToken);
-                    context.SetVariable("ActualPosition", distance);
-                    context.SetVariable("DistanceTraveled", distance);
-                    return FlowResult.Ok();
-                }
-
-                var validationError = ValidateService();
-                if (validationError != null) return validationError;
+                var axisName = context.GetNodeInput<string>(Id, "AxisName") ?? "X";
+                var distance = context.GetNodeInput<double>(Id, "Distance");
+                var velocity = context.GetNodeInput<double>(Id, "Velocity");
+                var acceleration = context.GetNodeInput<double>(Id, "Acceleration");
 
                 var profile = new MotionProfile
                 {
@@ -57,11 +44,13 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
                     Acc = (float)acceleration
                 };
 
-                // TODO: Implement relative move
-                // Service!.MoveAxisRelative(axisName, distance, profile);
+                var posBefore = Service!.GetPosition(axisName);
+                Service.MoveRelative(axisName, distance, profile);
+                await Service.WaitForIdleAsync(axisName, 30000, context.CancellationToken);
 
-                context.SetVariable("ActualPosition", distance);
-                context.SetVariable("DistanceTraveled", distance);
+                var posAfter = Service.GetPosition(axisName);
+                context.SetNodeOutput(Id, "ActualPosition", posAfter);
+                context.SetNodeOutput(Id, "DistanceTraveled", posAfter - posBefore);
 
                 return FlowResult.Ok();
             }
@@ -69,6 +58,17 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
             {
                 return FlowResult.Fail($"Relative motion failed: {ex.Message}");
             }
+        }
+
+        protected override async Task<FlowResult> ExecuteSimulatedAsync(FlowContext context)
+        {
+            var axisName = context.GetNodeInput<string>(Id, "AxisName") ?? "X";
+            var distance = context.GetNodeInput<double>(Id, "Distance");
+            Console.WriteLine($"[SIMULATION] AxisMoveRel: Moving {axisName} by {distance:F3}mm");
+            await Task.Delay(SimulatedDelayMs, context.CancellationToken);
+            context.SetNodeOutput(Id, "ActualPosition", distance);
+            context.SetNodeOutput(Id, "DistanceTraveled", distance);
+            return FlowResult.Ok();
         }
     }
 }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -8,12 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HWKUltra.Core\HWKUltra.Core.csproj" />
-    <ProjectReference Include="..\HWKUltra.DeviceIO\HWKUltra.DeviceIO.csproj" />
-    <ProjectReference Include="..\HWKUltra.Motion\HWKUltra.Motion.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Examples\" />
   </ItemGroup>
 
 </Project>

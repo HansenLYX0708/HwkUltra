@@ -36,11 +36,70 @@ namespace HWKUltra.Motion.Core
                 return;
             }
 
-            if (_axisMap.TryGetValue(axisName, out var axisId))
+            if (_axisMap.ContainsKey(axisName))
             {
                 _controller.MoveAxis(axisName, pos, profile);
                 return;
             }
+
+            throw new Exception($"Axis not found: {axisName}");
+        }
+
+        public void MoveRelative(string axisName, double distance, MotionProfile? profile = null)
+        {
+            if (_axisMap.ContainsKey(axisName))
+            {
+                _controller.MoveAxisRelative(axisName, distance, profile);
+                return;
+            }
+
+            // ISingleAxis 不支持相对运动，用绝对运动模拟
+            if (_singleAxes.TryGetValue(axisName, out var axis))
+            {
+                var current = _controller.GetPosition(axisName);
+                axis.MoveTo(current + distance);
+                return;
+            }
+
+            throw new Exception($"Axis not found: {axisName}");
+        }
+
+        public void MoveVelocity(string axisName, double velocity, MotionProfile? profile = null)
+        {
+            if (_axisMap.ContainsKey(axisName))
+            {
+                _controller.MoveAxisVelocity(axisName, velocity, profile);
+                return;
+            }
+
+            throw new Exception($"Axis {axisName} does not support velocity move");
+        }
+
+        public void Home(string axisName)
+        {
+            if (_singleAxes.TryGetValue(axisName, out var axis))
+            {
+                axis.Init();
+                return;
+            }
+
+            if (_axisMap.ContainsKey(axisName))
+            {
+                _controller.HomeAxis(axisName);
+                return;
+            }
+
+            throw new Exception($"Axis not found: {axisName}");
+        }
+
+        public double GetPosition(string axisName)
+        {
+            if (_axisMap.ContainsKey(axisName))
+                return _controller.GetPosition(axisName);
+
+            // ISingleAxis 无 GetPosition，返回 0
+            if (_singleAxes.ContainsKey(axisName))
+                return 0;
 
             throw new Exception($"Axis not found: {axisName}");
         }
@@ -53,9 +112,9 @@ namespace HWKUltra.Motion.Core
                 return;
             }
 
-            if (_axisMap.TryGetValue(axisName, out var axisId))
+            if (_axisMap.ContainsKey(axisName))
             {
-                _controller.Stop(axisId);
+                _controller.StopAxis(axisName);
                 return;
             }
 
@@ -67,33 +126,44 @@ namespace HWKUltra.Motion.Core
             if (_singleAxes.TryGetValue(axisName, out var axis))
                 return axis.IsBusy();
 
-            if (_axisMap.TryGetValue(axisName, out var axisId))
-                return _controller.IsBusy(axisId);
+            if (_axisMap.ContainsKey(axisName))
+                return _controller.IsAxisBusy(axisName);
 
             throw new Exception($"Axis not found: {axisName}");
+        }
+
+        /// <summary>
+        /// 异步等待轴到位
+        /// </summary>
+        public async Task WaitForIdleAsync(string axisName, int timeoutMs = 30000, CancellationToken cancellationToken = default)
+        {
+            const int pollIntervalMs = 10;
+            int elapsed = 0;
+
+            while (elapsed < timeoutMs)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!IsBusy(axisName))
+                    return;
+                await Task.Delay(pollIntervalMs, cancellationToken);
+                elapsed += pollIntervalMs;
+            }
+
+            throw new MotionException(axisName, $"Wait for idle timeout ({timeoutMs}ms)");
         }
 
         /// <summary>
         /// 按组名进行插补运动
         /// </summary>
         /// <param name="groupName">组名称，如"XY"</param>
+        /// <param name="pos">各轴目标位置</param>
         /// <param name="profile">运动参数，可选</param>
-        public void MoveGroup(string groupName, MotionProfile? profile = null)
+        public void MoveGroup(string groupName, AxisPosition pos, MotionProfile? profile = null)
         {
-            if (!_groupAxesMap.TryGetValue(groupName, out var axisNames))
+            if (!_groupAxesMap.TryGetValue(groupName, out _))
                 throw new Exception($"Group {groupName} not found in group axes map");
 
-            // 构造当前位置（从各轴获取实际位置）
-            var posDict = new Dictionary<string, double>();
-            foreach (var axisName in axisNames)
-            {
-                // 这里简化处理，实际应该从控制器获取当前位置或传入目标位置
-                // 暂时假设调用者会先设置各轴目标位置
-                posDict[axisName] = 0; // 占位
-            }
-
-            var axisPos = new AxisPosition(posDict);
-            _controller.MoveGroup(groupName, axisPos, profile);
+            _controller.MoveGroup(groupName, pos, profile);
         }
 
         /// <summary>

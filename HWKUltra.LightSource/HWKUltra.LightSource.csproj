@@ -6,9 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\HWKUltra.Motion\HWKUltra.Motion.csproj" />
-    <ProjectReference Include="..\HWKUltra.DeviceIO\HWKUltra.DeviceIO.csproj" />
-  </ItemGroup>
-
 </Project>

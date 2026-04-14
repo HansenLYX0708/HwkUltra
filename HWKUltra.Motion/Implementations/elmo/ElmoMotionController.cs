@@ -148,6 +148,62 @@ public class ElmoMotionController : IMotionController
         }
     }
 
+    public void MoveAxisRelative(string axisName, double distance, MotionProfile profile = null)
+    {
+        if (!isInit) return;
+        var currentPos = GetPosition(axisName);
+        MoveAxis(axisName, currentPos + distance, profile);
+    }
+
+    public void MoveAxisVelocity(string axisName, double velocity, MotionProfile profile = null)
+    {
+        if (!isInit) return;
+        try
+        {
+            var p = Clamp(axisName, profile);
+            axes[axisName].MoveVelocity((float)velocity, p.Acc.Value, p.Dec.Value, p.Jerk.Value,
+                velocity >= 0 ? MC_DIRECTION_ENUM.MC_POSITIVE_DIRECTION : MC_DIRECTION_ENUM.MC_NEGATIVE_DIRECTION,
+                MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE);
+        }
+        catch (Exception ex) { throw new MotionException(axisName, "Velocity move failed", ex); }
+    }
+
+    public void HomeAxis(string axisName)
+    {
+        if (!isInit) return;
+        try
+        {
+            axes[axisName].MoveAbsolute(0, 10, 100, 100, 1000,
+                MC_DIRECTION_ENUM.MC_POSITIVE_DIRECTION, MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE);
+            while ((axes[axisName].ReadStatus() & (uint)MC_STATE_SINGLE.STAND_STILL) == 0)
+            {
+                Thread.Sleep(50);
+            }
+        }
+        catch (Exception ex) { throw new MotionException(axisName, "Home failed", ex); }
+    }
+
+    public double GetPosition(string axisName)
+    {
+        if (!isInit) return 0;
+        try { return axes[axisName].GetActualPosition(); }
+        catch (Exception ex) { throw new MotionException(axisName, "GetPosition failed", ex); }
+    }
+
+    public void StopAxis(string axisName)
+    {
+        if (!isInit) return;
+        try { axes[axisName].Stop(100, 1000, MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE); }
+        catch (Exception ex) { throw new MotionException(axisName, "Stop failed", ex); }
+    }
+
+    public bool IsAxisBusy(string axisName)
+    {
+        if (!isInit) return false;
+        try { return (axes[axisName].ReadStatus() & (uint)MC_STATE_SINGLE.STAND_STILL) == 0; }
+        catch { return false; }
+    }
+
     public void Stop(int axisId) { }
 
     public bool IsBusy(int axisId)

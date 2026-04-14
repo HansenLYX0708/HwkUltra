@@ -287,6 +287,96 @@ namespace HWKUltra.Motion.Implementations.gts
             }
         }
 
+        public void MoveAxisRelative(string axisName, double distance, MotionProfile? profile = null)
+        {
+            if (!_isInit) return;
+            var currentPos = GetPosition(axisName);
+            MoveAxis(axisName, currentPos + distance, profile);
+        }
+
+        public void MoveAxisVelocity(string axisName, double velocity, MotionProfile? profile = null)
+        {
+            if (!_isInit) return;
+
+            if (!_axisIdMap.TryGetValue(axisName, out short axisId))
+                throw new MotionException(axisName, $"Axis {axisName} not found");
+
+            try
+            {
+                var p = Clamp(axisName, profile);
+                short rtn = GTN_PrfTrap(_config.CardId, axisId);
+                CheckError(rtn, $"PrfTrap_{axisName}", "Failed to set trap mode");
+
+                rtn = GTN_SetVel(_config.CardId, axisId, Math.Abs(velocity));
+                CheckError(rtn, $"SetVel_{axisName}", "Failed to set velocity");
+
+                rtn = GTN_SetAcc(_config.CardId, axisId, p.Acc ?? _config.DefaultAcc);
+                CheckError(rtn, $"SetAcc_{axisName}", "Failed to set acceleration");
+
+                // 速度运动用极大位置模拟方向
+                int direction = velocity >= 0 ? 1 : -1;
+                rtn = GTN_SetPos(_config.CardId, axisId, direction * int.MaxValue / 2);
+                CheckError(rtn, $"SetPos_{axisName}", "Failed to set position");
+
+                rtn = GTN_Update(_config.CardId, axisId);
+                CheckError(rtn, $"Update_{axisName}", "Failed to start motion");
+            }
+            catch (MotionException) { throw; }
+            catch (Exception ex) { throw new MotionException(axisName, "Velocity move failed", ex); }
+        }
+
+        public void HomeAxis(string axisName)
+        {
+            if (!_isInit) return;
+
+            if (!_axisIdMap.TryGetValue(axisName, out short axisId))
+                throw new MotionException(axisName, $"Axis {axisName} not found");
+
+            try
+            {
+                // TODO: 实际回零需根据硬件配置选择回零模式
+                short rtn = GTN_ClrSts(_config.CardId, axisId, 1);
+                CheckError(rtn, $"Home_ClrSts_{axisName}", "Failed to clear status for home");
+
+                MoveAxis(axisName, 0);
+                WaitForAxisIdle(axisName, axisId);
+            }
+            catch (MotionException) { throw; }
+            catch (Exception ex) { throw new MotionException(axisName, "Home failed", ex); }
+        }
+
+        public double GetPosition(string axisName)
+        {
+            if (!_isInit) return 0;
+
+            if (!_axisIdMap.TryGetValue(axisName, out short axisId))
+                throw new MotionException(axisName, $"Axis {axisName} not found");
+
+            try
+            {
+                double pos;
+                short rtn = GTN_GetEncPos(_config.CardId, axisId, out pos);
+                CheckError(rtn, $"GetEncPos_{axisName}", "Failed to get position");
+                return FromPulse(axisName, (int)pos);
+            }
+            catch (MotionException) { throw; }
+            catch (Exception ex) { throw new MotionException(axisName, "GetPosition failed", ex); }
+        }
+
+        public void StopAxis(string axisName)
+        {
+            if (!_axisIdMap.TryGetValue(axisName, out short axisId))
+                throw new MotionException(axisName, $"Axis {axisName} not found");
+            Stop(axisId);
+        }
+
+        public bool IsAxisBusy(string axisName)
+        {
+            if (!_axisIdMap.TryGetValue(axisName, out short axisId))
+                return false;
+            return IsBusy(axisId);
+        }
+
         public void Stop(int axisId)
         {
             if (!_isInit) return;

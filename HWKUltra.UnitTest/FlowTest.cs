@@ -1,5 +1,3 @@
-using HWKUltra.Flow.Examples;
-
 namespace HWKUltra.UnitTest
 {
     /// <summary>
@@ -24,7 +22,7 @@ namespace HWKUltra.UnitTest
         public static async Task Test5_MultiFlowAsync()
         {
             Console.WriteLine("\n----- Test 5: Multi-Flow Execution -----");
-            await MultiFlowTest.RunMultiFlowTest();
+            await TestFlowHelper.RunMultiFlowTest();
             Console.WriteLine("✓ Multi-flow test passed");
         }
 
@@ -34,7 +32,7 @@ namespace HWKUltra.UnitTest
         static void Test1_NodeTemplates()
         {
             Console.WriteLine("\n----- Test 1: Node Templates -----");
-            AoiFlowExample.DemoNodeTemplates();
+            TestFlowHelper.DemoNodeTemplates();
             Console.WriteLine("✓ Node templates test passed");
         }
 
@@ -45,7 +43,7 @@ namespace HWKUltra.UnitTest
         {
             Console.WriteLine("\n----- Test 2: Create AOI Flow -----");
 
-            var flow = AoiFlowExample.CreateAoiInspectionFlow();
+            var flow = TestFlowHelper.CreateTestAoiFlow();
 
             Console.WriteLine($"Flow name: {flow.Name}");
             Console.WriteLine($"Flow description: {flow.Description}");
@@ -76,7 +74,7 @@ namespace HWKUltra.UnitTest
         {
             Console.WriteLine("\n----- Test 3: Flow Serialization -----");
 
-            var flow = AoiFlowExample.CreateAoiInspectionFlow();
+            var flow = TestFlowHelper.CreateTestAoiFlow();
 
             // Serialize
             var json = HWKUltra.Flow.Utils.FlowSerializer.Serialize(flow);
@@ -104,7 +102,7 @@ namespace HWKUltra.UnitTest
         public static async Task Test4_ExecuteFlowAsync()
         {
             Console.WriteLine("\n----- Test 4: Execute Flow -----");
-            await AoiFlowExample.DemoExecuteFlow();
+            await TestFlowHelper.DemoExecuteFlow();
             Console.WriteLine("✓ Flow execution test passed");
         }
     }

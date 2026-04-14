@@ -317,11 +317,11 @@ namespace HWKUltra.UnitTest
         {
             Console.WriteLine("----- Build from Motion.json File -----");
 
-            var jsonPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "ConfigJson", "Motion", "Motion.json");
+            var jsonPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "ConfigJson", "Motion", "ElmoMotion.json");
             if (!File.Exists(jsonPath))
             {
                 // Try source tree path
-                jsonPath = @"g:\projects\AOIPlatform\HwkUltra_g\ConfigJson\Motion\Motion.json";
+                jsonPath = @"g:\projects\AOIPlatform\HwkUltra_g\ConfigJson\Motion\ElmoMotion.json";
             }
 
             if (!File.Exists(jsonPath))
@@ -331,7 +331,7 @@ namespace HWKUltra.UnitTest
             }
 
             var json = File.ReadAllText(jsonPath);
-            Console.WriteLine($"  Loaded Motion.json ({json.Length} chars)");
+            Console.WriteLine($"  Loaded ElmoMotion.json ({json.Length} chars)");
 
             var builder = new MotionBuilder<ElmoMotionControllerConfig>(
                 cfg => new ElmoMotionController(cfg),

@@ -25,45 +25,40 @@ namespace HWKUltra.Flow.Nodes.Laser.Real
             new FlowParameter { Name = "MeasurementTime", DisplayName = "Measurement Time", Type = "datetime", Description = "Timestamp of measurement" }
         };
 
+        protected override int SimulatedDelayMs => 50;
+
         public LaserTriggerNode(object? laserService = null) : base(laserService) { }
 
-        public override async Task<FlowResult> ExecuteAsync(FlowContext context)
+        protected override async Task<FlowResult> ExecuteRealAsync(FlowContext context)
         {
             try
             {
-                var laserId = context.GetVariable<string>("LaserId") ?? "Laser1";
-                var triggerMode = context.GetVariable<string>("TriggerMode") ?? "Single";
-                var averageCount = context.GetVariable<int>("AverageCount");
-
-                if (IsSimulated)
-                {
-                    Console.WriteLine($"[LaserTrigger] Simulating {triggerMode} trigger for laser {laserId}");
-                    await Task.Delay(50, context.CancellationToken);
-
-                    // Simulate measurement data
-                    var random = new Random();
-                    var height = 0.5 + (random.NextDouble() * 0.01);
-                    var intensity = 800 + random.Next(400);
-
-                    context.SetVariable("Height", height);
-                    context.SetVariable("Intensity", (double)intensity);
-                    context.SetVariable("MeasurementTime", DateTime.Now);
-
-                    return FlowResult.Ok();
-                }
-
-                var validationError = ValidateService();
-                if (validationError != null) return validationError;
+                var laserId = context.GetNodeInput<string>(Id, "LaserId") ?? "Laser1";
+                var triggerMode = context.GetNodeInput<string>(Id, "TriggerMode") ?? "Single";
 
                 // TODO: Actual laser trigger
+                await Task.CompletedTask;
 
-                context.SetVariable("MeasurementTime", DateTime.Now);
+                context.SetNodeOutput(Id, "MeasurementTime", DateTime.Now);
                 return FlowResult.Ok();
             }
             catch (Exception ex)
             {
                 return FlowResult.Fail($"Laser trigger failed: {ex.Message}");
             }
+        }
+
+        protected override async Task<FlowResult> ExecuteSimulatedAsync(FlowContext context)
+        {
+            var laserId = context.GetNodeInput<string>(Id, "LaserId") ?? "Laser1";
+            Console.WriteLine($"[SIMULATION] LaserTrigger: Trigger laser {laserId}");
+            await Task.Delay(SimulatedDelayMs, context.CancellationToken);
+
+            var random = new Random();
+            context.SetNodeOutput(Id, "Height", 0.5 + (random.NextDouble() * 0.01));
+            context.SetNodeOutput(Id, "Intensity", (double)(800 + random.Next(400)));
+            context.SetNodeOutput(Id, "MeasurementTime", DateTime.Now);
+            return FlowResult.Ok();
         }
     }
 }

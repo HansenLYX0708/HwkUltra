@@ -3,7 +3,8 @@ using HWKUltra.Flow.Abstractions;
 namespace HWKUltra.Flow.Nodes.Abstractions
 {
     /// <summary>
-    /// Device node base class - handles service injection for all device nodes
+    /// Device node base class - handles service injection and simulation fallback
+    /// When Service is null, automatically runs in simulation mode (log + delay)
     /// </summary>
     public abstract class DeviceNodeBase<TService> : IFlowNode
         where TService : class
@@ -22,23 +23,38 @@ namespace HWKUltra.Flow.Nodes.Abstractions
         /// </summary>
         public bool IsSimulated => Service == null;
 
+        /// <summary>
+        /// Simulated delay in ms (subclass can override)
+        /// </summary>
+        protected virtual int SimulatedDelayMs => 100;
+
         protected DeviceNodeBase(TService? service)
         {
             Service = service;
         }
 
-        public abstract Task<FlowResult> ExecuteAsync(FlowContext context);
+        public async Task<FlowResult> ExecuteAsync(FlowContext context)
+        {
+            if (IsSimulated)
+                return await ExecuteSimulatedAsync(context);
+
+            return await ExecuteRealAsync(context);
+        }
 
         /// <summary>
-        /// Validate that service is available for real execution
+        /// Real hardware execution - subclass implements actual device control
         /// </summary>
-        protected FlowResult? ValidateService()
+        protected abstract Task<FlowResult> ExecuteRealAsync(FlowContext context);
+
+        /// <summary>
+        /// Default simulation: log + delay. Subclass can override for custom simulation.
+        /// </summary>
+        protected virtual async Task<FlowResult> ExecuteSimulatedAsync(FlowContext context)
         {
-            if (Service == null)
-            {
-                return FlowResult.Fail($"{NodeType} service not available");
-            }
-            return null;
+            Console.WriteLine($"[SIMULATION] {NodeType}({Name}): simulated execution");
+            if (SimulatedDelayMs > 0)
+                await Task.Delay(SimulatedDelayMs, context.CancellationToken);
+            return FlowResult.Ok();
         }
     }
 

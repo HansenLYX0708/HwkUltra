@@ -1,7 +1,7 @@
 using HWKUltra.Core;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
-using HWKUltra.Motion.Abstractions;
+using HWKUltra.Motion.Core;
 using HWKUltra.Motion.Implementations;
 
 namespace HWKUltra.Flow.Nodes.Advanced.Real
@@ -12,7 +12,7 @@ namespace HWKUltra.Flow.Nodes.Advanced.Real
     /// </summary>
     public class OnTheFlyCaptureNode : CompositeNodeBase
     {
-        private readonly IMotionController? _motionController;
+        private readonly MotionRouter? _motionRouter;
         private readonly object? _cameraService;  // TODO: Replace with ICameraService
 
         public override string Name { get; set; } = "On-The-Fly Capture";
@@ -39,10 +39,10 @@ namespace HWKUltra.Flow.Nodes.Advanced.Real
             new FlowParameter { Name = "MotionComplete", DisplayName = "Motion Complete", Type = "bool", Description = "Whether motion completed successfully" }
         };
 
-        public OnTheFlyCaptureNode(IMotionController? motionController = null, object? cameraService = null, bool simulate = false)
-            : base(simulate || motionController == null || cameraService == null)
+        public OnTheFlyCaptureNode(MotionRouter? motionRouter = null, object? cameraService = null, bool simulate = false)
+            : base(simulate || motionRouter == null || cameraService == null)
         {
-            _motionController = motionController;
+            _motionRouter = motionRouter;
             _cameraService = cameraService;
         }
 
@@ -50,83 +50,58 @@ namespace HWKUltra.Flow.Nodes.Advanced.Real
         {
             try
             {
-                var axisName = context.GetVariable<string>("AxisName") ?? "X";
-                var targetPosition = context.GetVariable<double>("TargetPosition");
-                var velocity = context.GetVariable<double>("Velocity");
+                var axisName = context.GetNodeInput<string>(Id, "AxisName") ?? "X";
+                var targetPosition = context.GetNodeInput<double>(Id, "TargetPosition");
+                var velocity = context.GetNodeInput<double>(Id, "Velocity");
                 var triggerPositions = context.GetVariable<double[]>("TriggerPositions") ?? Array.Empty<double>();
-                var preTriggerDist = context.GetVariable<double>("PreTriggerDistance");
-                var cameraId = context.GetVariable<string>("CameraId") ?? "Cam1";
-                var exposureTime = context.GetVariable<double>("ExposureTime");
+                var cameraId = context.GetNodeInput<string>(Id, "CameraId") ?? "Cam1";
 
                 if (IsSimulated)
                 {
-                    return await ExecuteSimulatedAsync(context, axisName, targetPosition, velocity, triggerPositions, cameraId);
+                    Console.WriteLine($"[SIMULATION] OnTheFlyCapture: Moving {axisName} to {targetPosition}mm at {velocity}mm/s");
+                    var capturedImages = 0;
+                    var capturePositions = new List<double>();
+
+                    foreach (var triggerPos in triggerPositions.OrderBy(p => p))
+                    {
+                        var delayMs = Math.Max((int)(Math.Abs(triggerPos) / velocity * 1000), 10);
+                        await Task.Delay(delayMs, context.CancellationToken);
+                        Console.WriteLine($"[SIMULATION] OnTheFlyCapture: Triggered at {triggerPos:F3}mm");
+                        capturedImages++;
+                        capturePositions.Add(triggerPos);
+                    }
+
+                    await Task.Delay(50, context.CancellationToken);
+                    context.SetNodeOutput(Id, "ImagesCaptured", capturedImages);
+                    context.SetNodeOutput(Id, "CapturePositions", capturePositions.ToArray());
+                    context.SetNodeOutput(Id, "MotionComplete", true);
+                    return FlowResult.Ok();
                 }
 
-                return await ExecuteRealAsync(context, axisName, targetPosition, velocity, triggerPositions, preTriggerDist, cameraId, exposureTime);
+                if (_motionRouter == null)
+                    return FlowResult.Fail("Motion router not available");
+
+                // TODO: Implement real on-the-fly capture
+                // 1. Configure position trigger (PT) table with trigger positions
+                // 2. Set up camera trigger on PT output
+                // 3. Start motion via _motionRouter.Move()
+                // 4. Monitor and capture images at trigger positions
+                // 5. Wait for motion completion via _motionRouter.WaitForIdleAsync()
+
+                var profile = new MotionProfile { Vel = (float)velocity };
+                _motionRouter.Move(axisName, targetPosition, profile);
+                await _motionRouter.WaitForIdleAsync(axisName, 60000, context.CancellationToken);
+
+                context.SetNodeOutput(Id, "ImagesCaptured", triggerPositions.Length);
+                context.SetNodeOutput(Id, "CapturePositions", triggerPositions);
+                context.SetNodeOutput(Id, "MotionComplete", true);
+
+                return FlowResult.Ok();
             }
             catch (Exception ex)
             {
                 return FlowResult.Fail($"On-the-fly capture failed: {ex.Message}");
             }
-        }
-
-        private async Task<FlowResult> ExecuteSimulatedAsync(FlowContext context, string axisName, double targetPosition, double velocity, double[] triggerPositions, string cameraId)
-        {
-            Console.WriteLine($"[OnTheFlyCapture] SIMULATION: Moving {axisName} to {targetPosition}mm at {velocity}mm/s");
-            Console.WriteLine($"[OnTheFlyCapture] SIMULATION: Will trigger at positions: {string.Join(", ", triggerPositions)}");
-
-            var capturedImages = 0;
-            var capturePositions = new List<double>();
-
-            foreach (var triggerPos in triggerPositions.OrderBy(p => p))
-            {
-                // Simulate reaching trigger position
-                var delayMs = (int)(Math.Abs(triggerPos) / velocity * 1000);
-                await Task.Delay(delayMs, context.CancellationToken);
-
-                Console.WriteLine($"[OnTheFlyCapture] SIMULATION: Triggered capture at position {triggerPos:F3}mm");
-                capturedImages++;
-                capturePositions.Add(triggerPos);
-            }
-
-            // Complete motion to target
-            await Task.Delay(50, context.CancellationToken);
-
-            context.SetVariable("ImagesCaptured", capturedImages);
-            context.SetVariable("CapturePositions", capturePositions.ToArray());
-            context.SetVariable("MotionComplete", true);
-
-            Console.WriteLine($"[OnTheFlyCapture] SIMULATION: Captured {capturedImages} images, motion complete");
-
-            return FlowResult.Ok();
-        }
-
-        private async Task<FlowResult> ExecuteRealAsync(FlowContext context, string axisName, double targetPosition, double velocity, double[] triggerPositions, double preTriggerDist, string cameraId, double exposureTime)
-        {
-            if (_motionController == null)
-                return FlowResult.Fail("Motion controller not available");
-
-            var capturedImages = 0;
-            var capturePositions = new List<double>();
-
-            // TODO: Implement real on-the-fly capture
-            // 1. Configure position trigger (PT) table with trigger positions
-            // 2. Set up camera trigger on PT output
-            // 3. Start motion
-            // 4. Monitor and capture images at trigger positions
-            // 5. Wait for motion completion
-
-            Console.WriteLine($"[OnTheFlyCapture] Real capture: Moving {axisName} with {triggerPositions.Length} trigger points");
-
-            // Placeholder for actual implementation
-            await Task.Delay(100, context.CancellationToken);
-
-            context.SetVariable("ImagesCaptured", triggerPositions.Length);
-            context.SetVariable("CapturePositions", triggerPositions);
-            context.SetVariable("MotionComplete", true);
-
-            return FlowResult.Ok();
         }
     }
 }

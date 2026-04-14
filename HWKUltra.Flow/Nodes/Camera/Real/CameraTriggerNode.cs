@@ -25,34 +25,24 @@ namespace HWKUltra.Flow.Nodes.Camera.Real
             new FlowParameter { Name = "TriggerStatus", DisplayName = "Trigger Status", Type = "bool", Description = "Whether trigger was successful" }
         };
 
+        protected override int SimulatedDelayMs => 50;
+
         public CameraTriggerNode(object? cameraService = null) : base(cameraService) { }
 
-        public override async Task<FlowResult> ExecuteAsync(FlowContext context)
+        protected override async Task<FlowResult> ExecuteRealAsync(FlowContext context)
         {
             try
             {
-                var cameraId = context.GetVariable<string>("CameraId") ?? "Cam1";
-                var triggerMode = context.GetVariable<string>("TriggerMode") ?? "Software";
-                var timeout = context.GetVariable<int>("Timeout");
-
-                if (IsSimulated)
-                {
-                    Console.WriteLine($"[CameraTrigger] Simulating trigger for camera {cameraId}, mode={triggerMode}");
-                    await Task.Delay(50, context.CancellationToken);
-
-                    context.SetVariable("Timestamp", DateTime.Now);
-                    context.SetVariable("TriggerStatus", true);
-                    return FlowResult.Ok();
-                }
-
-                var validationError = ValidateService();
-                if (validationError != null) return validationError;
+                var cameraId = context.GetNodeInput<string>(Id, "CameraId") ?? "Cam1";
+                var triggerMode = context.GetNodeInput<string>(Id, "TriggerMode") ?? "Software";
+                var timeout = context.GetNodeInput<int>(Id, "Timeout");
 
                 // TODO: Actual camera trigger
                 // var image = await Service!.TriggerAsync(cameraId, triggerMode, timeout);
+                await Task.CompletedTask;
 
-                context.SetVariable("Timestamp", DateTime.Now);
-                context.SetVariable("TriggerStatus", true);
+                context.SetNodeOutput(Id, "Timestamp", DateTime.Now);
+                context.SetNodeOutput(Id, "TriggerStatus", true);
 
                 return FlowResult.Ok();
             }
@@ -60,6 +50,16 @@ namespace HWKUltra.Flow.Nodes.Camera.Real
             {
                 return FlowResult.Fail($"Camera trigger failed: {ex.Message}");
             }
+        }
+
+        protected override async Task<FlowResult> ExecuteSimulatedAsync(FlowContext context)
+        {
+            var cameraId = context.GetNodeInput<string>(Id, "CameraId") ?? "Cam1";
+            Console.WriteLine($"[SIMULATION] CameraTrigger: Trigger camera {cameraId}");
+            await Task.Delay(SimulatedDelayMs, context.CancellationToken);
+            context.SetNodeOutput(Id, "Timestamp", DateTime.Now);
+            context.SetNodeOutput(Id, "TriggerStatus", true);
+            return FlowResult.Ok();
         }
     }
 }

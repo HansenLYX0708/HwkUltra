@@ -1,19 +1,21 @@
+using HWKUltra.DeviceIO.Core;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
 
 namespace HWKUltra.Flow.Nodes.IO.Real
 {
     /// <summary>
-    /// Digital output node - controls DO signals
+    /// Digital output node - controls DO signals via IORouter.
+    /// Uses string-based IO point names (e.g., "CameraSwitch", "LightTowerRed").
     /// </summary>
-    public class DigitalOutputNode : DeviceNodeBase<object>  // TODO: Replace with IIoService
+    public class DigitalOutputNode : DeviceNodeBase<IORouter>
     {
         public override string Name { get; set; } = "Digital Output";
         public override string NodeType => "DigitalOutput";
 
         public override List<FlowParameter> Inputs { get; } = new()
         {
-            new FlowParameter { Name = "Port", DisplayName = "Port", Type = "int", Required = true, Description = "DO port number" },
+            new FlowParameter { Name = "OutputName", DisplayName = "Output Name", Type = "string", Required = true, Description = "IO point name (e.g., CameraSwitch, LightTowerRed)" },
             new FlowParameter { Name = "Value", DisplayName = "Value", Type = "bool", Required = true, DefaultValue = true, Description = "true=ON, false=OFF" },
             new FlowParameter { Name = "Duration", DisplayName = "Duration", Type = "int", Required = false, DefaultValue = 0, Description = "Pulse duration in ms (0 = permanent)" },
             new FlowParameter { Name = "WaitForComplete", DisplayName = "Wait For Complete", Type = "bool", Required = false, DefaultValue = true, Description = "Wait for operation to complete" }
@@ -25,46 +27,34 @@ namespace HWKUltra.Flow.Nodes.IO.Real
             new FlowParameter { Name = "OperationTime", DisplayName = "Operation Time", Type = "datetime", Description = "When operation completed" }
         };
 
-        public DigitalOutputNode(object? ioService = null) : base(ioService) { }
+        protected override int SimulatedDelayMs => 50;
 
-        public override async Task<FlowResult> ExecuteAsync(FlowContext context)
+        public DigitalOutputNode(IORouter? ioRouter = null) : base(ioRouter) { }
+
+        protected override async Task<FlowResult> ExecuteRealAsync(FlowContext context)
         {
             try
             {
-                var port = context.GetVariable<int>("Port");
-                var value = context.GetVariable<bool>("Value");
-                var duration = context.GetVariable<int>("Duration");
-                var waitForComplete = context.GetVariable<bool>("WaitForComplete");
+                var outputName = context.GetNodeInput<string>(Id, "OutputName") ?? "";
+                var value = context.GetNodeInput<string>(Id, "Value") != "false";
+                var duration = context.GetNodeInput<int>(Id, "Duration");
 
-                if (IsSimulated)
-                {
-                    Console.WriteLine($"[DigitalOutput] Simulating DO{port} = {(value ? "ON" : "OFF")}");
+                if (string.IsNullOrEmpty(outputName))
+                    return FlowResult.Fail("OutputName is required");
 
-                    if (duration > 0)
-                    {
-                        await Task.Delay(duration, context.CancellationToken);
-                        Console.WriteLine($"[DigitalOutput] Simulating DO{port} auto-reset to OFF");
-                    }
+                if (!Service!.HasOutput(outputName))
+                    return FlowResult.Fail($"Output '{outputName}' not found in IO configuration");
 
-                    context.SetVariable("ActualValue", value);
-                    context.SetVariable("OperationTime", DateTime.Now);
-                    return FlowResult.Ok();
-                }
+                Service.SetOutput(outputName, value);
 
-                var validationError = ValidateService();
-                if (validationError != null) return validationError;
-
-                // TODO: Actual DO operation
-                // Service!.SetDigitalOutput(port, value);
-
-                if (duration > 0 && waitForComplete)
+                if (duration > 0)
                 {
                     await Task.Delay(duration, context.CancellationToken);
-                    // Service!.SetDigitalOutput(port, false);
+                    Service.SetOutput(outputName, false);
                 }
 
-                context.SetVariable("ActualValue", value);
-                context.SetVariable("OperationTime", DateTime.Now);
+                context.SetNodeOutput(Id, "ActualValue", value);
+                context.SetNodeOutput(Id, "OperationTime", DateTime.Now);
 
                 return FlowResult.Ok();
             }
@@ -72,6 +62,17 @@ namespace HWKUltra.Flow.Nodes.IO.Real
             {
                 return FlowResult.Fail($"Digital output operation failed: {ex.Message}");
             }
+        }
+
+        protected override async Task<FlowResult> ExecuteSimulatedAsync(FlowContext context)
+        {
+            var outputName = context.GetNodeInput<string>(Id, "OutputName") ?? "Unknown";
+            var value = context.GetNodeInput<string>(Id, "Value") != "false";
+            Console.WriteLine($"[SIMULATION] DigitalOutput: {outputName} = {(value ? "ON" : "OFF")}");
+            await Task.Delay(SimulatedDelayMs, context.CancellationToken);
+            context.SetNodeOutput(Id, "ActualValue", value);
+            context.SetNodeOutput(Id, "OperationTime", DateTime.Now);
+            return FlowResult.Ok();
         }
     }
 }

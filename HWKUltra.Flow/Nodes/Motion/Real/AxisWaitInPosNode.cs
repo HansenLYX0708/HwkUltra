@@ -1,13 +1,13 @@
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
-using HWKUltra.Motion.Abstractions;
+using HWKUltra.Motion.Core;
 
 namespace HWKUltra.Flow.Nodes.Motion.Real
 {
     /// <summary>
     /// Wait for axis in-position node - waits until axis reaches target position
     /// </summary>
-    public class AxisWaitInPosNode : DeviceNodeBase<IMotionController>
+    public class AxisWaitInPosNode : DeviceNodeBase<MotionRouter>
     {
         public override string Name { get; set; } = "Axis Wait In Position";
         public override string NodeType => "AxisWaitInPos";
@@ -27,55 +27,46 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
             new FlowParameter { Name = "PositionError", DisplayName = "Position Error", Type = "double", Description = "Position error from target" }
         };
 
-        public AxisWaitInPosNode(IMotionController? motionController) : base(motionController) { }
+        public AxisWaitInPosNode(MotionRouter? router) : base(router) { }
 
-        public override async Task<FlowResult> ExecuteAsync(FlowContext context)
+        protected override async Task<FlowResult> ExecuteRealAsync(FlowContext context)
         {
             try
             {
-                var axisName = context.GetVariable<string>("AxisName") ?? "X";
-                var tolerance = context.GetVariable<double>("Tolerance");
-                var timeout = context.GetVariable<int>("Timeout");
-                var targetPosition = context.GetVariable<double?>("TargetPosition");
+                var axisName = context.GetNodeInput<string>(Id, "AxisName") ?? "X";
+                var tolerance = context.GetNodeInput<double>(Id, "Tolerance");
+                var timeout = context.GetNodeInput<int>(Id, "Timeout");
+                if (timeout <= 0) timeout = 30000;
+                var targetPosition = context.GetNodeInput<double>(Id, "TargetPosition");
 
-                if (IsSimulated)
-                {
-                    Console.WriteLine($"[AxisWaitInPos] Simulating wait for {axisName} in position");
-                    await Task.Delay(100, context.CancellationToken);
-                    context.SetVariable("IsInPosition", true);
-                    context.SetVariable("ActualPosition", targetPosition ?? 0.0);
-                    context.SetVariable("PositionError", 0.0);
-                    return FlowResult.Ok();
-                }
+                await Service!.WaitForIdleAsync(axisName, timeout, context.CancellationToken);
 
-                var validationError = ValidateService();
-                if (validationError != null) return validationError;
+                var actualPos = Service.GetPosition(axisName);
+                var posError = Math.Abs(actualPos - targetPosition);
+                var inPos = posError <= (tolerance > 0 ? tolerance : 0.01);
 
-                var startTime = DateTime.Now;
-                bool isInPosition = false;
+                context.SetNodeOutput(Id, "IsInPosition", inPos);
+                context.SetNodeOutput(Id, "ActualPosition", actualPos);
+                context.SetNodeOutput(Id, "PositionError", posError);
 
-                // TODO: Poll axis status
-                while ((DateTime.Now - startTime).TotalMilliseconds < timeout)
-                {
-                    // Check if axis is busy and in position
-                    // isInPosition = !Service!.IsBusy(axisName) && Service.IsInPosition(axisName, tolerance);
-
-                    if (isInPosition)
-                        break;
-
-                    await Task.Delay(10, context.CancellationToken);
-                }
-
-                context.SetVariable("IsInPosition", isInPosition);
-                context.SetVariable("ActualPosition", 0.0); // TODO: Get actual position
-                context.SetVariable("PositionError", 0.0);
-
-                return isInPosition ? FlowResult.Ok() : FlowResult.Fail($"Timeout waiting for {axisName} to reach position");
+                return inPos ? FlowResult.Ok() : FlowResult.Fail($"Axis {axisName} position error {posError:F4}mm exceeds tolerance {tolerance:F4}mm");
             }
             catch (Exception ex)
             {
                 return FlowResult.Fail($"Wait for in-position failed: {ex.Message}");
             }
+        }
+
+        protected override async Task<FlowResult> ExecuteSimulatedAsync(FlowContext context)
+        {
+            var axisName = context.GetNodeInput<string>(Id, "AxisName") ?? "X";
+            var targetPosition = context.GetNodeInput<double>(Id, "TargetPosition");
+            Console.WriteLine($"[SIMULATION] AxisWaitInPos: Waiting for {axisName} at {targetPosition:F3}mm");
+            await Task.Delay(SimulatedDelayMs, context.CancellationToken);
+            context.SetNodeOutput(Id, "IsInPosition", true);
+            context.SetNodeOutput(Id, "ActualPosition", targetPosition);
+            context.SetNodeOutput(Id, "PositionError", 0.0);
+            return FlowResult.Ok();
         }
     }
 }

@@ -32,4 +32,15 @@
             CameraId = id;
         }
     }
+
+    public class IODeviceException : DeviceException
+    {
+        public string PointName { get; }
+
+        public IODeviceException(string pointName, string message, Exception inner = null)
+            : base("IO", message, inner)
+        {
+            PointName = pointName;
+        }
+    }
 }

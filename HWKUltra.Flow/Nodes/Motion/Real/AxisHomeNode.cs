@@ -1,17 +1,17 @@
-using HWKUltra.Core;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
-using HWKUltra.Motion.Abstractions;
+using HWKUltra.Motion.Core;
 
 namespace HWKUltra.Flow.Nodes.Motion.Real
 {
     /// <summary>
     /// Axis homing node - performs home operation on a single axis
     /// </summary>
-    public class AxisHomeNode : DeviceNodeBase<IMotionController>
+    public class AxisHomeNode : DeviceNodeBase<MotionRouter>
     {
         public override string Name { get; set; } = "Axis Home";
         public override string NodeType => "AxisHome";
+        protected override int SimulatedDelayMs => 500;
 
         public override List<FlowParameter> Inputs { get; } = new()
         {
@@ -26,33 +26,19 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
             new FlowParameter { Name = "HomePosition", DisplayName = "Home Position", Type = "double", Description = "Position after homing" }
         };
 
-        public AxisHomeNode(IMotionController? motionController) : base(motionController) { }
+        public AxisHomeNode(MotionRouter? router) : base(router) { }
 
-        public override async Task<FlowResult> ExecuteAsync(FlowContext context)
+        protected override async Task<FlowResult> ExecuteRealAsync(FlowContext context)
         {
             try
             {
-                var axisName = context.GetVariable<string>("AxisName") ?? "X";
-                var homeMode = context.GetVariable<string>("HomeMode") ?? "Auto";
-                var velocity = context.GetVariable<double>("Velocity");
+                var axisName = context.GetNodeInput<string>(Id, "AxisName") ?? "X";
 
-                if (IsSimulated)
-                {
-                    Console.WriteLine($"[AxisHome] Simulating home for axis {axisName}, mode={homeMode}");
-                    await Task.Delay(500, context.CancellationToken);
-                    context.SetVariable("HomeCompleted", true);
-                    context.SetVariable("HomePosition", 0.0);
-                    return FlowResult.Ok();
-                }
+                Service!.Home(axisName);
+                await Service.WaitForIdleAsync(axisName, 30000, context.CancellationToken);
 
-                var validationError = ValidateService();
-                if (validationError != null) return validationError;
-
-                // TODO: Actual home operation
-                // Service!.HomeAxis(axisName, homeMode, velocity);
-
-                context.SetVariable("HomeCompleted", true);
-                context.SetVariable("HomePosition", 0.0);
+                context.SetNodeOutput(Id, "HomeCompleted", true);
+                context.SetNodeOutput(Id, "HomePosition", Service.GetPosition(axisName));
 
                 return FlowResult.Ok();
             }
@@ -60,6 +46,16 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
             {
                 return FlowResult.Fail($"Axis homing failed: {ex.Message}");
             }
+        }
+
+        protected override async Task<FlowResult> ExecuteSimulatedAsync(FlowContext context)
+        {
+            var axisName = context.GetNodeInput<string>(Id, "AxisName") ?? "X";
+            Console.WriteLine($"[SIMULATION] AxisHome: Homing axis {axisName}");
+            await Task.Delay(SimulatedDelayMs, context.CancellationToken);
+            context.SetNodeOutput(Id, "HomeCompleted", true);
+            context.SetNodeOutput(Id, "HomePosition", 0.0);
+            return FlowResult.Ok();
         }
     }
 }

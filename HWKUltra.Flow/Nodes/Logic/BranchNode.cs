@@ -25,16 +25,16 @@ namespace HWKUltra.Flow.Nodes.Logic
             new FlowParameter { Name = "FalseValue", DisplayName = "False Value", Type = "any", Description = "Value when condition is false" }
         };
 
-        public override async Task<FlowResult> ExecuteAsync(FlowContext context)
+        public override Task<FlowResult> ExecuteAsync(FlowContext context)
         {
             try
             {
-                var condition = context.GetVariable<string>("Condition") ?? "";
-                var op = context.GetVariable<string>("Operator") ?? "Equals";
-                var compareValue = context.GetVariable<string>("CompareValue") ?? "";
+                var condition = context.GetNodeInput<string>(Id, "Condition") ?? "";
+                var op = context.GetNodeInput<string>(Id, "Operator") ?? "Equals";
+                var compareValue = context.GetNodeInput<string>(Id, "CompareValue") ?? "";
 
-                // Get the value to evaluate from context
-                var valueToEvaluate = context.GetVariable<object>(condition);
+                // Get the value to evaluate from context (condition is a variable name, search all scopes)
+                var valueToEvaluate = context.FindVariable<object>(condition);
                 bool result = false;
 
                 if (valueToEvaluate != null)
@@ -51,18 +51,18 @@ namespace HWKUltra.Flow.Nodes.Logic
                     };
                 }
 
-                context.SetVariable("Result", result);
-                context.SetVariable("TrueValue", result);
-                context.SetVariable("FalseValue", !result);
+                context.SetNodeOutput(Id, "Result", result);
+                context.SetNodeOutput(Id, "TrueValue", result);
+                context.SetNodeOutput(Id, "FalseValue", !result);
 
                 Console.WriteLine($"[Branch] Condition '{condition}' evaluated to: {result}");
 
                 // Return with branch indicator
-                return result ? FlowResult.Ok("True") : FlowResult.Ok("False");
+                return Task.FromResult(result ? FlowResult.OkBranch("True") : FlowResult.OkBranch("False"));
             }
             catch (Exception ex)
             {
-                return FlowResult.Fail($"Branch evaluation failed: {ex.Message}");
+                return Task.FromResult(FlowResult.Fail($"Branch evaluation failed: {ex.Message}"));
             }
         }
     }

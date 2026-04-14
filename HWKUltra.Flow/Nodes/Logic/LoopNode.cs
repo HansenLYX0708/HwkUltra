@@ -25,17 +25,17 @@ namespace HWKUltra.Flow.Nodes.Logic
             new FlowParameter { Name = "LoopCompleted", DisplayName = "Loop Completed", Type = "bool", Description = "Whether loop completed normally" }
         };
 
-        public override async Task<FlowResult> ExecuteAsync(FlowContext context)
+        public override Task<FlowResult> ExecuteAsync(FlowContext context)
         {
             try
             {
-                var iterations = context.GetVariable<int>("Iterations");
-                var conditionVar = context.GetVariable<string>("ConditionVariable");
-                var continueValue = context.GetVariable<string>("ContinueValue") ?? "true";
+                var iterations = context.GetNodeInput<int>(Id, "Iterations");
+                var conditionVar = context.GetNodeInput<string>(Id, "ConditionVariable");
+                var continueValue = context.GetNodeInput<string>(Id, "ContinueValue") ?? "true";
 
-                // Get current iteration from context (maintained across executions)
-                var currentIteration = context.GetVariable<int>("CurrentIteration");
-                var totalIterations = context.GetVariable<int>("TotalIterations");
+                // Get current iteration from node output (maintained across executions)
+                var currentIteration = context.GetNodeInput<int>(Id, "CurrentIteration");
+                var totalIterations = context.GetNodeInput<int>(Id, "TotalIterations");
 
                 // Check if we should continue looping
                 bool shouldContinue = true;
@@ -49,7 +49,7 @@ namespace HWKUltra.Flow.Nodes.Logic
                 // Check condition variable if specified
                 if (!string.IsNullOrEmpty(conditionVar))
                 {
-                    var conditionValue = context.GetVariable<object>(conditionVar)?.ToString();
+                    var conditionValue = context.FindVariable<object>(conditionVar)?.ToString();
                     if (conditionValue != continueValue)
                     {
                         shouldContinue = false;
@@ -60,27 +60,27 @@ namespace HWKUltra.Flow.Nodes.Logic
                 {
                     Console.WriteLine($"[Loop] Iteration {currentIteration + 1}/{iterations}");
 
-                    context.SetVariable("CurrentIteration", currentIteration + 1);
-                    context.SetVariable("TotalIterations", totalIterations + 1);
-                    context.SetVariable("LoopCompleted", false);
+                    context.SetNodeOutput(Id, "CurrentIteration", currentIteration + 1);
+                    context.SetNodeOutput(Id, "TotalIterations", totalIterations + 1);
+                    context.SetNodeOutput(Id, "LoopCompleted", false);
 
                     // Return with "Continue" to indicate loop should continue
-                    return FlowResult.Ok("Continue");
+                    return Task.FromResult(FlowResult.OkBranch("Continue"));
                 }
                 else
                 {
                     Console.WriteLine($"[Loop] Completed after {totalIterations} iterations");
 
-                    context.SetVariable("LoopCompleted", true);
-                    context.SetVariable("CurrentIteration", 0); // Reset for next time
+                    context.SetNodeOutput(Id, "LoopCompleted", true);
+                    context.SetNodeOutput(Id, "CurrentIteration", 0); // Reset for next time
 
                     // Return with "Exit" to indicate loop should exit
-                    return FlowResult.Ok("Exit");
+                    return Task.FromResult(FlowResult.OkBranch("Exit"));
                 }
             }
             catch (Exception ex)
             {
-                return FlowResult.Fail($"Loop execution failed: {ex.Message}");
+                return Task.FromResult(FlowResult.Fail($"Loop execution failed: {ex.Message}"));
             }
         }
     }

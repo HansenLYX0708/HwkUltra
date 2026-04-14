@@ -14,6 +14,13 @@ namespace HWKUltra.Motion.Abstractions
         void Close();
 
         void MoveAxis(string axisName, double pos, MotionProfile profile = null);
+        void MoveAxisRelative(string axisName, double distance, MotionProfile profile = null);
+        void MoveAxisVelocity(string axisName, double velocity, MotionProfile profile = null);
+        void HomeAxis(string axisName);
+        double GetPosition(string axisName);
+        void StopAxis(string axisName);
+        bool IsAxisBusy(string axisName);
+
         void Stop(int axisId);
         bool IsBusy(int axisId);
 

@@ -1,0 +1,60 @@
+{
+  "Cards": [
+    { "CardIndex": 0, "IpAddress": "192.168.1.101 -d" },
+    { "CardIndex": 1, "IpAddress": "192.168.1.102 -d" }
+  ],
+  "Inputs": [
+    { "Name": "LeftTrayBaseVacuum1",  "CardIndex": 1, "BankIndex": 0, "BitIndex": 0, "Description": "左托盘真空1反馈" },
+    { "Name": "LeftTrayBaseVacuum2",  "CardIndex": 1, "BankIndex": 0, "BitIndex": 1, "Description": "左托盘真空2反馈" },
+    { "Name": "LeftTrayBaseVacuum3",  "CardIndex": 1, "BankIndex": 0, "BitIndex": 2, "Description": "左托盘真空3反馈" },
+    { "Name": "LeftTrayBaseVacuum4",  "CardIndex": 1, "BankIndex": 0, "BitIndex": 3, "Description": "左托盘真空4反馈" },
+    { "Name": "RightTrayBaseVacuum1", "CardIndex": 1, "BankIndex": 0, "BitIndex": 4, "Description": "右托盘真空1反馈" },
+    { "Name": "RightTrayBaseVacuum2", "CardIndex": 1, "BankIndex": 0, "BitIndex": 5, "Description": "右托盘真空2反馈" },
+    { "Name": "RightTrayBaseVacuum3", "CardIndex": 1, "BankIndex": 0, "BitIndex": 6, "Description": "右托盘真空3反馈" },
+    { "Name": "RightTrayBaseVacuum4", "CardIndex": 1, "BankIndex": 0, "BitIndex": 7, "Description": "右托盘真空4反馈" },
+    { "Name": "VacuumPressureSensor", "CardIndex": 0, "BankIndex": 0, "BitIndex": 0, "Description": "真空压力传感器" },
+    { "Name": "CDAPressureSensor",    "CardIndex": 0, "BankIndex": 0, "BitIndex": 1, "Description": "CDA压力传感器" },
+    { "Name": "EMO",                  "CardIndex": 0, "BankIndex": 0, "BitIndex": 2, "Description": "紧急停止按钮" },
+    { "Name": "LeftLoadSwitch",       "CardIndex": 0, "BankIndex": 0, "BitIndex": 3, "Description": "左上料开关" },
+    { "Name": "RightLoadSwitch",      "CardIndex": 0, "BankIndex": 0, "BitIndex": 4, "Description": "右上料开关" },
+    { "Name": "DoorSensor",           "CardIndex": 0, "BankIndex": 0, "BitIndex": 5, "Description": "门传感器" },
+    { "Name": "LeftSafelyDoorOpen",   "CardIndex": 0, "BankIndex": 0, "BitIndex": 6, "Description": "左安全门打开" },
+    { "Name": "RightSafelyDoorOpen",  "CardIndex": 0, "BankIndex": 0, "BitIndex": 7, "Description": "右安全门打开" },
+    { "Name": "LeftCylinderContract", "CardIndex": 0, "BankIndex": 1, "BitIndex": 3, "Description": "左气缸收缩" },
+    { "Name": "RightCylinderContract","CardIndex": 0, "BankIndex": 1, "BitIndex": 4, "Description": "右气缸收缩" }
+  ],
+  "Outputs": [
+    { "Name": "LeftTrayBaseVacuum1",  "CardIndex": 1, "BankIndex": 0, "BitIndex": 0, "Description": "左托盘真空1" },
+    { "Name": "LeftTrayBaseVacuum2",  "CardIndex": 1, "BankIndex": 0, "BitIndex": 1, "Description": "左托盘真空2" },
+    { "Name": "LeftTrayBaseVacuum3",  "CardIndex": 1, "BankIndex": 0, "BitIndex": 2, "Description": "左托盘真空3" },
+    { "Name": "LeftTrayBaseVacuum4",  "CardIndex": 1, "BankIndex": 0, "BitIndex": 3, "Description": "左托盘真空4" },
+    { "Name": "RightTrayBaseVacuum1", "CardIndex": 1, "BankIndex": 0, "BitIndex": 4, "Description": "右托盘真空1" },
+    { "Name": "RightTrayBaseVacuum2", "CardIndex": 1, "BankIndex": 0, "BitIndex": 5, "Description": "右托盘真空2" },
+    { "Name": "RightTrayBaseVacuum3", "CardIndex": 1, "BankIndex": 0, "BitIndex": 6, "Description": "右托盘真空3" },
+    { "Name": "RightTrayBaseVacuum4", "CardIndex": 1, "BankIndex": 0, "BitIndex": 7, "Description": "右托盘真空4" },
+    { "Name": "RightSafelyDoorLock",  "CardIndex": 0, "BankIndex": 0, "BitIndex": 0, "Description": "右安全门锁" },
+    { "Name": "LeftSafelyDoorLock",   "CardIndex": 0, "BankIndex": 0, "BitIndex": 1, "Description": "左安全门锁" },
+    { "Name": "CameraSwitch",         "CardIndex": 0, "BankIndex": 0, "BitIndex": 2, "Description": "相机开关" },
+    { "Name": "LaserSwitch",          "CardIndex": 0, "BankIndex": 0, "BitIndex": 3, "Description": "激光开关" },
+    { "Name": "LightTowerRed",        "CardIndex": 0, "BankIndex": 0, "BitIndex": 4, "Description": "三色灯-红" },
+    { "Name": "LightTowerGreen",      "CardIndex": 0, "BankIndex": 0, "BitIndex": 5, "Description": "三色灯-绿" },
+    { "Name": "SideLight",            "CardIndex": 0, "BankIndex": 0, "BitIndex": 6, "Description": "侧面灯" },
+    { "Name": "YCameraSwitch",        "CardIndex": 0, "BankIndex": 1, "BitIndex": 0, "Description": "Y相机开关" },
+    { "Name": "YLaserSwitch",         "CardIndex": 0, "BankIndex": 1, "BitIndex": 1, "Description": "Y激光开关" },
+    { "Name": "CameraXYSwitch",       "CardIndex": 0, "BankIndex": 1, "BitIndex": 2, "Description": "XY相机开关" },
+    { "Name": "LaserXYSwitch",        "CardIndex": 0, "BankIndex": 1, "BitIndex": 3, "Description": "XY激光开关" },
+    { "Name": "LeftCDA",              "CardIndex": 0, "BankIndex": 1, "BitIndex": 4, "Description": "左CDA" },
+    { "Name": "RightCDA",             "CardIndex": 0, "BankIndex": 1, "BitIndex": 5, "Description": "右CDA" }
+  ],
+  "MonitorIntervalMs": 100,
+  "DefaultOnOutputs": [
+    "LeftTrayBaseVacuum1",
+    "LeftTrayBaseVacuum2",
+    "LeftTrayBaseVacuum3",
+    "LeftTrayBaseVacuum4",
+    "RightTrayBaseVacuum1",
+    "RightTrayBaseVacuum2",
+    "RightTrayBaseVacuum3",
+    "RightTrayBaseVacuum4"
+  ]
+}

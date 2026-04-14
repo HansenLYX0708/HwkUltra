@@ -1,7 +1,6 @@
-using HWKUltra.Core;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
-using HWKUltra.Motion.Abstractions;
+using HWKUltra.Motion.Core;
 using HWKUltra.Motion.Implementations;
 
 namespace HWKUltra.Flow.Nodes.Motion.Real
@@ -9,7 +8,7 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
     /// <summary>
     /// Absolute position motion node - moves axis to target position
     /// </summary>
-    public class AxisMoveAbsNode : DeviceNodeBase<IMotionController>
+    public class AxisMoveAbsNode : DeviceNodeBase<MotionRouter>
     {
         public override string Name { get; set; } = "Axis Move Absolute";
         public override string NodeType => "AxisMoveAbs";
@@ -30,30 +29,18 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
             new FlowParameter { Name = "CommandPosition", DisplayName = "Command Position", Type = "double", Description = "Commanded position" }
         };
 
-        public AxisMoveAbsNode(IMotionController? motionController) : base(motionController) { }
+        public AxisMoveAbsNode(MotionRouter? router) : base(router) { }
 
-        public override async Task<FlowResult> ExecuteAsync(FlowContext context)
+        protected override async Task<FlowResult> ExecuteRealAsync(FlowContext context)
         {
             try
             {
-                var axisName = context.GetVariable<string>("AxisName") ?? "X";
-                var position = context.GetVariable<double>("Position");
-                var velocity = context.GetVariable<double>("Velocity");
-                var acceleration = context.GetVariable<double>("Acceleration");
-                var deceleration = context.GetVariable<double>("Deceleration");
-                var waitForComplete = context.GetVariable<bool>("WaitForComplete");
-
-                if (IsSimulated)
-                {
-                    Console.WriteLine($"[AxisMoveAbs] Simulating move {axisName} to {position:F3}mm");
-                    await Task.Delay(100, context.CancellationToken);
-                    context.SetVariable("ActualPosition", position);
-                    context.SetVariable("CommandPosition", position);
-                    return FlowResult.Ok();
-                }
-
-                var validationError = ValidateService();
-                if (validationError != null) return validationError;
+                var axisName = context.GetNodeInput<string>(Id, "AxisName") ?? "X";
+                var position = context.GetNodeInput<double>(Id, "Position");
+                var velocity = context.GetNodeInput<double>(Id, "Velocity");
+                var acceleration = context.GetNodeInput<double>(Id, "Acceleration");
+                var deceleration = context.GetNodeInput<double>(Id, "Deceleration");
+                var waitForComplete = context.GetNodeInput<string>(Id, "WaitForComplete") != "false";
 
                 var profile = new MotionProfile
                 {
@@ -62,21 +49,14 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
                     Dec = (float)deceleration
                 };
 
-                Service!.MoveAxis(axisName, position, profile);
+                Service!.Move(axisName, position, profile);
 
                 if (waitForComplete)
-                {
-                    // TODO: Wait for motion complete
-                    // Note: IsBusy requires axis ID (int), not axis name
-                    // while (Service.IsBusy(axisId))
-                    // {
-                    //     await Task.Delay(10, context.CancellationToken);
-                    // }
-                    await Task.Delay(100, context.CancellationToken);
-                }
+                    await Service.WaitForIdleAsync(axisName, 30000, context.CancellationToken);
 
-                context.SetVariable("ActualPosition", position);
-                context.SetVariable("CommandPosition", position);
+                var actualPos = Service.GetPosition(axisName);
+                context.SetNodeOutput(Id, "ActualPosition", actualPos);
+                context.SetNodeOutput(Id, "CommandPosition", position);
 
                 return FlowResult.Ok();
             }
@@ -84,6 +64,17 @@ namespace HWKUltra.Flow.Nodes.Motion.Real
             {
                 return FlowResult.Fail($"Absolute motion failed: {ex.Message}");
             }
+        }
+
+        protected override async Task<FlowResult> ExecuteSimulatedAsync(FlowContext context)
+        {
+            var axisName = context.GetNodeInput<string>(Id, "AxisName") ?? "X";
+            var position = context.GetNodeInput<double>(Id, "Position");
+            Console.WriteLine($"[SIMULATION] AxisMoveAbs: Moving {axisName} to {position:F3}mm");
+            await Task.Delay(SimulatedDelayMs, context.CancellationToken);
+            context.SetNodeOutput(Id, "ActualPosition", position);
+            context.SetNodeOutput(Id, "CommandPosition", position);
+            return FlowResult.Ok();
         }
     }
 }
