@@ -8,12 +8,15 @@ using HWKUltra.Flow.Nodes.IO.Real;
 using HWKUltra.Flow.Nodes.IO.Simulation;
 using HWKUltra.Flow.Nodes.LightSource.Real;
 using HWKUltra.Flow.Nodes.LightSource.Simulation;
+using HWKUltra.Flow.Nodes.AutoFocus.Real;
+using HWKUltra.Flow.Nodes.AutoFocus.Simulation;
 using HWKUltra.Flow.Nodes.Logic;
 using HWKUltra.Flow.Nodes.Advanced.Real;
 using HWKUltra.Motion.Core;
 using HWKUltra.DeviceIO.Core;
 using HWKUltra.LightSource.Core;
 using HWKUltra.Camera.Core;
+using HWKUltra.AutoFocus.Core;
 
 namespace HWKUltra.Flow.Services
 {
@@ -27,6 +30,7 @@ namespace HWKUltra.Flow.Services
         private readonly IORouter? _ioRouter;
         private readonly LightSourceRouter? _lightSourceRouter;
         private readonly CameraRouter? _cameraRouter;
+        private readonly AutoFocusRouter? _autoFocusRouter;
         private readonly object? _laserService;   // TODO: Replace with ILaserService
 
         public bool UseSimulation { get; set; } = false;
@@ -36,12 +40,14 @@ namespace HWKUltra.Flow.Services
             IORouter? ioRouter = null,
             LightSourceRouter? lightSourceRouter = null,
             CameraRouter? cameraRouter = null,
+            AutoFocusRouter? autoFocusRouter = null,
             object? laserService = null)
         {
             _motionRouter = motionRouter;
             _ioRouter = ioRouter;
             _lightSourceRouter = lightSourceRouter;
             _cameraRouter = cameraRouter;
+            _autoFocusRouter = autoFocusRouter;
             _laserService = laserService;
         }
 
@@ -107,6 +113,17 @@ namespace HWKUltra.Flow.Services
                 "LightSetContinuousMode" or "LightContinuous" => new LightSetContinuousModeNode(_lightSourceRouter),
                 "LightTurnOnOff" or "LightSwitch" => new LightTurnOnOffNode(_lightSourceRouter),
 
+                // AutoFocus (null → auto simulation)
+                "AutoFocusOpen" => new AutoFocusOpenNode(_autoFocusRouter),
+                "AutoFocusClose" => new AutoFocusCloseNode(_autoFocusRouter),
+                "AutoFocusEnable" => new AutoFocusEnableNode(_autoFocusRouter),
+                "AutoFocusDisable" => new AutoFocusDisableNode(_autoFocusRouter),
+                "AutoFocusLaserOn" => new AutoFocusLaserOnNode(_autoFocusRouter),
+                "AutoFocusLaserOff" => new AutoFocusLaserOffNode(_autoFocusRouter),
+                "AutoFocusGetStatus" => new AutoFocusGetStatusNode(_autoFocusRouter),
+                "AutoFocusCommand" => new AutoFocusCommandNode(_autoFocusRouter),
+                "AutoFocusReset" => new AutoFocusResetNode(_autoFocusRouter),
+
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),
                 "Branch" => new BranchNode(),
@@ -160,6 +177,17 @@ namespace HWKUltra.Flow.Services
                 "LightSetTriggerMode" or "LightTrigger" => new SimLightSetTriggerModeNode(),
                 "LightSetContinuousMode" or "LightContinuous" => new SimLightSetContinuousModeNode(),
                 "LightTurnOnOff" or "LightSwitch" => new SimLightTurnOnOffNode(),
+
+                // AutoFocus Simulation
+                "AutoFocusOpen" => new SimAutoFocusOpenNode(),
+                "AutoFocusClose" => new SimAutoFocusCloseNode(),
+                "AutoFocusEnable" => new SimAutoFocusEnableNode(),
+                "AutoFocusDisable" => new SimAutoFocusDisableNode(),
+                "AutoFocusLaserOn" => new SimAutoFocusLaserOnNode(),
+                "AutoFocusLaserOff" => new SimAutoFocusLaserOffNode(),
+                "AutoFocusGetStatus" => new SimAutoFocusGetStatusNode(),
+                "AutoFocusCommand" => new SimAutoFocusCommandNode(),
+                "AutoFocusReset" => new SimAutoFocusResetNode(),
 
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),

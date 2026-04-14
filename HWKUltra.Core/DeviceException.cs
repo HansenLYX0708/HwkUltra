@@ -54,4 +54,15 @@
             ChannelName = channelName;
         }
     }
+
+    public class AutoFocusException : DeviceException
+    {
+        public string InstanceName { get; }
+
+        public AutoFocusException(string instanceName, string message, Exception inner = null)
+            : base("AutoFocus", message, inner)
+        {
+            InstanceName = instanceName;
+        }
+    }
 }

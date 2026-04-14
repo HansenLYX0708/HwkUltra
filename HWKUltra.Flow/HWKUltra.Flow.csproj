@@ -7,15 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Examples\**" />
+    <EmbeddedResource Remove="Examples\**" />
+    <None Remove="Examples\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\HWKUltra.Core\HWKUltra.Core.csproj" />
     <ProjectReference Include="..\HWKUltra.DeviceIO\HWKUltra.DeviceIO.csproj" />
     <ProjectReference Include="..\HWKUltra.Motion\HWKUltra.Motion.csproj" />
     <ProjectReference Include="..\HWKUltra.LightSource\HWKUltra.LightSource.csproj" />
     <ProjectReference Include="..\HWKUltra.Camera\HWKUltra.Camera.csproj" />
+    <ProjectReference Include="..\HWKUltra.AutoFocus\HWKUltra.AutoFocus.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Examples\" />
+    <Folder Include="Nodes\Laser\Real\" />
   </ItemGroup>
 
 </Project>

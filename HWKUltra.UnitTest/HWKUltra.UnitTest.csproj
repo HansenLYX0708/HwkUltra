@@ -16,6 +16,7 @@
     <ProjectReference Include="..\HWKUltra.DeviceIO\HWKUltra.DeviceIO.csproj" />
     <ProjectReference Include="..\HWKUltra.LightSource\HWKUltra.LightSource.csproj" />
     <ProjectReference Include="..\HWKUltra.Camera\HWKUltra.Camera.csproj" />
+    <ProjectReference Include="..\HWKUltra.AutoFocus\HWKUltra.AutoFocus.csproj" />
   </ItemGroup>
 
 </Project>

@@ -10,10 +10,4 @@
     <ProjectReference Include="..\HWKUltra.Core\HWKUltra.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="ElmoMotionControlComponents.GMAS.MMCLibDotNET">
-      <HintPath>..\Package_3rd\elmonet2.9.0.1\ElmoMotionControlComponents.GMAS.MMCLibDotNET.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

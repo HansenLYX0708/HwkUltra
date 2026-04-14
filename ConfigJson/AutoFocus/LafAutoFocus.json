@@ -1,0 +1,16 @@
+{
+    "Instances": [
+        {
+            "Name": "MainAF",
+            "IpAddress": "127.0.0.1",
+            "Port": 7777,
+            "TimeoutMs": 1000
+        },
+        {
+            "Name": "SubAF",
+            "IpAddress": "127.0.0.1",
+            "Port": 7778,
+            "TimeoutMs": 1500
+        }
+    ]
+}
