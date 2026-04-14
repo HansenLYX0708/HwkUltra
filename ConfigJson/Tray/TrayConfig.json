@@ -1,0 +1,52 @@
+{
+    "Instances": [
+        {
+            "Name": "Tray1",
+            "Rows": 8,
+            "Cols": 30,
+            "PositionDataPath": ""
+        },
+        {
+            "Name": "Tray2",
+            "Rows": 8,
+            "Cols": 30,
+            "PositionDataPath": ""
+        },
+        {
+            "Name": "Tray3",
+            "Rows": 8,
+            "Cols": 30,
+            "PositionDataPath": ""
+        },
+        {
+            "Name": "Tray4",
+            "Rows": 8,
+            "Cols": 30,
+            "PositionDataPath": ""
+        },
+        {
+            "Name": "Tray5",
+            "Rows": 8,
+            "Cols": 30,
+            "PositionDataPath": ""
+        },
+        {
+            "Name": "Tray6",
+            "Rows": 8,
+            "Cols": 30,
+            "PositionDataPath": ""
+        },
+        {
+            "Name": "Tray7",
+            "Rows": 8,
+            "Cols": 30,
+            "PositionDataPath": ""
+        },
+        {
+            "Name": "Tray8",
+            "Rows": 8,
+            "Cols": 30,
+            "PositionDataPath": ""
+        }
+    ]
+}

@@ -20,6 +20,7 @@
     <ProjectReference Include="..\HWKUltra.Camera\HWKUltra.Camera.csproj" />
     <ProjectReference Include="..\HWKUltra.AutoFocus\HWKUltra.AutoFocus.csproj" />
     <ProjectReference Include="..\HWKUltra.Measurement\HWKUltra.Measurement.csproj" />
+    <ProjectReference Include="..\HWKUltra.Tray\HWKUltra.Tray.csproj" />
   </ItemGroup>
 
 </Project>

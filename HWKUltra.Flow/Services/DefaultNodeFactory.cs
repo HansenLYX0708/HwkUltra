@@ -11,6 +11,8 @@ using HWKUltra.Flow.Nodes.LightSource.Real;
 using HWKUltra.Flow.Nodes.LightSource.Simulation;
 using HWKUltra.Flow.Nodes.AutoFocus.Real;
 using HWKUltra.Flow.Nodes.AutoFocus.Simulation;
+using HWKUltra.Flow.Nodes.Tray.Real;
+using HWKUltra.Flow.Nodes.Tray.Simulation;
 using HWKUltra.Flow.Nodes.Logic;
 using HWKUltra.Flow.Nodes.Advanced.Real;
 using HWKUltra.Motion.Core;
@@ -19,6 +21,7 @@ using HWKUltra.LightSource.Core;
 using HWKUltra.Camera.Core;
 using HWKUltra.AutoFocus.Core;
 using HWKUltra.Measurement.Core;
+using HWKUltra.Tray.Core;
 
 namespace HWKUltra.Flow.Services
 {
@@ -34,6 +37,7 @@ namespace HWKUltra.Flow.Services
         private readonly CameraRouter? _cameraRouter;
         private readonly AutoFocusRouter? _autoFocusRouter;
         private readonly MeasurementRouter? _measurementRouter;
+        private readonly TrayRouter? _trayRouter;
 
         public bool UseSimulation { get; set; } = false;
 
@@ -43,7 +47,8 @@ namespace HWKUltra.Flow.Services
             LightSourceRouter? lightSourceRouter = null,
             CameraRouter? cameraRouter = null,
             AutoFocusRouter? autoFocusRouter = null,
-            MeasurementRouter? measurementRouter = null)
+            MeasurementRouter? measurementRouter = null,
+            TrayRouter? trayRouter = null)
         {
             _motionRouter = motionRouter;
             _ioRouter = ioRouter;
@@ -51,6 +56,7 @@ namespace HWKUltra.Flow.Services
             _cameraRouter = cameraRouter;
             _autoFocusRouter = autoFocusRouter;
             _measurementRouter = measurementRouter;
+            _trayRouter = trayRouter;
         }
 
         public IFlowNode CreateNode(string type, Dictionary<string, string> properties)
@@ -134,6 +140,15 @@ namespace HWKUltra.Flow.Services
                 "AutoFocusCommand" => new AutoFocusCommandNode(_autoFocusRouter),
                 "AutoFocusReset" => new AutoFocusResetNode(_autoFocusRouter),
 
+                // Tray (null → auto simulation)
+                "TrayInit" => new TrayInitNode(_trayRouter),
+                "TrayTeach" => new TrayTeachNode(_trayRouter),
+                "TrayGetPosition" => new TrayGetPositionNode(_trayRouter),
+                "TraySetSlotState" => new TraySetSlotStateNode(_trayRouter),
+                "TrayGetSlotState" => new TrayGetSlotStateNode(_trayRouter),
+                "TrayReset" => new TrayResetNode(_trayRouter),
+                "TrayGetInfo" => new TrayGetInfoNode(_trayRouter),
+
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),
                 "Branch" => new BranchNode(),
@@ -206,6 +221,15 @@ namespace HWKUltra.Flow.Services
                 "AutoFocusGetStatus" => new SimAutoFocusGetStatusNode(),
                 "AutoFocusCommand" => new SimAutoFocusCommandNode(),
                 "AutoFocusReset" => new SimAutoFocusResetNode(),
+
+                // Tray Simulation
+                "TrayInit" => new SimTrayInitNode(),
+                "TrayTeach" => new SimTrayTeachNode(),
+                "TrayGetPosition" => new SimTrayGetPositionNode(),
+                "TraySetSlotState" => new SimTraySetSlotStateNode(),
+                "TrayGetSlotState" => new SimTrayGetSlotStateNode(),
+                "TrayReset" => new SimTrayResetNode(),
+                "TrayGetInfo" => new SimTrayGetInfoNode(),
 
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),

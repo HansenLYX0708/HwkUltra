@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\HWKUltra.Core\HWKUltra.Core.csproj" />
+  </ItemGroup>
+
 </Project>

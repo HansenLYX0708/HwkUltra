@@ -76,4 +76,12 @@
             InstanceName = instanceName;
         }
     }
+
+    public class TrayException : DeviceException
+    {
+        public TrayException(string message, Exception inner = null)
+            : base("Tray", message, inner)
+        {
+        }
+    }
 }
