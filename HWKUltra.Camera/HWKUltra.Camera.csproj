@@ -4,10 +4,17 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\HWKUltra.Core\HWKUltra.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Basler.Pylon">
+      <HintPath>..\Package_3rd\Basler.Pylon\x64\Basler.Pylon.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,882 @@
+﻿using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Basler.Pylon;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Collections.Generic;
+
+namespace WD.AVI.BaslerCam
+{
+    /// <summary>
+    /// class for camera in AVI system
+    /// </summary>
+    public class AVICamera
+    {
+        private Camera camera = null;
+        private PixelDataConverter converter = new PixelDataConverter();
+        private long grabTime = 0;
+        private bool isColor = false;
+        private IntPtr latestFrameAddress = IntPtr.Zero;
+        private Stopwatch stopWatch = new Stopwatch();
+
+        public string strModelName = null;
+        public string strSerialNumber = null;
+        public string strUserID = null;
+        public int imageWidth = 0;
+        public int imageHeight = 0;
+        public long payloadSize = 0;
+        public long minExposureTime = 0;
+        public long maxExposureTime = 0;
+        public long minGain = 0;
+        public long maxGain = 0;
+        public int numWindowIndex = 0;
+        public bool SaveTag = false;
+        public string SaveFolder = "";
+        public bool OpenImageDisplay = false;
+
+        /// <summary>
+        /// delegate for Compute Grab Time
+        /// </summary>
+        /// <param name="time"></param>
+        public delegate void delegateComputeGrabTime(long time);
+
+        /// <summary>
+        /// event for compute grab time
+        /// </summary>
+        public event delegateComputeGrabTime eventComputeGrabTime;
+
+        /// <summary>
+        /// delegate for Image come from camera
+        /// </summary>
+        /// <param name="width">Image width</param>
+        /// <param name="height">Image Height</param>
+        /// <param name="frameAddress">Image Data</param>
+        public delegate void delegateProcessByte(int width, int height, byte[] frameAddress, bool isColor = false);
+        public event delegateProcessByte eventProcessImageByte;
+        public delegate void delegateProcessDisplay(int width, int height, byte[] frameAddress, int flag);
+        public event delegateProcessDisplay eventImageByteForDisplay;
+
+
+        /// <summary>
+        /// camera version
+        /// </summary>
+        static Version Sfnc2_0_0 = new Version(2, 0, 0);
+
+        /// <summary>
+        /// set the first camera
+        /// </summary>
+        public AVICamera(string cameraSN)
+        {
+            try
+            {
+                // Ask the camera finder for a list of all GigE camera devices.
+                List<ICameraInfo> allDeviceInfos = CameraFinder.Enumerate(DeviceType.Usb);
+                if (allDeviceInfos.Count == 0)
+                {
+                    allDeviceInfos = CameraFinder.Enumerate(DeviceType.BaslerGenTlCxpDeviceClass);
+                }
+                camera = null;
+                List<string> deviceSNList = new List<string>();
+
+                if (allDeviceInfos.Count == 0)
+                {
+                    throw new ApplicationException("No GigE cameras present.");
+                }
+
+                foreach (var cameraInfo in allDeviceInfos)
+                {
+
+                    deviceSNList.Add(cameraInfo[CameraInfoKey.SerialNumber]);
+
+                    if (cameraSN == cameraInfo[CameraInfoKey.SerialNumber])
+                    {
+                        camera = new Camera(cameraSN);
+                        break;
+                    }
+                }
+                if (camera == null)
+                {
+                    string result = String.Join(",", deviceSNList);
+                    string errorInfo = String.Format("The current configuration camera serial number {0} is not in {1}", cameraSN, result);
+                    throw new ApplicationException(errorInfo);
+                }
+
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public double DefaultMPP = 0.00274 / 6.6;
+        public double MPP { get; set; }
+
+        /// <summary>
+        /// open camera with default setting
+        /// </summary>
+        /// <returns>open camera success or not</returns>
+        public bool OpenCam(int width, int height, int mode = 0)
+        {
+            try
+            {
+               
+                _ = camera.Open();
+                if (camera.IsOpen)
+                {
+                    camera.Parameters[PLCameraInstance.MaxNumBuffer].SetValue(10);
+                    strModelName = camera.CameraInfo[CameraInfoKey.ModelName];
+                    strSerialNumber = camera.CameraInfo[CameraInfoKey.SerialNumber];
+                    strUserID = camera.CameraInfo[CameraInfoKey.UserDefinedName];
+
+                    // camera.Parameters[PLCamera.SensorWidth].SetValue(width);
+                    // camera.Parameters[PLCamera.SensorHeight].SetValue(height);
+                    camera.Parameters[PLCamera.Width].SetValue(width);
+                    camera.Parameters[PLCamera.Height].SetValue(height);
+                    long maxImageWidth = (int)camera.Parameters[PLCamera.WidthMax].GetValue();
+                    long maxImageHeight = (int)camera.Parameters[PLCamera.HeightMax].GetValue();
+                    if (mode == 0)
+                    {
+                        camera.Parameters[PLCamera.OffsetX].SetValue(0);
+                        camera.Parameters[PLCamera.OffsetY].SetValue(0);
+                    }
+                    else if (mode == 1)
+                    {
+                        camera.Parameters[PLCamera.OffsetX].SetValue((maxImageWidth - width) / 2);
+                        camera.Parameters[PLCamera.OffsetY].SetValue((maxImageHeight - height) / 2);
+                    }
+                    else
+                    {
+                        camera.Parameters[PLCamera.OffsetX].SetValue(0);
+                        camera.Parameters[PLCamera.OffsetY].SetValue(0);
+                    }
+
+
+                    //camera.Parameters[(BooleanName)"@DeviceTransportLayer/AutomaticFormatControl"].SetValue(false);
+                    //camera.Parameters[(BooleanName)"@DeviceTransportLayer/AutomaticROIControl"].SetValue(false);
+                    //camera.Parameters[(BooleanName)"@DeviceTransportLayer/AutomaticTapGeometryControl"].SetValue(false);
+                    //// Remember the original compression mode.
+                    //string oldCompressionMode = camera.Parameters[PLCamera.ImageCompressionMode].GetValue();
+
+                    //// Set the compression mode to BaslerCompressionBeyond if available.
+                    //camera.Parameters[PLCamera.ImageCompressionMode].SetValue(PLCamera.ImageCompressionMode.BaslerCompressionBeyond);
+                    //// After enabling the compression, we can read the compression rate option.
+                    //string oldCompressionRateOption = camera.Parameters[PLCamera.ImageCompressionRateOption].GetValue();
+                    //// Configure lossless compression.
+                    //camera.Parameters[PLCamera.ImageCompressionRateOption].SetValue(PLCamera.ImageCompressionRateOption.Lossless);
+
+                    //// camera.Parameters[PLCamera.CxpLinkConfiguration].SetValue(PLCamera.CxpLinkConfiguration.CXP12_X1);
+
+
+                    // camera.Parameters[PLCamera.PixelFormat].SetValue(PLCamera.PixelFormat.RGB8);
+                    camera.Parameters[PLCamera.ExposureTime].SetValue(50);
+                    imageWidth = (int)camera.Parameters[PLCamera.Width].GetValue();
+                    imageHeight = (int)camera.Parameters[PLCamera.Height].GetValue();
+                    payloadSize = imageWidth * imageHeight;
+                    GetMinMaxExposureTime();
+                    GetMinMaxGain();
+                    camera.StreamGrabber.ImageGrabbed += OnImageGrabbed;
+                    camera.ConnectionLost += OnConnectionLost;
+                    return true;
+                }
+                else
+                    return false;
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+                return false;
+            }
+        }
+
+        public void SetROI(int width, int height)
+        {
+            try
+            {
+                if (camera != null)
+                {
+                    camera.Parameters[PLCamera.Width].SetValue(width);
+                    camera.Parameters[PLCamera.Height].SetValue(height);
+                }
+            }
+            catch (Exception e) 
+            {
+                throw e;
+            }
+        }
+
+
+        /// <summary>
+        /// fucntion for process data after grab image data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnImageGrabbed(object sender, ImageGrabbedEventArgs e)
+        {
+            try
+            {
+                // Acquire the image from the camera. Only show the latest image. The camera may acquire images faster than the images can be displayed.
+                // Get the grab result.
+                IGrabResult grabResult = e.GrabResult;
+
+                // Check if the image can be displayed.
+                if (grabResult.GrabSucceeded)
+                {
+
+                    grabTime = stopWatch.ElapsedMilliseconds;
+                    if (eventComputeGrabTime != null)
+                        eventComputeGrabTime(grabTime);
+
+                    long len = converter.GetBufferSizeForConversion(grabResult);
+
+                    byte[] imageByteData = new byte[len];
+                    if (grabResult.PixelTypeValue == PixelType.Mono8)
+                    {
+                        if (latestFrameAddress == IntPtr.Zero)
+                        {
+                            latestFrameAddress = Marshal.AllocHGlobal((int)payloadSize);
+                        }
+                        converter.OutputPixelFormat = PixelType.Mono8;
+                        converter.Convert(latestFrameAddress, payloadSize, grabResult);
+                        converter.Convert<byte>(imageByteData, grabResult);
+                        isColor = false;
+                    }
+                    else if (grabResult.PixelTypeValue == PixelType.BGR8packed)
+                    {
+                        //imageWidth = grabResult.Width - 1;
+                        //imageHeight = grabResult.Height - 1;
+                        //payloadSize = imageWidth * imageHeight;
+
+                        if (latestFrameAddress == IntPtr.Zero)
+                        {
+                            latestFrameAddress = Marshal.AllocHGlobal((int)payloadSize * 3);
+                        }
+                        converter.OutputPixelFormat = PixelType.BGR8packed;
+                        converter.Convert(latestFrameAddress, payloadSize * 3, grabResult);
+                        converter.Convert<byte>(imageByteData, grabResult);
+                        isColor = true;
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                    if (eventProcessImageByte != null)
+                        eventProcessImageByte(imageWidth, imageHeight, imageByteData, isColor);
+
+                    // TODO : close camera
+                    /*
+                    if (eventImageByteForDisplay!=null)
+                    {
+                        eventImageByteForDisplay(imageWidth, imageHeight, imageByteData, 1);
+                    }
+                    */
+                    if (OpenImageDisplay)
+                    {
+                        /*
+                        using (ImageDecompressor decompressor = new ImageDecompressor(camera))
+                        {
+                            CompressionInfo compressionInfo = new CompressionInfo();
+                            if (ImageDecompressor.GetCompressionInfo(ref compressionInfo, grabResult))
+                            {
+                                // Check if we have a valid compressed image
+                                if (compressionInfo.CompressionStatus == CompressionStatus.Ok)
+                                {
+                                    // Show compression ratio.
+                                    // Console.WriteLine("\nTransferred compressed payload: {0}", grabResult.PayloadSize);
+                                    // Console.WriteLine("Compression ratio: {0:N2}%", (Single)grabResult.PayloadSize / (Single)compressionInfo.DecompressedPayloadSize * 100.0);
+
+                                    // Create buffer for storing the decompressed image.
+                                    var myBuffer = new Byte[compressionInfo.DecompressedImageSize];
+
+                                    // Decompress the image.
+                                    decompressor.DecompressImage(myBuffer, grabResult);
+
+                                    // Show the image.
+                                    ImageWindow.DisplayImage(0, myBuffer, compressionInfo.PixelType, compressionInfo.Width, compressionInfo.Height, 0, ImageOrientation.TopDown);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("There was an error while the camera was compressing the image.");
+                                }
+                            }
+                        }
+                        */
+                        ImageWindow.DisplayImage(0, grabResult);
+                    }
+                    if (SaveTag)
+                    {
+                        if (SaveFolder != "")
+                        {
+                            SaveImage(SaveFolder, latestFrameAddress, imageWidth, imageHeight, isColor);
+                        }
+                        else
+                        {
+                            SaveImage((new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds()).ToString() + ".bmp", latestFrameAddress, imageWidth, imageHeight, isColor);
+                        }
+                        SaveTag = !SaveTag;
+                    }
+                }
+                else
+                {
+                    throw new Exception("Grab failed! " + grabResult.ErrorDescription);
+                }
+            }
+            catch (Exception exception)
+            {
+                //ShowException(exception);
+            }
+            finally
+            {
+                // Dispose the grab result if needed for returning it to the grab loop.
+                e.DisposeGrabResultIfClone();
+            }
+        }
+
+        /// <summary>
+        /// camera reconnection function
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnConnectionLost(object sender, EventArgs e)
+        {
+            try
+            {
+                const int cTimeOutMs = 20;
+
+                System.Threading.Thread.Sleep(100);
+                camera.Close();
+
+                for (int i = 0; i < 1000; i++)
+                {
+                    try
+                    {
+                        camera.Open(cTimeOutMs, TimeoutHandling.ThrowException);
+                        if (camera.IsOpen)
+                        {
+                            break;
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+                if (camera == null)
+                {
+                    return;
+                }
+
+                SetHeartBeatTime(5000);
+                imageWidth = (int)camera.Parameters[PLCamera.Width].GetValue();
+                imageHeight = (int)camera.Parameters[PLCamera.Height].GetValue();
+                GetMinMaxExposureTime();
+                GetMinMaxGain();
+            }
+            catch (Exception exception)
+            {
+                ShowException(exception);
+            }
+        }
+
+        /// <summary>
+        /// camera haeart beat function
+        /// </summary>
+        /// <param name="value"> heart beat time</param>
+        private void SetHeartBeatTime(long value)
+        {
+            try
+            {
+                if (camera.GetSfncVersion() < Sfnc2_0_0)
+                {
+                    camera.Parameters[PLGigECamera.GevHeartbeatTimeout].SetValue(value);
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+            }
+        }
+
+        /// <summary>
+        /// Get Min & Max camera Exposure Time (us)
+        /// </summary>
+        public void GetMinMaxExposureTime()
+        {
+            try
+            {
+                if (camera.GetSfncVersion() < Sfnc2_0_0)
+                {
+                    minExposureTime = camera.Parameters[PLCamera.ExposureTimeRaw].GetMinimum();
+                    maxExposureTime = camera.Parameters[PLCamera.ExposureTimeRaw].GetMaximum();
+                }
+                else
+                {
+                    minExposureTime = (long)camera.Parameters[PLUsbCamera.ExposureTime].GetMinimum();
+                    maxExposureTime = (long)camera.Parameters[PLUsbCamera.ExposureTime].GetMaximum();
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+            }
+        }
+
+        /// <summary>
+        /// Get Min & Max camera Gain
+        /// </summary>
+        public void GetMinMaxGain()
+        {
+            try
+            {
+                if (camera.GetSfncVersion() < Sfnc2_0_0)
+                {
+                    minGain = camera.Parameters[PLCamera.GainRaw].GetMinimum();
+                    maxGain = camera.Parameters[PLCamera.GainRaw].GetMaximum();
+                }
+                else
+                {
+                    minGain = (long)camera.Parameters[PLUsbCamera.Gain].GetMinimum();
+                    maxGain = (long)camera.Parameters[PLUsbCamera.Gain].GetMaximum();
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+            }
+        }
+
+        /// <summary>
+        /// Save Image
+        /// </summary>
+        /// <param name="path"> save path</param>
+        /// <param name="address">image data</param>
+        /// <param name="width">image width</param>
+        /// <param name="height">image height</param>
+        /// <param name="isColor">mono or RGB</param>
+        public void SaveImage(string path, IntPtr address, int width, int height, bool isColor)
+        {
+            if (isColor == false)
+                ImagePersistence.Save(ImageFileFormat.Bmp, path, address, width * height, PixelType.Mono8, width, height, 0, ImageOrientation.TopDown);
+            else
+                ImagePersistence.Save(ImageFileFormat.Bmp, path, address, width * height * 3, PixelType.BGR8packed, width, height, 0, ImageOrientation.TopDown);
+        }
+
+        /// <summary>
+        /// Close Camera
+        /// </summary>
+        public void CloseCam()
+        {
+            try
+            {
+                camera.Close();
+
+                if (latestFrameAddress != null)
+                {
+                    Marshal.FreeHGlobal(latestFrameAddress);
+                    latestFrameAddress = IntPtr.Zero;
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+            }
+        }
+
+        /// <summary>
+        /// grab function
+        /// </summary>
+        /// <returns></returns>
+        public bool GrabOne()
+        {
+            try
+            {
+                if (camera.StreamGrabber.IsGrabbing)
+                {
+                    return false;
+                }
+                else
+                {
+                    camera.Parameters[PLCamera.AcquisitionMode].SetValue("SingleFrame");
+                    camera.StreamGrabber.Start(1, GrabStrategy.LatestImages, GrabLoop.ProvidedByStreamGrabber);
+                    stopWatch.Restart();
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Start Grabbing
+        /// </summary>
+        /// <returns></returns>
+        public bool StartGrabbing()
+        {
+            try
+            {
+                if (camera.StreamGrabber.IsGrabbing)
+                {
+                    return false;
+                }
+                else
+                {
+                    camera.Parameters[PLCamera.AcquisitionMode].SetValue(PLCamera.AcquisitionMode.Continuous);
+                    camera.StreamGrabber.Start(GrabStrategy.OneByOne, GrabLoop.ProvidedByStreamGrabber);
+                    stopWatch.Restart();
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Stop Grabbing
+        /// </summary>
+        public void StopGrabbing()
+        {
+            try
+            {
+                if (camera.StreamGrabber.IsGrabbing)
+                {
+                    camera.StreamGrabber.Stop();
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+            }
+        }
+
+        public unsafe Bitmap CaptureOneFrame()
+        {
+
+            IGrabResult grabResult = camera.StreamGrabber.GrabOne(5000);
+            using (grabResult)
+            {
+                Bitmap camGrabTmp;
+                // Image grabbed successfully?
+                if (grabResult.GrabSucceeded)
+                {
+                    // Access the image data.
+                    byte[] buffer = grabResult.PixelData as byte[];
+
+                    fixed (byte* ptr = buffer)
+                    {
+                        camGrabTmp = new Bitmap(grabResult.Width, grabResult.Height, grabResult.Width, PixelFormat.Format8bppIndexed, new IntPtr(ptr));
+                    }
+                    ColorPalette colorPalette = camGrabTmp.Palette;
+                    for (int i = 0; i < 256; i++)
+                    {
+                        colorPalette.Entries[i] = System.Drawing.Color.FromArgb(i, i, i);
+                    }
+                    camGrabTmp.Palette = colorPalette;
+                    camera.StreamGrabber.ImageGrabbed += OnImageGrabbed;
+                    camera.ConnectionLost += OnConnectionLost;
+                    return camGrabTmp;
+                }
+                else
+                {
+                    throw new Exception("Camera grab image falled");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set camera Exposure Time
+        /// </summary>
+        /// <param name="value"> exposure time</param>
+        public void SetExposureTime(long value)
+        {
+            try
+            {
+                // Some camera models may have auto functions enabled. To set the ExposureTime value to a specific value,
+                // the ExposureAuto function must be disabled first (if ExposureAuto is available).
+                camera.Parameters[PLCamera.ExposureAuto].TrySetValue(PLCamera.ExposureAuto.Off); // Set ExposureAuto to Off if it is writable.
+                camera.Parameters[PLCamera.ExposureMode].TrySetValue(PLCamera.ExposureMode.Timed); // Set ExposureMode to Timed if it is writable.
+
+                if (camera.GetSfncVersion() < Sfnc2_0_0)
+                {
+                    long min = camera.Parameters[PLCamera.ExposureTimeRaw].GetMinimum();
+                    long max = camera.Parameters[PLCamera.ExposureTimeRaw].GetMaximum();
+                    long incr = camera.Parameters[PLCamera.ExposureTimeRaw].GetIncrement();
+                    if (value < min)
+                    {
+                        value = min;
+                    }
+                    else if (value > max)
+                    {
+                        value = max;
+                    }
+                    else
+                    {
+                        value = min + (((value - min) / incr) * incr);
+                    }
+                    camera.Parameters[PLCamera.ExposureTimeRaw].SetValue(value);
+
+                    // Or,here, we let pylon correct the value if needed.
+                    //camera.Parameters[PLCamera.ExposureTimeRaw].SetValue(value, IntegerValueCorrection.Nearest);
+                }
+                else // For SFNC 2.0 cameras, e.g. USB3 Vision cameras
+                {
+                    // In SFNC 2.0, ExposureTimeRaw is renamed as ExposureTime,is a float parameter, 单位us.
+                    camera.Parameters[PLUsbCamera.ExposureTime].SetValue((double)value);
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+            }
+        }
+
+        public void GetExposureTime(out long value)
+        {
+            try
+            {
+                camera.Parameters[PLCamera.ExposureAuto].TrySetValue(PLCamera.ExposureAuto.Off); // Set ExposureAuto to Off if it is writable.
+                camera.Parameters[PLCamera.ExposureMode].TrySetValue(PLCamera.ExposureMode.Timed); // Set ExposureMode to Timed if it is writable.
+                value = (long)camera.Parameters[PLUsbCamera.ExposureTime].GetValue();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// set camera gain
+        /// </summary>
+        /// <param name="value">gain value</param>
+        public void SetGain(long value)
+        {
+            try
+            {
+                // Some camera models may have auto functions enabled. To set the gain value to a specific value,
+                // the Gain Auto function must be disabled first (if gain auto is available).
+                camera.Parameters[PLCamera.GainAuto].TrySetValue(PLCamera.GainAuto.Off); // Set GainAuto to Off if it is writable.
+
+                if (camera.GetSfncVersion() < Sfnc2_0_0)
+                {
+                    // Some parameters have restrictions. You can use GetIncrement/GetMinimum/GetMaximum to make sure you set a valid value.                              
+                    // In previous SFNC versions, GainRaw is an integer parameter.
+                    long min = camera.Parameters[PLCamera.GainRaw].GetMinimum();
+                    long max = camera.Parameters[PLCamera.GainRaw].GetMaximum();
+                    long incr = camera.Parameters[PLCamera.GainRaw].GetIncrement();
+                    if (value < min)
+                    {
+                        value = min;
+                    }
+                    else if (value > max)
+                    {
+                        value = max;
+                    }
+                    else
+                    {
+                        value = min + (((value - min) / incr) * incr);
+                    }
+                    camera.Parameters[PLCamera.GainRaw].SetValue(value);
+
+                    //// Or,here, we let pylon correct the value if needed.
+                    //camera.Parameters[PLCamera.GainRaw].SetValue(value, IntegerValueCorrection.Nearest);
+                }
+                else // For SFNC 2.0 cameras, e.g. USB3 Vision cameras
+                {
+                    // In SFNC 2.0, Gain is a float parameter.
+                    camera.Parameters[PLUsbCamera.Gain].SetValue(value);
+                }
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+            }
+        }
+
+        public void GetGain(out long value)
+        {
+            try
+            {
+                camera.Parameters[PLCamera.GainAuto].TrySetValue(PLCamera.GainAuto.Off); // Set GainAuto to Off if it is writable.
+                value = (long)camera.Parameters[PLUsbCamera.Gain].GetValue();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// set free run mode
+        /// </summary>
+        public void SetFreerun()
+        {
+            try
+            {
+                if (camera.Parameters[PLCamera.TriggerMode].GetValue() == PLCamera.TriggerMode.Off)
+                {
+                    return;
+                }
+                {
+                    /*
+                    if (camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameBurstStart))
+                    {
+                        if (camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameStart))
+                        {
+                            camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameBurstStart);
+                            camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.Off);
+
+                            camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameStart);
+                            camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.Off);
+                        }
+                        else
+                        {
+                            camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameBurstStart);
+                            camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.Off);
+                        }
+                    }
+                    */
+                    // camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameStart);
+                    camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.Off);
+
+                }
+                stopWatch.Restart();
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+            }
+        }
+
+        /// <summary>
+        /// set line trigger
+        /// </summary>
+        public void SetExternTrigger()
+        {
+            try
+            {
+                /*
+                if (camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameBurstStart))
+                {
+                    if (camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameStart))
+                    {
+                        camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameBurstStart);
+                        camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.Off);
+
+                        camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameStart);
+                        camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.On);
+                        camera.Parameters[PLCamera.TriggerSource].TrySetValue(PLCamera.TriggerSource.Line1);
+                    }
+                    else
+                    {
+                        camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameBurstStart);
+                        camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.On);
+                        camera.Parameters[PLCamera.TriggerSource].TrySetValue(PLCamera.TriggerSource.Line1);
+                    }
+                    //camera.Parameters[PLCameraInstance.MaxNumBuffer].SetValue(50);
+                }
+                */
+
+                camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.Off);
+                camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameStart);
+                camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.On);
+                camera.Parameters[PLCamera.TriggerSource].TrySetValue(PLCamera.TriggerSource.Line1);
+                camera.Parameters[PLCameraInstance.MaxNumBuffer].SetValue(50);
+
+                //Sets the trigger delay time in microseconds.//float
+                camera.Parameters[PLCamera.TriggerDelay].SetValue(0);
+
+                //Sets the absolute value of the selected line debouncer time in microseconds
+                camera.Parameters[PLCamera.LineSelector].TrySetValue(PLCamera.LineSelector.Line1);
+                camera.Parameters[PLCamera.LineMode].TrySetValue(PLCamera.LineMode.Input);
+                //camera.Parameters[PLCamera.LineDebouncerTime].SetValue(10);      
+                stopWatch.Reset();
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+            }
+        }
+        public void SetSoftwareTrigger()
+        {
+            try
+            {
+                // Set an enum parameter.
+                if (camera.GetSfncVersion() < Sfnc2_0_0)
+                {
+                    if (camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.AcquisitionStart))
+                    {
+                        if (camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameStart))
+                        {
+                            camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.AcquisitionStart);
+                            camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.Off);
+
+                            camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameStart);
+                            camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.On);
+                            camera.Parameters[PLCamera.TriggerSource].TrySetValue(PLCamera.TriggerSource.Software);
+                        }
+                        else
+                        {
+                            camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.AcquisitionStart);
+                            camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.On);
+                            camera.Parameters[PLCamera.TriggerSource].TrySetValue(PLCamera.TriggerSource.Software);
+                        }
+                    }
+                }
+                else // For SFNC 2.0 cameras, e.g. USB3 Vision cameras
+                {
+                    if (camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameBurstStart))
+                    {
+                        if (camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameStart))
+                        {
+                            camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameBurstStart);
+                            camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.Off);
+
+                            camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameStart);
+                            camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.On);
+                            camera.Parameters[PLCamera.TriggerSource].TrySetValue(PLCamera.TriggerSource.Software);
+                        }
+                        else
+                        {
+                            camera.Parameters[PLCamera.TriggerSelector].TrySetValue(PLCamera.TriggerSelector.FrameBurstStart);
+                            camera.Parameters[PLCamera.TriggerMode].TrySetValue(PLCamera.TriggerMode.On);
+                            camera.Parameters[PLCamera.TriggerSource].TrySetValue(PLCamera.TriggerSource.Software);
+                        }
+                    }
+                }
+                stopWatch.Reset();
+            }
+            catch (Exception e)
+            {
+                ShowException(e);
+            }
+        }
+        public void SendSoftwareExecute()
+        {
+            try
+            {
+                if (camera.WaitForFrameTriggerReady(1000, TimeoutHandling.ThrowException))
+                {
+                    camera.ExecuteSoftwareTrigger();
+                    stopWatch.Restart();
+                }
+            }
+            catch (Exception exception)
+            {
+                ShowException(exception);
+            }
+        }
+        private void ShowException(Exception exception)
+        {
+            throw exception;
+        }
+        public void Dispose()
+        {
+            camera.Dispose();
+        }
+    }
+}

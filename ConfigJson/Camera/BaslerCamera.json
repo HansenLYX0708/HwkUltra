@@ -1,0 +1,24 @@
+{
+  "DeviceType": "Auto",
+  "MaxBufferCount": 10,
+  "Cameras": [
+    {
+      "Name": "DetectCam",
+      "SerialNumber": "40478880",
+      "Width": 2048,
+      "Height": 2048,
+      "DefaultExposure": 50,
+      "DefaultGain": 0,
+      "OffsetMode": 0
+    },
+    {
+      "Name": "AlignCam",
+      "SerialNumber": "40478881",
+      "Width": 1024,
+      "Height": 1024,
+      "DefaultExposure": 100,
+      "DefaultGain": 5,
+      "OffsetMode": 1
+    }
+  ]
+}

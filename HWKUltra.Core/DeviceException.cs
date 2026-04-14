@@ -43,4 +43,15 @@
             PointName = pointName;
         }
     }
+
+    public class LightSourceException : DeviceException
+    {
+        public string ChannelName { get; }
+
+        public LightSourceException(string channelName, string message, Exception inner = null)
+            : base("LightSource", message, inner)
+        {
+            ChannelName = channelName;
+        }
+    }
 }

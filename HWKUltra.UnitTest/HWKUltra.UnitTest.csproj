@@ -14,6 +14,8 @@
     <ProjectReference Include="..\HWKUltra.Flow\HWKUltra.Flow.csproj" />
     <ProjectReference Include="..\HWKUltra.Motion\HWKUltra.Motion.csproj" />
     <ProjectReference Include="..\HWKUltra.DeviceIO\HWKUltra.DeviceIO.csproj" />
+    <ProjectReference Include="..\HWKUltra.LightSource\HWKUltra.LightSource.csproj" />
+    <ProjectReference Include="..\HWKUltra.Camera\HWKUltra.Camera.csproj" />
   </ItemGroup>
 
 </Project>

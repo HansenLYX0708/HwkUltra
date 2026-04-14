@@ -1,3 +1,4 @@
+using HWKUltra.Camera.Core;
 using HWKUltra.Core;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
@@ -13,7 +14,7 @@ namespace HWKUltra.Flow.Nodes.Advanced.Real
     public class OnTheFlyCaptureNode : CompositeNodeBase
     {
         private readonly MotionRouter? _motionRouter;
-        private readonly object? _cameraService;  // TODO: Replace with ICameraService
+        private readonly CameraRouter? _cameraRouter;
 
         public override string Name { get; set; } = "On-The-Fly Capture";
         public override string NodeType => "OnTheFlyCapture";
@@ -39,11 +40,11 @@ namespace HWKUltra.Flow.Nodes.Advanced.Real
             new FlowParameter { Name = "MotionComplete", DisplayName = "Motion Complete", Type = "bool", Description = "Whether motion completed successfully" }
         };
 
-        public OnTheFlyCaptureNode(MotionRouter? motionRouter = null, object? cameraService = null, bool simulate = false)
-            : base(simulate || motionRouter == null || cameraService == null)
+        public OnTheFlyCaptureNode(MotionRouter? motionRouter = null, CameraRouter? cameraRouter = null, bool simulate = false)
+            : base(simulate || motionRouter == null || cameraRouter == null)
         {
             _motionRouter = motionRouter;
-            _cameraService = cameraService;
+            _cameraRouter = cameraRouter;
         }
 
         public override async Task<FlowResult> ExecuteAsync(FlowContext context)

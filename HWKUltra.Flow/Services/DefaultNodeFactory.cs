@@ -1,12 +1,19 @@
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Motion.Real;
+using HWKUltra.Flow.Nodes.Motion.Simulation;
 using HWKUltra.Flow.Nodes.Camera.Real;
+using HWKUltra.Flow.Nodes.Camera.Simulation;
 using HWKUltra.Flow.Nodes.Laser.Real;
 using HWKUltra.Flow.Nodes.IO.Real;
+using HWKUltra.Flow.Nodes.IO.Simulation;
+using HWKUltra.Flow.Nodes.LightSource.Real;
+using HWKUltra.Flow.Nodes.LightSource.Simulation;
 using HWKUltra.Flow.Nodes.Logic;
 using HWKUltra.Flow.Nodes.Advanced.Real;
 using HWKUltra.Motion.Core;
 using HWKUltra.DeviceIO.Core;
+using HWKUltra.LightSource.Core;
+using HWKUltra.Camera.Core;
 
 namespace HWKUltra.Flow.Services
 {
@@ -18,7 +25,8 @@ namespace HWKUltra.Flow.Services
     {
         private readonly MotionRouter? _motionRouter;
         private readonly IORouter? _ioRouter;
-        private readonly object? _cameraService;  // TODO: Replace with ICameraService
+        private readonly LightSourceRouter? _lightSourceRouter;
+        private readonly CameraRouter? _cameraRouter;
         private readonly object? _laserService;   // TODO: Replace with ILaserService
 
         public bool UseSimulation { get; set; } = false;
@@ -26,12 +34,14 @@ namespace HWKUltra.Flow.Services
         public DefaultNodeFactory(
             MotionRouter? motionRouter = null,
             IORouter? ioRouter = null,
-            object? cameraService = null,
+            LightSourceRouter? lightSourceRouter = null,
+            CameraRouter? cameraRouter = null,
             object? laserService = null)
         {
             _motionRouter = motionRouter;
             _ioRouter = ioRouter;
-            _cameraService = cameraService;
+            _lightSourceRouter = lightSourceRouter;
+            _cameraRouter = cameraRouter;
             _laserService = laserService;
         }
 
@@ -77,7 +87,13 @@ namespace HWKUltra.Flow.Services
                 "GroupInterpolation" => new GroupInterpolationNode(_motionRouter),
 
                 // Camera (null → auto simulation)
-                "CameraTrigger" or "Camera" => new CameraTriggerNode(_cameraService),
+                "CameraTrigger" or "Camera" => new CameraTriggerNode(_cameraRouter),
+                "CameraOpen" => new CameraOpenNode(_cameraRouter),
+                "CameraClose" => new CameraCloseNode(_cameraRouter),
+                "CameraGrab" => new CameraGrabNode(_cameraRouter),
+                "CameraSetExposure" => new CameraSetExposureNode(_cameraRouter),
+                "CameraSetGain" => new CameraSetGainNode(_cameraRouter),
+                "CameraSetTriggerMode" => new CameraSetTriggerModeNode(_cameraRouter),
 
                 // Laser (null → auto simulation)
                 "LaserTrigger" or "Laser" => new LaserTriggerNode(_laserService),
@@ -86,13 +102,18 @@ namespace HWKUltra.Flow.Services
                 "DigitalOutput" or "IoOutput" => new DigitalOutputNode(_ioRouter),
                 "DigitalInput" or "IoInput" => new DigitalInputNode(_ioRouter),
 
+                // LightSource (null → auto simulation)
+                "LightSetTriggerMode" or "LightTrigger" => new LightSetTriggerModeNode(_lightSourceRouter),
+                "LightSetContinuousMode" or "LightContinuous" => new LightSetContinuousModeNode(_lightSourceRouter),
+                "LightTurnOnOff" or "LightSwitch" => new LightTurnOnOffNode(_lightSourceRouter),
+
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),
                 "Branch" => new BranchNode(),
                 "Loop" => new LoopNode(),
 
                 // Advanced Features
-                "OnTheFlyCapture" => new OnTheFlyCaptureNode(_motionRouter, _cameraService),
+                "OnTheFlyCapture" => new OnTheFlyCaptureNode(_motionRouter, _cameraRouter),
 
                 // Legacy compatibility
                 "Motion" => new AxisMoveAbsNode(_motionRouter) { Name = "Motion (Legacy)" },
@@ -111,23 +132,48 @@ namespace HWKUltra.Flow.Services
         {
             return type switch
             {
-                "AxisHome" => new AxisHomeNode(null),
-                "AxisMoveAbs" => new AxisMoveAbsNode(null),
-                "AxisMoveRel" => new AxisMoveRelNode(null),
-                "AxisMoveVelocity" => new AxisMoveVelocityNode(null),
-                "AxisWaitInPos" => new AxisWaitInPosNode(null),
-                "GroupInterpolation" => new GroupInterpolationNode(null),
-                "CameraTrigger" or "Camera" => new CameraTriggerNode(null),
+                // Motion Simulation
+                "AxisHome" => new SimAxisHomeNode(),
+                "AxisMoveAbs" => new SimAxisMoveAbsNode(),
+                "AxisMoveRel" => new SimAxisMoveRelNode(),
+                "AxisMoveVelocity" => new SimAxisMoveVelocityNode(),
+                "AxisWaitInPos" => new SimAxisWaitInPosNode(),
+                "GroupInterpolation" => new SimGroupInterpolationNode(),
+
+                // Camera Simulation
+                "CameraTrigger" or "Camera" => new SimCameraTriggerNode(),
+                "CameraOpen" => new SimCameraOpenNode(),
+                "CameraClose" => new SimCameraCloseNode(),
+                "CameraGrab" => new SimCameraGrabNode(),
+                "CameraSetExposure" => new SimCameraSetExposureNode(),
+                "CameraSetGain" => new SimCameraSetGainNode(),
+                "CameraSetTriggerMode" => new SimCameraSetTriggerModeNode(),
+
+                // Laser Simulation (TODO: dedicated sim node)
                 "LaserTrigger" or "Laser" => new LaserTriggerNode(null),
-                "DigitalOutput" or "IoOutput" => new DigitalOutputNode(null),
-                "DigitalInput" or "IoInput" => new DigitalInputNode(null),
+
+                // IO Simulation
+                "DigitalOutput" or "IoOutput" => new SimDigitalOutputNode(),
+                "DigitalInput" or "IoInput" => new SimDigitalInputNode(),
+
+                // LightSource Simulation
+                "LightSetTriggerMode" or "LightTrigger" => new SimLightSetTriggerModeNode(),
+                "LightSetContinuousMode" or "LightContinuous" => new SimLightSetContinuousModeNode(),
+                "LightTurnOnOff" or "LightSwitch" => new SimLightTurnOnOffNode(),
+
+                // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),
                 "Branch" => new BranchNode(),
                 "Loop" => new LoopNode(),
+
+                // Advanced Simulation
                 "OnTheFlyCapture" => new OnTheFlyCaptureNode(null, null, true),
-                "Motion" => new AxisMoveAbsNode(null) { Name = "Motion (Legacy)" },
-                "MotionGroup" => new GroupInterpolationNode(null) { Name = "MotionGroup (Legacy)" },
-                "WaitForAxis" => new AxisWaitInPosNode(null) { Name = "WaitForAxis (Legacy)" },
+
+                // Legacy compatibility
+                "Motion" => new SimAxisMoveAbsNode() { Name = "Motion (Legacy Sim)" },
+                "MotionGroup" => new SimGroupInterpolationNode() { Name = "MotionGroup (Legacy Sim)" },
+                "WaitForAxis" => new SimAxisWaitInPosNode() { Name = "WaitForAxis (Legacy Sim)" },
+
                 _ => throw new ArgumentException($"Unknown node type: {type}")
             };
         }

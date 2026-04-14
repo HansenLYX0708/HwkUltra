@@ -1,0 +1,32 @@
+{
+  "IpAddress": "192.168.1.80",
+  "Port": 40001,
+  "ConnectionTimeoutMs": 3000,
+  "CommandDelayMs": 100,
+  "Channels": [
+    {
+      "Name": "TopLight",
+      "ChannelIndex": 0,
+      "DefaultIntensity": 512,
+      "MaxIntensity": 1023
+    },
+    {
+      "Name": "BottomLight",
+      "ChannelIndex": 1,
+      "DefaultIntensity": 256,
+      "MaxIntensity": 1023
+    },
+    {
+      "Name": "SideLight",
+      "ChannelIndex": 2,
+      "DefaultIntensity": 400,
+      "MaxIntensity": 1023
+    },
+    {
+      "Name": "BackLight",
+      "ChannelIndex": 3,
+      "DefaultIntensity": 300,
+      "MaxIntensity": 1023
+    }
+  ]
+}

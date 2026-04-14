@@ -16,9 +16,17 @@ namespace HWKUltra.UnitTest
             //Console.WriteLine("\n[Phase 2] MotionRouter Tests");
             //MotionRouterTest.RunAllTests();
 
-            // Phase 3: IOBuilder Tests (JSON config)
-            Console.WriteLine("\n[Phase 3] IOBuilder Tests");
-            IOBuilderTest.RunAllTests();
+            //// Phase 3: IOBuilder Tests (JSON config)
+            //Console.WriteLine("\n[Phase 3] IOBuilder Tests");
+            //IOBuilderTest.RunAllTests();
+
+            // Phase 3.5: LightSourceBuilder Tests (JSON config)
+            Console.WriteLine("\n[Phase 3.5] LightSourceBuilder Tests");
+            LightSourceBuilderTest.RunAllTests();
+
+            // Phase 3.6: CameraBuilder Tests (JSON config)
+            Console.WriteLine("\n[Phase 3.6] CameraBuilder Tests");
+            await CameraBuilderTest.RunAllTests();
 
             //// Phase 4: Flow Engine Tests
             //Console.WriteLine("\n[Phase 4] Flow Engine Tests");
