@@ -54,7 +54,7 @@ namespace HWKUltra.UI
                 services.AddSingleton<SettingsViewModel>();
 
                 // Creator Services
-                services.AddSingleton<EditorConfigService>();
+                services.AddSingleton<AppSettingsService>();
                 services.AddSingleton<NodeCatalogService>();
                 services.AddSingleton<FlowDocumentService>();
             }).Build();

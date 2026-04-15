@@ -6,11 +6,12 @@
              AllowDrop="True"
              Drop="Canvas_Drop"
              DragOver="Canvas_DragOver"
-             Background="Transparent"
+             Background="{DynamicResource ApplicationBackgroundBrush}"
              ClipToBounds="True"
              Focusable="True"
              KeyDown="Canvas_KeyDown"
-             MouseDown="Canvas_MouseDown">
+             MouseDown="Canvas_MouseDown"
+             PreviewMouseWheel="FlowCanvas_PreviewMouseWheel">
 
     <UserControl.Resources>
         <converters:StringToBrushConverter x:Key="StringToBrush" />
@@ -27,7 +28,10 @@
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                       x:Name="CanvasScrollViewer">
             <Grid x:Name="CanvasRoot" Width="4000" Height="3000"
-                  MouseWheel="CanvasRoot_MouseWheel">
+                  RenderTransformOrigin="0,0">
+                <Grid.RenderTransform>
+                    <ScaleTransform x:Name="CanvasScale" ScaleX="{Binding ZoomLevel}" ScaleY="{Binding ZoomLevel}" />
+                </Grid.RenderTransform>
 
                 <!-- Grid Background -->
                 <Grid.Background>
@@ -36,12 +40,16 @@
                             <GeometryDrawing>
                                 <GeometryDrawing.Geometry>
                                     <GeometryGroup>
-                                        <EllipseGeometry Center="0,0" RadiusX="0.5" RadiusY="0.5" />
+                                        <LineGeometry StartPoint="0,10" EndPoint="20,10"/>
+                                        <LineGeometry StartPoint="10,0" EndPoint="10,20" />
                                     </GeometryGroup>
                                 </GeometryDrawing.Geometry>
-                                <GeometryDrawing.Brush>
+                                <GeometryDrawing.Pen>
+                                    <Pen Brush="#33888888" Thickness="0.5"/>
+                                </GeometryDrawing.Pen>
+                                <!--<GeometryDrawing.Brush>
                                     <SolidColorBrush Color="#33888888" />
-                                </GeometryDrawing.Brush>
+                                </GeometryDrawing.Brush>-->
                             </GeometryDrawing>
                         </DrawingBrush.Drawing>
                     </DrawingBrush>

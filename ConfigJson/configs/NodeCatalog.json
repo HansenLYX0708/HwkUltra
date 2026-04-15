@@ -1,0 +1,76 @@
+{
+  "Categories": [
+    { "Name": "Motion", "Color": "#FF5722", "Order": 0 },
+    { "Name": "Camera", "Color": "#4CAF50", "Order": 1 },
+    { "Name": "Measurement", "Color": "#673AB7", "Order": 2 },
+    { "Name": "IO", "Color": "#607D8B", "Order": 3 },
+    { "Name": "LightSource", "Color": "#FFC107", "Order": 4 },
+    { "Name": "AutoFocus", "Color": "#00BCD4", "Order": 5 },
+    { "Name": "Tray", "Color": "#795548", "Order": 6 },
+    { "Name": "BarcodeScanner", "Color": "#3F51B5", "Order": 7 },
+    { "Name": "Logic", "Color": "#9E9E9E", "Order": 8 },
+    { "Name": "Advanced", "Color": "#E91E63", "Order": 9 }
+  ],
+  "Nodes": [
+    { "Type": "AxisHome", "DisplayName": "Axis Home", "Category": "Motion" },
+    { "Type": "AxisMoveAbs", "DisplayName": "Axis Move Absolute", "Category": "Motion" },
+    { "Type": "AxisMoveRel", "DisplayName": "Axis Move Relative", "Category": "Motion" },
+    { "Type": "AxisMoveVelocity", "DisplayName": "Axis Move Velocity", "Category": "Motion" },
+    { "Type": "AxisWaitInPos", "DisplayName": "Axis Wait In Position", "Category": "Motion" },
+    { "Type": "GroupInterpolation", "DisplayName": "Group Interpolation", "Category": "Motion" },
+
+    { "Type": "CameraOpen", "DisplayName": "Camera Open", "Category": "Camera" },
+    { "Type": "CameraClose", "DisplayName": "Camera Close", "Category": "Camera" },
+    { "Type": "CameraTrigger", "DisplayName": "Camera Trigger", "Category": "Camera" },
+    { "Type": "CameraGrab", "DisplayName": "Camera Grab", "Category": "Camera" },
+    { "Type": "CameraSetExposure", "DisplayName": "Camera Set Exposure", "Category": "Camera" },
+    { "Type": "CameraSetGain", "DisplayName": "Camera Set Gain", "Category": "Camera" },
+    { "Type": "CameraSetTriggerMode", "DisplayName": "Camera Set Trigger Mode", "Category": "Camera" },
+
+    { "Type": "MeasurementOpen", "DisplayName": "Measurement Open", "Category": "Measurement" },
+    { "Type": "MeasurementClose", "DisplayName": "Measurement Close", "Category": "Measurement" },
+    { "Type": "MeasurementGetData", "DisplayName": "Measurement Get Data", "Category": "Measurement" },
+    { "Type": "MeasurementStartStorage", "DisplayName": "Measurement Start Storage", "Category": "Measurement" },
+    { "Type": "MeasurementStopStorage", "DisplayName": "Measurement Stop Storage", "Category": "Measurement" },
+    { "Type": "MeasurementClearStorage", "DisplayName": "Measurement Clear Storage", "Category": "Measurement" },
+    { "Type": "MeasurementGetTrendData", "DisplayName": "Measurement Get Trend Data", "Category": "Measurement" },
+    { "Type": "MeasurementSetSampling", "DisplayName": "Measurement Set Sampling", "Category": "Measurement" },
+    { "Type": "MeasurementControl", "DisplayName": "Measurement Control", "Category": "Measurement" },
+
+    { "Type": "DigitalOutput", "DisplayName": "Digital Output", "Category": "IO" },
+    { "Type": "DigitalInput", "DisplayName": "Digital Input", "Category": "IO" },
+
+    { "Type": "LightSetTriggerMode", "DisplayName": "Light Set Trigger Mode", "Category": "LightSource" },
+    { "Type": "LightSetContinuousMode", "DisplayName": "Light Set Continuous Mode", "Category": "LightSource" },
+    { "Type": "LightTurnOnOff", "DisplayName": "Light Turn On/Off", "Category": "LightSource" },
+
+    { "Type": "AutoFocusOpen", "DisplayName": "AutoFocus Open", "Category": "AutoFocus" },
+    { "Type": "AutoFocusClose", "DisplayName": "AutoFocus Close", "Category": "AutoFocus" },
+    { "Type": "AutoFocusEnable", "DisplayName": "AutoFocus Enable", "Category": "AutoFocus" },
+    { "Type": "AutoFocusDisable", "DisplayName": "AutoFocus Disable", "Category": "AutoFocus" },
+    { "Type": "AutoFocusLaserOn", "DisplayName": "AutoFocus Laser On", "Category": "AutoFocus" },
+    { "Type": "AutoFocusLaserOff", "DisplayName": "AutoFocus Laser Off", "Category": "AutoFocus" },
+    { "Type": "AutoFocusGetStatus", "DisplayName": "AutoFocus Get Status", "Category": "AutoFocus" },
+    { "Type": "AutoFocusCommand", "DisplayName": "AutoFocus Command", "Category": "AutoFocus" },
+    { "Type": "AutoFocusReset", "DisplayName": "AutoFocus Reset", "Category": "AutoFocus" },
+
+    { "Type": "TrayInit", "DisplayName": "Tray Initialize", "Category": "Tray" },
+    { "Type": "TrayTeach", "DisplayName": "Tray Teach", "Category": "Tray" },
+    { "Type": "TrayGetPosition", "DisplayName": "Tray Get Position", "Category": "Tray" },
+    { "Type": "TraySetSlotState", "DisplayName": "Tray Set Slot State", "Category": "Tray" },
+    { "Type": "TrayGetSlotState", "DisplayName": "Tray Get Slot State", "Category": "Tray" },
+    { "Type": "TrayReset", "DisplayName": "Tray Reset", "Category": "Tray" },
+    { "Type": "TrayGetInfo", "DisplayName": "Tray Get Info", "Category": "Tray" },
+
+    { "Type": "BarcodeScannerOpen", "DisplayName": "BarcodeScanner Open", "Category": "BarcodeScanner" },
+    { "Type": "BarcodeScannerClose", "DisplayName": "BarcodeScanner Close", "Category": "BarcodeScanner" },
+    { "Type": "BarcodeScannerTrigger", "DisplayName": "BarcodeScanner Trigger", "Category": "BarcodeScanner" },
+    { "Type": "BarcodeScannerGetLast", "DisplayName": "BarcodeScanner Get Last", "Category": "BarcodeScanner" },
+
+    { "Type": "Delay", "DisplayName": "Delay", "Category": "Logic" },
+    { "Type": "Branch", "DisplayName": "Branch", "Category": "Logic" },
+    { "Type": "Loop", "DisplayName": "Loop", "Category": "Logic" },
+
+    { "Type": "OnTheFlyCapture", "DisplayName": "On-The-Fly Capture", "Category": "Advanced" }
+  ]
+}

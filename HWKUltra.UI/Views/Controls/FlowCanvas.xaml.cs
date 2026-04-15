@@ -232,7 +232,35 @@ namespace HWKUltra.UI.Views.Controls
 
         private void CanvasRoot_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            // Zoom is handled via ScrollViewer built-in scrolling
+            // Handled by FlowCanvas_PreviewMouseWheel
+        }
+
+        private void FlowCanvas_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (ViewModel == null) return;
+
+            // Ctrl+Wheel: zoom
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                if (e.Delta > 0)
+                    ViewModel.ZoomInCommand.Execute(null);
+                else
+                    ViewModel.ZoomOutCommand.Execute(null);
+                e.Handled = true;
+                return;
+            }
+
+            // Wheel without Ctrl: manually scroll the ScrollViewer
+            // This is needed because ScrollViewer only responds to wheel when
+            // the mouse is over its background, not over child elements like nodes.
+            if (CanvasScrollViewer != null)
+            {
+                if (e.Delta > 0)
+                    CanvasScrollViewer.LineUp();
+                else
+                    CanvasScrollViewer.LineDown();
+                e.Handled = true;
+            }
         }
 
         #endregion

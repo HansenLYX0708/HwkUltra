@@ -1,7 +1,5 @@
 using System.Collections.ObjectModel;
 using System.IO;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using Wpf.Ui.Abstractions.Controls;
 using HWKUltra.Flow.Abstractions;
@@ -18,7 +16,7 @@ namespace HWKUltra.UI.ViewModels.Pages
     {
         private readonly FlowDocumentService _documentService;
         private readonly NodeCatalogService _catalogService;
-        private readonly EditorConfigService _configService;
+        private readonly AppSettingsService _settingsService;
 
         private FlowDefinition _currentDefinition = null!;
         private bool _isInitialized = false;
@@ -50,8 +48,29 @@ namespace HWKUltra.UI.ViewModels.Pages
         [ObservableProperty]
         private string? _startNodeId;
 
+        [ObservableProperty]
+        private double _zoomLevel = 1.0;
+
         public ObservableCollection<FlowNodeViewModel> Nodes { get; } = new();
         public ObservableCollection<FlowConnectionViewModel> Connections { get; } = new();
+
+        [RelayCommand]
+        private void ZoomIn()
+        {
+            ZoomLevel = Math.Min(3.0, ZoomLevel + 0.1);
+        }
+
+        [RelayCommand]
+        private void ZoomOut()
+        {
+            ZoomLevel = Math.Max(0.2, ZoomLevel - 0.1);
+        }
+
+        [RelayCommand]
+        private void ResetZoom()
+        {
+            ZoomLevel = 1.0;
+        }
 
         #endregion
 
@@ -84,11 +103,11 @@ namespace HWKUltra.UI.ViewModels.Pages
         public CreatorViewModel(
             FlowDocumentService documentService,
             NodeCatalogService catalogService,
-            EditorConfigService configService)
+            AppSettingsService settingsService)
         {
             _documentService = documentService;
             _catalogService = catalogService;
-            _configService = configService;
+            _settingsService = settingsService;
 
             // Wire collection change handlers for status
             Nodes.CollectionChanged += (s, e) =>
@@ -204,10 +223,10 @@ namespace HWKUltra.UI.ViewModels.Pages
                 Title = "Open Flow Definition"
             };
 
-            var config = _configService.GetConfig();
-            if (!string.IsNullOrEmpty(config.DefaultFlowDirectory))
+            var settings = _settingsService.Settings;
+            if (!string.IsNullOrEmpty(settings.DefaultFlowDirectory))
             {
-                var fullPath = Path.GetFullPath(config.DefaultFlowDirectory);
+                var fullPath = _settingsService.ResolvePath(settings.DefaultFlowDirectory);
                 if (Directory.Exists(fullPath))
                     dialog.InitialDirectory = fullPath;
             }
@@ -533,6 +552,8 @@ namespace HWKUltra.UI.ViewModels.Pages
                 Description = def.Description,
                 X = def.X,
                 Y = def.Y,
+                Width = catalogEntry?.DefaultWidth ?? 160,
+                Height = catalogEntry?.DefaultHeight ?? 80,
                 Category = catalogEntry?.Category ?? "Unknown",
                 Color = catalogEntry?.Color ?? "#2196F3"
             };

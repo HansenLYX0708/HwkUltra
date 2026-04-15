@@ -3,6 +3,7 @@ using HWKUltra.UI.Views.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Wpf.Ui;
+using Wpf.Ui.Appearance;
 
 namespace HWKUltra.UI.Services
 {
@@ -48,6 +49,16 @@ namespace HWKUltra.UI.Services
                 _navigationWindow = (
                     _serviceProvider.GetService(typeof(INavigationWindow)) as INavigationWindow
                 )!;
+
+                // Apply persisted theme AFTER window construction (SystemThemeWatcher.Watch
+                // is called in MainWindow constructor and overrides any prior theme apply)
+                var settingsService = _serviceProvider.GetService(typeof(AppSettingsService)) as AppSettingsService;
+                if (settingsService != null)
+                {
+                    var theme = settingsService.Settings.Theme;
+                    ApplicationThemeManager.Apply(theme == "Light" ? ApplicationTheme.Light : ApplicationTheme.Dark);
+                }
+
                 _navigationWindow!.ShowWindow();
 
                 _navigationWindow.Navigate(typeof(Views.Pages.DashboardPage));

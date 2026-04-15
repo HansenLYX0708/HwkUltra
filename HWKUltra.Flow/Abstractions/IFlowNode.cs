@@ -178,6 +178,26 @@ namespace HWKUltra.Flow.Abstractions
         List<FlowParameter> Outputs { get; }
 
         /// <summary>
+        /// Visual category for toolbox grouping (e.g., "Motion", "Camera")
+        /// </summary>
+        string Category { get; set; }
+
+        /// <summary>
+        /// Visual color for the node header (hex, e.g., "#FF5722")
+        /// </summary>
+        string Color { get; set; }
+
+        /// <summary>
+        /// Default node width in the visual editor
+        /// </summary>
+        double DefaultWidth { get; set; }
+
+        /// <summary>
+        /// Default node height in the visual editor
+        /// </summary>
+        double DefaultHeight { get; set; }
+
+        /// <summary>
         /// Execute node
         /// </summary>
         Task<FlowResult> ExecuteAsync(FlowContext context);

@@ -41,4 +41,13 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\ConfigJson\configs\**\*.json" LinkBase="Local\configs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ConfigJson\Flow\**\*.json" LinkBase="ConfigJson\Flow">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

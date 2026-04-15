@@ -49,6 +49,18 @@
                 <ui:Button Icon="{ui:SymbolIcon Delete24}" Content="Delete" 
                            Command="{Binding ViewModel.DeleteSelectedCommand}" Margin="0,0,4,0"
                            Appearance="Transparent" />
+                <Separator Margin="8,4" />
+                <ui:Button Icon="{ui:SymbolIcon ZoomOut24}" Content="Zoom Out" 
+                           Command="{Binding ViewModel.ZoomOutCommand}" Margin="0,0,4,0"
+                           Appearance="Transparent" />
+                <TextBlock Text="{Binding ViewModel.ZoomLevel, StringFormat='{}{0:P0}'}" 
+                           VerticalAlignment="Center" FontSize="12" Margin="4,0" Opacity="0.7" />
+                <ui:Button Icon="{ui:SymbolIcon ZoomIn24}" Content="Zoom In" 
+                           Command="{Binding ViewModel.ZoomInCommand}" Margin="0,0,4,0"
+                           Appearance="Transparent" />
+                <ui:Button Icon="{ui:SymbolIcon ArrowMaximize24}" Content="Fit" 
+                           Command="{Binding ViewModel.ResetZoomCommand}" Margin="0,0,4,0"
+                           Appearance="Transparent" />
             </StackPanel>
         </Border>
 

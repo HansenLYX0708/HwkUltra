@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:converters="clr-namespace:HWKUltra.UI.Helpers"
-             xmlns:models="clr-namespace:HWKUltra.UI.Models">
+             xmlns:models="clr-namespace:HWKUltra.UI.Models"
+             Background="{DynamicResource ApplicationBackgroundBrush}">
 
     <UserControl.Resources>
         <converters:StringToBrushConverter x:Key="StringToBrush" />
@@ -30,7 +31,10 @@
         <TreeView Grid.Row="2" Margin="4,4"
                   ItemsSource="{Binding FilteredCategories}"
                   BorderThickness="0"
-                  Background="Transparent">
+                  Background="Transparent"
+                  ScrollViewer.CanContentScroll="False"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate DataType="{x:Type models:NodeCatalogCategory}"
                                           ItemsSource="{Binding Entries}">

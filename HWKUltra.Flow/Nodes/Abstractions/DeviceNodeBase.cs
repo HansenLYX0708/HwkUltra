@@ -17,6 +17,10 @@ namespace HWKUltra.Flow.Nodes.Abstractions
         public string? Description { get; set; }
         public abstract List<FlowParameter> Inputs { get; }
         public abstract List<FlowParameter> Outputs { get; }
+        public string Category { get; set; } = string.Empty;
+        public string Color { get; set; } = "#2196F3";
+        public double DefaultWidth { get; set; } = 160;
+        public double DefaultHeight { get; set; } = 80;
 
         /// <summary>
         /// Whether this node is running in simulation mode (no real hardware)
@@ -69,6 +73,10 @@ namespace HWKUltra.Flow.Nodes.Abstractions
         public string? Description { get; set; }
         public abstract List<FlowParameter> Inputs { get; }
         public abstract List<FlowParameter> Outputs { get; }
+        public string Category { get; set; } = string.Empty;
+        public string Color { get; set; } = "#2196F3";
+        public double DefaultWidth { get; set; } = 160;
+        public double DefaultHeight { get; set; } = 80;
 
         public abstract Task<FlowResult> ExecuteAsync(FlowContext context);
     }
@@ -84,6 +92,10 @@ namespace HWKUltra.Flow.Nodes.Abstractions
         public string? Description { get; set; }
         public abstract List<FlowParameter> Inputs { get; }
         public abstract List<FlowParameter> Outputs { get; }
+        public string Category { get; set; } = string.Empty;
+        public string Color { get; set; } = "#2196F3";
+        public double DefaultWidth { get; set; } = 160;
+        public double DefaultHeight { get; set; } = 80;
 
         /// <summary>
         /// Whether running in simulation mode

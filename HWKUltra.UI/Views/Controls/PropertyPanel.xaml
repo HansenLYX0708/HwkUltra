@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:converters="clr-namespace:HWKUltra.UI.Helpers"
-             xmlns:vm="clr-namespace:HWKUltra.UI.ViewModels.Pages">
+             xmlns:vm="clr-namespace:HWKUltra.UI.ViewModels.Pages"
+             Background="{DynamicResource ApplicationBackgroundBrush}">
 
     <UserControl.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
@@ -29,6 +30,8 @@
 
         <!-- Node Properties -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                      CanContentScroll="False"
+                      HorizontalScrollBarVisibility="Disabled"
                       Visibility="{Binding IsNodeSelected, Converter={StaticResource BoolToVisibility}}">
             <StackPanel Margin="8,4">
                 <!-- Node Info Header -->
@@ -122,6 +125,8 @@
 
         <!-- Connection Properties -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                      CanContentScroll="False"
+                      HorizontalScrollBarVisibility="Disabled"
                       Visibility="{Binding IsConnectionSelected, Converter={StaticResource BoolToVisibility}}">
             <StackPanel Margin="8,4">
                 <Border Padding="8" Margin="0,0,0,8" CornerRadius="6"
