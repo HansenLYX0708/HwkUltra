@@ -56,6 +56,10 @@ namespace HWKUltra.UnitTest
             //Console.WriteLine("\n[Phase 6] Multi-Flow Concurrent Test");
             //await FlowTest.Test5_MultiFlowAsync();
 
+            // Phase 7: Flow Parallel Extension Tests
+            Console.WriteLine("\n[Phase 7] Flow Parallel Extension Tests");
+            await FlowParallelTest.RunAllTests();
+
             Console.WriteLine("\n========== All Tests Complete ==========");
         }
     }

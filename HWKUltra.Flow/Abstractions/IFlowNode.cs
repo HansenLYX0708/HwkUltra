@@ -1,3 +1,5 @@
+using HWKUltra.Flow.Services;
+
 namespace HWKUltra.Flow.Abstractions
 {
     /// <summary>
@@ -24,6 +26,18 @@ namespace HWKUltra.Flow.Abstractions
         /// Cancellation token
         /// </summary>
         public CancellationToken CancellationToken { get; set; }
+
+        /// <summary>
+        /// Shared context for cross-flow communication (parallel execution, signals, locks).
+        /// Null when running a standalone single flow.
+        /// </summary>
+        public SharedFlowContext? SharedContext { get; set; }
+
+        /// <summary>
+        /// Node factory for creating nodes in sub-flows (used by SubFlowNode/ParallelNode).
+        /// Must be set when using sub-flow or parallel execution features.
+        /// </summary>
+        public IFlowNodeFactory? NodeFactory { get; set; }
 
         /// <summary>
         /// Get variable value
@@ -72,6 +86,14 @@ namespace HWKUltra.Flow.Abstractions
         public void SetNodeOutput<T>(string nodeId, string key, T value)
         {
             Variables[$"{nodeId}:{key}"] = value!;
+        }
+
+        /// <summary>
+        /// Get node-scoped output variable (reads from "{nodeId}:{key}")
+        /// </summary>
+        public T? GetNodeOutput<T>(string nodeId, string key)
+        {
+            return GetNodeInput<T>(nodeId, key);
         }
 
         /// <summary>

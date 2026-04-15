@@ -161,10 +161,21 @@ namespace HWKUltra.Flow.Services
                 "BarcodeScannerTrigger" => new BarcodeScannerTriggerNode(_barcodeScannerRouter),
                 "BarcodeScannerGetLast" => new BarcodeScannerGetLastNode(_barcodeScannerRouter),
 
+                // Tray Iterator
+                "TrayIterator" => new TrayIteratorNode(_trayRouter),
+
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),
                 "Branch" => new BranchNode(),
                 "Loop" => new LoopNode(),
+                "SubFlow" => new SubFlowNode(),
+                "Parallel" => new ParallelNode(),
+                "SetSignal" => new SetSignalNode(),
+                "WaitForSignal" => new WaitForSignalNode(),
+                "AcquireLock" => new AcquireLockNode(),
+                "ReleaseLock" => new ReleaseLockNode(),
+                "SetSharedVariable" => new SetSharedVariableNode(),
+                "GetSharedVariable" => new GetSharedVariableNode(),
 
                 // Advanced Features
                 "OnTheFlyCapture" => new OnTheFlyCaptureNode(_motionRouter, _cameraRouter),
@@ -249,10 +260,21 @@ namespace HWKUltra.Flow.Services
                 "BarcodeScannerTrigger" => new SimBarcodeScannerTriggerNode(),
                 "BarcodeScannerGetLast" => new SimBarcodeScannerGetLastNode(),
 
+                // Tray Iterator Simulation
+                "TrayIterator" => new SimTrayIteratorNode(),
+
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),
                 "Branch" => new BranchNode(),
                 "Loop" => new LoopNode(),
+                "SubFlow" => new SubFlowNode(),
+                "Parallel" => new ParallelNode(),
+                "SetSignal" => new SetSignalNode(),
+                "WaitForSignal" => new WaitForSignalNode(),
+                "AcquireLock" => new AcquireLockNode(),
+                "ReleaseLock" => new ReleaseLockNode(),
+                "SetSharedVariable" => new SetSharedVariableNode(),
+                "GetSharedVariable" => new GetSharedVariableNode(),
 
                 // Advanced Simulation
                 "OnTheFlyCapture" => new OnTheFlyCaptureNode(null, null, true),

@@ -109,6 +109,8 @@ namespace HWKUltra.Flow.Services
 
             // Create flow context, inject node properties scoped by node ID
             context ??= new FlowContext();
+            // Provide node factory to context for SubFlowNode/ParallelNode usage
+            context.NodeFactory ??= _nodeFactory;
             foreach (var nodeDef in executionDef.Nodes)
             {
                 foreach (var prop in nodeDef.Properties)
@@ -149,6 +151,27 @@ namespace HWKUltra.Flow.Services
                 instance.EndTime = DateTime.UtcNow;
                 _runningInstances.TryRemove(instance.Id, out _);
             }
+        }
+
+        /// <summary>
+        /// Execute multiple flows in parallel with a shared context for cross-flow communication.
+        /// All flows share the same SharedFlowContext for signals, locks, and shared variables.
+        /// </summary>
+        /// <param name="definitionIds">IDs of the flow definitions to run in parallel</param>
+        /// <param name="sharedContext">Shared context (auto-created if null)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Array of results, one per flow</returns>
+        public async Task<FlowResult[]> ExecuteParallelAsync(IEnumerable<string> definitionIds, SharedFlowContext? sharedContext = null, CancellationToken cancellationToken = default)
+        {
+            sharedContext ??= new SharedFlowContext();
+
+            var tasks = definitionIds.Select(id =>
+            {
+                var context = new FlowContext { SharedContext = sharedContext };
+                return ExecuteAsync(id, context, cancellationToken);
+            }).ToArray();
+
+            return await Task.WhenAll(tasks);
         }
 
         /// <summary>
