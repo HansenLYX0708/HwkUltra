@@ -1,0 +1,246 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO.Ports;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace WD.AVI.BarcodeLib
+{
+    public partial class BarcodeScaner
+    {
+        private static BarcodeScaner uniqueInstance;
+        private static readonly object locker = new object();
+        private SerialPort leftScanner;
+        private SerialPort rightScanner;
+        private SerialPort handheldScanner;
+        byte[] bData = new byte[1024];
+        byte mReceiveByte;
+        int mReceiveByteCount = 0;
+
+
+        public Action<string> TriggerEvent { get; set; }
+        public bool IsAutoScan;
+        public string LeftScannerPort = "";
+        public string RightScannerPort = "";
+        public string HandheldScannerPort = "";
+
+        private BarcodeScaner()
+        {
+            leftScanner = new SerialPort();
+            rightScanner = new SerialPort();
+            handheldScanner = new SerialPort();
+        }
+
+        public static BarcodeScaner GetInstance()
+        {
+            if (uniqueInstance == null)
+            {
+                lock (locker)
+                {
+                    if (uniqueInstance == null)
+                    {
+                        uniqueInstance = new BarcodeScaner();
+                    }
+                }
+            }
+            return uniqueInstance;
+        }
+
+        public void OpenScanner()
+        {
+            if (IsAutoScan)
+            {
+                OpenMyCom(9600, LeftScannerPort, RightScannerPort, 8, Parity.None, StopBits.One);
+            }
+            else
+            {
+                // OpenHandHeldCom(9600, HandheldScannerPort, 8, Parity.None, StopBits.One);
+            }
+        }
+        private bool OpenMyCom(int iBaudRate, string iPortNo1, string iPortNo2, int iDataBits, Parity iParity, StopBits iStopBits)
+        {
+            try
+            {
+                if (leftScanner.IsOpen)
+                {
+                    leftScanner.Close();
+                }
+                leftScanner.BaudRate = iBaudRate;
+                leftScanner.PortName = iPortNo1;
+                leftScanner.DataBits = iDataBits;
+                leftScanner.Parity = iParity;
+                leftScanner.StopBits = iStopBits;
+                leftScanner.ReceivedBytesThreshold = 1;
+                leftScanner.DataReceived += LeftDataReceived;
+                leftScanner.Open();
+                if (rightScanner.IsOpen)
+                {
+                    rightScanner.Close();
+                }
+                rightScanner.BaudRate = iBaudRate;
+                rightScanner.PortName = iPortNo2;
+                rightScanner.DataBits = iDataBits;
+                rightScanner.Parity = iParity;
+                rightScanner.StopBits = iStopBits;
+                rightScanner.ReceivedBytesThreshold = 1;
+                rightScanner.DataReceived += RightDataReceived;
+                rightScanner.Open();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private bool OpenHandHeldCom(int iBaudRate, string comPort, int iDataBits, Parity iParity, StopBits iStopBits)
+        {
+            try
+            {
+                if (handheldScanner.IsOpen)
+                {
+                    handheldScanner.Close();
+                }
+                handheldScanner.BaudRate = iBaudRate;
+                handheldScanner.PortName = comPort;
+                handheldScanner.DataBits = iDataBits;
+                handheldScanner.Parity = iParity;
+                handheldScanner.StopBits = iStopBits;
+                handheldScanner.ReceivedBytesThreshold = 1;
+                handheldScanner.DataReceived += HandHeldDataReceived;
+                handheldScanner.Open();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private void LeftDataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            mReceiveByteCount = 0;
+            while (leftScanner.BytesToRead > 0)
+            {
+                mReceiveByte = (byte)leftScanner.ReadByte();
+                bData[mReceiveByteCount] = mReceiveByte;
+                mReceiveByteCount += 1;
+                if (mReceiveByteCount >= 1024)
+                {
+                    mReceiveByteCount = 0;
+                    leftScanner.DiscardInBuffer();
+                    return;
+                }
+            }
+            if (mReceiveByte > 0)
+            {
+                if (TriggerEvent != null)
+                    TriggerEvent(Encoding.ASCII.GetString(GetByteArray(bData, 0, mReceiveByteCount)));
+            }
+        }
+
+        private void RightDataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            mReceiveByteCount = 0;
+            while (rightScanner.BytesToRead > 0)
+            {
+                mReceiveByte = (byte)rightScanner.ReadByte();
+                bData[mReceiveByteCount] = mReceiveByte;
+                mReceiveByteCount += 1;
+                if (mReceiveByteCount >= 1024)
+                {
+                    mReceiveByteCount = 0;
+                    rightScanner.DiscardInBuffer();
+                    return;
+                }
+            }
+            if (mReceiveByte > 0)
+            {
+                if (TriggerEvent != null)
+                    TriggerEvent(Encoding.ASCII.GetString(GetByteArray(bData, 0, mReceiveByteCount)));
+            }
+        }
+
+        private void HandHeldDataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            mReceiveByteCount = 0;
+            while (handheldScanner.BytesToRead > 0)
+            {
+                mReceiveByte = (byte)handheldScanner.ReadByte();
+                bData[mReceiveByteCount] = mReceiveByte;
+                mReceiveByteCount += 1;
+                if (mReceiveByteCount >= 1024)
+                {
+                    mReceiveByteCount = 0;
+                    handheldScanner.DiscardInBuffer();
+                    return;
+                }
+            }
+            if (mReceiveByte > 0)
+            {
+                if (TriggerEvent != null)
+                    TriggerEvent(Encoding.ASCII.GetString(GetByteArray(bData, 0, mReceiveByteCount)));
+            }
+        }
+
+        private byte[] GetByteArray(byte[] byteArr, int start, int length)
+        {
+            byte[] Res = new byte[length];
+            if (byteArr != null && byteArr.Length >= length)
+            {
+                for (int i = 0; i < length; i++)
+                {
+                    Res[i] = byteArr[i + start];
+                }
+            }
+            return Res;
+        }
+
+        public static string ConvertHex(String hexString)
+        {
+            try
+            {
+                string ascii = string.Empty;
+
+                for (int i = 0; i < hexString.Length; i += 2)
+                {
+                    String hs = string.Empty;
+                    hs = hexString.Substring(i, 2);
+                    uint decval = System.Convert.ToUInt32(hs, 16);
+                    char character = System.Convert.ToChar(decval);
+                    ascii += character;
+                }
+                return ascii;
+            }
+            catch (Exception ex) { throw new Exception(ex.Message); }
+        }
+
+        public void ClosePort()
+        {
+            try
+            {
+                if (leftScanner.IsOpen)
+                {
+                    leftScanner.Close();
+                    leftScanner.Dispose();
+                }
+                if (rightScanner.IsOpen)
+                {
+                    rightScanner.Close();
+                    rightScanner.Dispose();
+                }
+                if (handheldScanner.IsOpen)
+                {
+                    handheldScanner.Close();
+                    handheldScanner.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+    }
+}

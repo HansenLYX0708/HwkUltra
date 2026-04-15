@@ -1,0 +1,149 @@
+{
+  "id": "sample-aoi-flow-001",
+  "name": "Sample AOI Inspection Flow",
+  "description": "A sample flow demonstrating typical AOI inspection sequence",
+  "createdAt": "2024-01-01T00:00:00",
+  "modifiedAt": "2024-01-01T00:00:00",
+  "version": "1.0.0",
+  "startNodeId": "node-home",
+  "nodes": [
+    {
+      "id": "node-home",
+      "type": "AxisHome",
+      "name": "Home All Axes",
+      "description": "Home X and Y axes before starting",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "AxisName": "X"
+      }
+    },
+    {
+      "id": "node-light-on",
+      "type": "LightTurnOnOff",
+      "name": "Turn On Light",
+      "description": "Turn on inspection light",
+      "x": 280,
+      "y": 200,
+      "properties": {
+        "ChannelName": "MainLight",
+        "TurnOn": "true"
+      }
+    },
+    {
+      "id": "node-move-pos1",
+      "type": "AxisMoveAbs",
+      "name": "Move to Position 1",
+      "description": "Move to first inspection position",
+      "x": 510,
+      "y": 200,
+      "properties": {
+        "AxisName": "X",
+        "Position": "100.0",
+        "Velocity": "50000",
+        "WaitForComplete": "true"
+      }
+    },
+    {
+      "id": "node-camera-grab",
+      "type": "CameraGrab",
+      "name": "Capture Image",
+      "description": "Grab image from main camera",
+      "x": 740,
+      "y": 200,
+      "properties": {
+        "CameraName": "MainCamera",
+        "TimeoutMs": "5000"
+      }
+    },
+    {
+      "id": "node-delay",
+      "type": "Delay",
+      "name": "Processing Delay",
+      "description": "Wait for image processing",
+      "x": 970,
+      "y": 200,
+      "properties": {
+        "Duration": "500",
+        "CanCancel": "true"
+      }
+    },
+    {
+      "id": "node-branch",
+      "type": "Branch",
+      "name": "Check Result",
+      "description": "Branch based on inspection result",
+      "x": 1200,
+      "y": 200,
+      "properties": {
+        "Condition": "InspectionResult",
+        "Operator": "Equals",
+        "CompareValue": "OK"
+      }
+    },
+    {
+      "id": "node-ok-output",
+      "type": "DigitalOutput",
+      "name": "OK Signal",
+      "description": "Output OK signal",
+      "x": 1430,
+      "y": 100,
+      "properties": {
+        "PointName": "ResultOK",
+        "Value": "true"
+      }
+    },
+    {
+      "id": "node-ng-output",
+      "type": "DigitalOutput",
+      "name": "NG Signal",
+      "description": "Output NG signal",
+      "x": 1430,
+      "y": 300,
+      "properties": {
+        "PointName": "ResultNG",
+        "Value": "true"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn-1",
+      "sourceNodeId": "node-home",
+      "targetNodeId": "node-light-on"
+    },
+    {
+      "id": "conn-2",
+      "sourceNodeId": "node-light-on",
+      "targetNodeId": "node-move-pos1"
+    },
+    {
+      "id": "conn-3",
+      "sourceNodeId": "node-move-pos1",
+      "targetNodeId": "node-camera-grab"
+    },
+    {
+      "id": "conn-4",
+      "sourceNodeId": "node-camera-grab",
+      "targetNodeId": "node-delay"
+    },
+    {
+      "id": "conn-5",
+      "sourceNodeId": "node-delay",
+      "targetNodeId": "node-branch"
+    },
+    {
+      "id": "conn-6",
+      "sourceNodeId": "node-branch",
+      "targetNodeId": "node-ok-output",
+      "condition": "True"
+    },
+    {
+      "id": "conn-7",
+      "sourceNodeId": "node-branch",
+      "targetNodeId": "node-ng-output",
+      "condition": "False"
+    }
+  ],
+  "globalVariables": []
+}

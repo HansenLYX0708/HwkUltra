@@ -1,0 +1,34 @@
+{
+    "Instances": [
+        {
+            "Name": "LeftScanner",
+            "PortName": "COM3",
+            "BaudRate": 9600,
+            "DataBits": 8,
+            "Parity": 0,
+            "StopBits": 1,
+            "TriggerCommand": "",
+            "ReadTimeoutMs": 3000
+        },
+        {
+            "Name": "RightScanner",
+            "PortName": "COM4",
+            "BaudRate": 9600,
+            "DataBits": 8,
+            "Parity": 0,
+            "StopBits": 1,
+            "TriggerCommand": "",
+            "ReadTimeoutMs": 3000
+        },
+        {
+            "Name": "HandheldScanner",
+            "PortName": "COM5",
+            "BaudRate": 9600,
+            "DataBits": 8,
+            "Parity": 0,
+            "StopBits": 1,
+            "TriggerCommand": "",
+            "ReadTimeoutMs": 3000
+        }
+    ]
+}

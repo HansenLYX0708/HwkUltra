@@ -13,6 +13,8 @@ using HWKUltra.Flow.Nodes.AutoFocus.Real;
 using HWKUltra.Flow.Nodes.AutoFocus.Simulation;
 using HWKUltra.Flow.Nodes.Tray.Real;
 using HWKUltra.Flow.Nodes.Tray.Simulation;
+using HWKUltra.Flow.Nodes.BarcodeScanner.Real;
+using HWKUltra.Flow.Nodes.BarcodeScanner.Simulation;
 using HWKUltra.Flow.Nodes.Logic;
 using HWKUltra.Flow.Nodes.Advanced.Real;
 using HWKUltra.Motion.Core;
@@ -22,6 +24,7 @@ using HWKUltra.Camera.Core;
 using HWKUltra.AutoFocus.Core;
 using HWKUltra.Measurement.Core;
 using HWKUltra.Tray.Core;
+using HWKUltra.BarcodeScanner.Core;
 
 namespace HWKUltra.Flow.Services
 {
@@ -38,6 +41,7 @@ namespace HWKUltra.Flow.Services
         private readonly AutoFocusRouter? _autoFocusRouter;
         private readonly MeasurementRouter? _measurementRouter;
         private readonly TrayRouter? _trayRouter;
+        private readonly BarcodeScannerRouter? _barcodeScannerRouter;
 
         public bool UseSimulation { get; set; } = false;
 
@@ -48,7 +52,8 @@ namespace HWKUltra.Flow.Services
             CameraRouter? cameraRouter = null,
             AutoFocusRouter? autoFocusRouter = null,
             MeasurementRouter? measurementRouter = null,
-            TrayRouter? trayRouter = null)
+            TrayRouter? trayRouter = null,
+            BarcodeScannerRouter? barcodeScannerRouter = null)
         {
             _motionRouter = motionRouter;
             _ioRouter = ioRouter;
@@ -57,6 +62,7 @@ namespace HWKUltra.Flow.Services
             _autoFocusRouter = autoFocusRouter;
             _measurementRouter = measurementRouter;
             _trayRouter = trayRouter;
+            _barcodeScannerRouter = barcodeScannerRouter;
         }
 
         public IFlowNode CreateNode(string type, Dictionary<string, string> properties)
@@ -149,6 +155,12 @@ namespace HWKUltra.Flow.Services
                 "TrayReset" => new TrayResetNode(_trayRouter),
                 "TrayGetInfo" => new TrayGetInfoNode(_trayRouter),
 
+                // BarcodeScanner (null → auto simulation)
+                "BarcodeScannerOpen" => new BarcodeScannerOpenNode(_barcodeScannerRouter),
+                "BarcodeScannerClose" => new BarcodeScannerCloseNode(_barcodeScannerRouter),
+                "BarcodeScannerTrigger" => new BarcodeScannerTriggerNode(_barcodeScannerRouter),
+                "BarcodeScannerGetLast" => new BarcodeScannerGetLastNode(_barcodeScannerRouter),
+
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),
                 "Branch" => new BranchNode(),
@@ -230,6 +242,12 @@ namespace HWKUltra.Flow.Services
                 "TrayGetSlotState" => new SimTrayGetSlotStateNode(),
                 "TrayReset" => new SimTrayResetNode(),
                 "TrayGetInfo" => new SimTrayGetInfoNode(),
+
+                // BarcodeScanner Simulation
+                "BarcodeScannerOpen" => new SimBarcodeScannerOpenNode(),
+                "BarcodeScannerClose" => new SimBarcodeScannerCloseNode(),
+                "BarcodeScannerTrigger" => new SimBarcodeScannerTriggerNode(),
+                "BarcodeScannerGetLast" => new SimBarcodeScannerGetLastNode(),
 
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),

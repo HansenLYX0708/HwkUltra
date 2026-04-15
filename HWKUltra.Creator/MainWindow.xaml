@@ -1,0 +1,73 @@
+<ui:FluentWindow x:Class="HWKUltra.Creator.MainWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:pages="clr-namespace:HWKUltra.Creator.Views.Pages"
+                 Title="HWKUltra Creator - Flow Editor"
+                 Width="1400" Height="900"
+                 WindowStartupLocation="CenterScreen"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Title Bar -->
+        <ui:TitleBar Grid.Row="0" Title="HWKUltra Creator - Flow Editor" />
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Toolbar -->
+            <Border Grid.Row="0" Padding="8,4" 
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" 
+                    BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <ui:Button Icon="{ui:SymbolIcon DocumentAdd24}" Content="New" 
+                               Command="{Binding NewFlowCommand}" Margin="0,0,4,0"
+                               Appearance="Transparent" />
+                    <ui:Button Icon="{ui:SymbolIcon FolderOpen24}" Content="Open" 
+                               Command="{Binding OpenFlowCommand}" Margin="0,0,4,0"
+                               Appearance="Transparent" />
+                    <ui:Button Icon="{ui:SymbolIcon Save24}" Content="Save" 
+                               Command="{Binding SaveFlowCommand}" Margin="0,0,4,0"
+                               Appearance="Transparent" />
+                    <ui:Button Icon="{ui:SymbolIcon SaveCopy24}" Content="Save As" 
+                               Command="{Binding SaveAsFlowCommand}" Margin="0,0,4,0"
+                               Appearance="Transparent" />
+                    <Separator Margin="8,4" />
+                    <ui:Button Icon="{ui:SymbolIcon Delete24}" Content="Delete" 
+                               Command="{Binding DeleteSelectedCommand}" Margin="0,0,4,0"
+                               Appearance="Transparent" />
+                </StackPanel>
+            </Border>
+
+            <!-- Editor Page -->
+            <pages:FlowEditorPage Grid.Row="1" DataContext="{Binding}" />
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Padding="8,4"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" 
+                BorderThickness="0,1,0,0">
+            <Grid>
+                <TextBlock Text="{Binding StatusText}" 
+                           VerticalAlignment="Center" Opacity="0.7" FontSize="12" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="{Binding NodeCount, StringFormat='Nodes: {0}'}" 
+                               Margin="0,0,16,0" Opacity="0.7" FontSize="12" />
+                    <TextBlock Text="{Binding ConnectionCount, StringFormat='Connections: {0}'}" 
+                               Opacity="0.7" FontSize="12" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</ui:FluentWindow>

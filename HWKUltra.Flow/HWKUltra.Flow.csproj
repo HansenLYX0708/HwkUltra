@@ -21,6 +21,7 @@
     <ProjectReference Include="..\HWKUltra.AutoFocus\HWKUltra.AutoFocus.csproj" />
     <ProjectReference Include="..\HWKUltra.Measurement\HWKUltra.Measurement.csproj" />
     <ProjectReference Include="..\HWKUltra.Tray\HWKUltra.Tray.csproj" />
+    <ProjectReference Include="..\HWKUltra.BarcodeScanner\HWKUltra.BarcodeScanner.csproj" />
   </ItemGroup>
 
 </Project>

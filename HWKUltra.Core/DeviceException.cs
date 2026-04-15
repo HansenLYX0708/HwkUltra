@@ -84,4 +84,12 @@
         {
         }
     }
+
+    public class BarcodeScannerException : DeviceException
+    {
+        public BarcodeScannerException(string message, Exception inner = null)
+            : base("BarcodeScanner", message, inner)
+        {
+        }
+    }
 }
