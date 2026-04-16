@@ -75,6 +75,52 @@ namespace HWKUltra.UI.Helpers
     }
 
     /// <summary>
+    /// Inverse null to Visibility converter (visible when null)
+    /// </summary>
+    public class InverseNullToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value == null ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Non-empty string to Visibility converter (visible when string is not empty)
+    /// </summary>
+    public class StringToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is string s && !string.IsNullOrEmpty(s) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Inverts a boolean value (true → false, false → true)
+    /// </summary>
+    public class InverseBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool b) return !b;
+            return true;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool b) return !b;
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Converts a hex color string to a semi-transparent brush (for node backgrounds)
     /// </summary>
     public class StringToSemiTransparentBrushConverter : IValueConverter

@@ -29,6 +29,10 @@ namespace HWKUltra.Camera.Core
             _controller.ImageGrabbed += (sender, e) => ImageGrabbed?.Invoke(this, e);
         }
 
+        public void Open() => _controller.Open();
+
+        public void Close() => _controller.Close();
+
         /// <summary>
         /// Grab a single frame from the specified camera.
         /// </summary>

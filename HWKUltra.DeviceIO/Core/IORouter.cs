@@ -45,6 +45,10 @@ namespace HWKUltra.DeviceIO.Core
                 p => p.Name);
         }
 
+        public void Open() => _controller.Open();
+
+        public void Close() => _controller.Close();
+
         /// <summary>
         /// Set output by name.
         /// </summary>

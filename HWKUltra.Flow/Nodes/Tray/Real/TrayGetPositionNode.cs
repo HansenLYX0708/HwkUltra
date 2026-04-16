@@ -1,3 +1,4 @@
+using HWKUltra.Core;
 using HWKUltra.Tray.Core;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
@@ -24,7 +25,8 @@ namespace HWKUltra.Flow.Nodes.Tray.Real
         {
             new FlowParameter { Name = "X", DisplayName = "X", Type = "double" },
             new FlowParameter { Name = "Y", DisplayName = "Y", Type = "double" },
-            new FlowParameter { Name = "Z", DisplayName = "Z", Type = "double" }
+            new FlowParameter { Name = "Z", DisplayName = "Z", Type = "double" },
+            new FlowParameter { Name = "AxisPositionJson", DisplayName = "AxisPosition JSON", Type = "string", Description = "Position as AxisPosition JSON for motion nodes" }
         };
 
         public TrayGetPositionNode(TrayRouter? router = null) : base(router) { }
@@ -41,9 +43,11 @@ namespace HWKUltra.Flow.Nodes.Tray.Real
                 int row = context.GetNodeInput<int>(Id, "Row");
                 int col = context.GetNodeInput<int>(Id, "Col");
                 var pos = Service!.GetPocketPosition(name, row, col);
-                context.SetNodeOutput(Id, "X", pos.X);
-                context.SetNodeOutput(Id, "Y", pos.Y);
-                context.SetNodeOutput(Id, "Z", pos.Z);
+                var (x, y, z) = pos.ToXYZ();
+                context.SetNodeOutput(Id, "X", x);
+                context.SetNodeOutput(Id, "Y", y);
+                context.SetNodeOutput(Id, "Z", z);
+                context.SetNodeOutput(Id, "AxisPositionJson", pos.ToJson());
                 return FlowResult.Ok();
             }
             catch (Exception ex)
@@ -60,6 +64,7 @@ namespace HWKUltra.Flow.Nodes.Tray.Real
             context.SetNodeOutput(Id, "X", 100.0);
             context.SetNodeOutput(Id, "Y", 200.0);
             context.SetNodeOutput(Id, "Z", 0.0);
+            context.SetNodeOutput(Id, "AxisPositionJson", Pos.XYZ(100.0, 200.0, 0.0).ToJson());
             return FlowResult.Ok();
         }
     }

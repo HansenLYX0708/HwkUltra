@@ -4,14 +4,14 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows7.0</TargetFramework>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>wpfui-icon.ico</ApplicationIcon>
+    <ApplicationIcon>hawkeye-ultra-icon.ico</ApplicationIcon>
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="wpfui-icon.ico" />
+    <Content Include="hawkeye-ultra-icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,13 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Assets\wpfui-icon-256.png" />
-    <None Remove="Assets\wpfui-icon-1024.png" />
+    <None Remove="Assets\hawkeye-ultra-icon-256.png" />
+    <None Remove="Assets\hawkeye-ultra-icon-1024.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\wpfui-icon-256.png" />
-    <Resource Include="Assets\wpfui-icon-1024.png" />
+    <Resource Include="Assets\hawkeye-ultra-icon-256.png" />
+    <Resource Include="Assets\hawkeye-ultra-icon-1024.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +46,30 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\ConfigJson\Flow\**\*.json" LinkBase="ConfigJson\Flow">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ConfigJson\Motion\**\*.json" LinkBase="ConfigJson\Motion">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ConfigJson\IO\**\*.json" LinkBase="ConfigJson\IO">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ConfigJson\LightSource\**\*.json" LinkBase="ConfigJson\LightSource">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ConfigJson\Camera\**\*.json" LinkBase="ConfigJson\Camera">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ConfigJson\AutoFocus\**\*.json" LinkBase="ConfigJson\AutoFocus">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ConfigJson\Measurement\**\*.json" LinkBase="ConfigJson\Measurement">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ConfigJson\Tray\**\*.json" LinkBase="ConfigJson\Tray">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ConfigJson\BarcodeScanner\**\*.json" LinkBase="ConfigJson\BarcodeScanner">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

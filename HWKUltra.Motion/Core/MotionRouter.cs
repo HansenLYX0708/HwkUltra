@@ -28,6 +28,10 @@ namespace HWKUltra.Motion.Core
             _groupAxesMap = groupAxesMap ?? new Dictionary<string, string[]>();
         }
 
+        public void Open() => _controller.Open();
+
+        public void Close() => _controller.Close();
+
         public void Move(string axisName, double pos, MotionProfile? profile = null)
         {
             if (_singleAxes.TryGetValue(axisName, out var axis))

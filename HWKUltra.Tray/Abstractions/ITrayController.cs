@@ -1,3 +1,5 @@
+using HWKUltra.Core;
+
 namespace HWKUltra.Tray.Abstractions
 {
     /// <summary>
@@ -15,13 +17,13 @@ namespace HWKUltra.Tray.Abstractions
         /// Teach pocket positions using 4-corner interpolation.
         /// Corners: [0]=leftTop, [1]=rightTop, [2]=leftBottom, [3]=rightBottom.
         /// </summary>
-        void InitPositions(string name, Point3D leftTop, Point3D rightTop, Point3D leftBottom, Point3D rightBottom);
+        void InitPositions(string name, AxisPosition leftTop, AxisPosition rightTop, AxisPosition leftBottom, AxisPosition rightBottom);
 
         /// <summary>
         /// Get pocket position at (row, col) for a tray instance.
         /// Row and col are 0-based.
         /// </summary>
-        Point3D GetPocketPosition(string name, int row, int col);
+        AxisPosition GetPocketPosition(string name, int row, int col);
 
         /// <summary>
         /// Get the slot state at (row, col).

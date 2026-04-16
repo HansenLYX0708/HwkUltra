@@ -65,31 +65,40 @@
         </Border>
 
         <!-- Main Editor Area -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Margin="5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240" MinWidth="180" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="280" MinWidth="200" />
+                <ColumnDefinition Width="280" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="*" MinWidth="300" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="320" />
             </Grid.ColumnDefinitions>
 
             <!-- Left: Node Toolbox -->
-            <controls:NodeToolbox Grid.Column="0" DataContext="{Binding ViewModel}" />
+            <Border Grid.Column="0" CornerRadius="8" Padding="12"
+                Background="{DynamicResource ControlFillColorDefaultBrush}">
+                <controls:NodeToolbox DataContext="{Binding ViewModel}"/>
+            </Border>
 
             <!-- Splitter -->
             <GridSplitter Grid.Column="1" Width="3" HorizontalAlignment="Center" VerticalAlignment="Stretch"
-                          Background="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                          Background="Transparent" />
 
             <!-- Center: Flow Canvas -->
-            <controls:FlowCanvas Grid.Column="2" x:Name="FlowCanvasControl" DataContext="{Binding ViewModel}" />
+            <Border Grid.Column="2" CornerRadius="8" Padding="12"
+                        Background="{DynamicResource ControlFillColorDefaultBrush}">
+                <controls:FlowCanvas x:Name="FlowCanvasControl" DataContext="{Binding ViewModel}" />
+            </Border>
 
             <!-- Splitter -->
             <GridSplitter Grid.Column="3" Width="3" HorizontalAlignment="Center" VerticalAlignment="Stretch"
-                          Background="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                          Background="Transparent" />
 
             <!-- Right: Property Panel -->
-            <controls:PropertyPanel Grid.Column="4" DataContext="{Binding ViewModel}" />
+            <Border Grid.Column="4" CornerRadius="8" Padding="12"
+                        Background="{DynamicResource ControlFillColorDefaultBrush}">
+                <controls:PropertyPanel DataContext="{Binding ViewModel}" />
+            </Border>
         </Grid>
 
         <!-- Status Bar -->

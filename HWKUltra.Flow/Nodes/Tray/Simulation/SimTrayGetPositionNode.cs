@@ -1,3 +1,4 @@
+using HWKUltra.Core;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
 
@@ -19,7 +20,8 @@ namespace HWKUltra.Flow.Nodes.Tray.Simulation
         {
             new FlowParameter { Name = "X", DisplayName = "X", Type = "double" },
             new FlowParameter { Name = "Y", DisplayName = "Y", Type = "double" },
-            new FlowParameter { Name = "Z", DisplayName = "Z", Type = "double" }
+            new FlowParameter { Name = "Z", DisplayName = "Z", Type = "double" },
+            new FlowParameter { Name = "AxisPositionJson", DisplayName = "AxisPosition JSON", Type = "string", Description = "Position as AxisPosition JSON for motion nodes" }
         };
 
         public override async Task<FlowResult> ExecuteAsync(FlowContext context)
@@ -30,6 +32,7 @@ namespace HWKUltra.Flow.Nodes.Tray.Simulation
             context.SetNodeOutput(Id, "X", 100.0);
             context.SetNodeOutput(Id, "Y", 200.0);
             context.SetNodeOutput(Id, "Z", 0.0);
+            context.SetNodeOutput(Id, "AxisPositionJson", Pos.XYZ(100.0, 200.0, 0.0).ToJson());
             return FlowResult.Ok();
         }
     }

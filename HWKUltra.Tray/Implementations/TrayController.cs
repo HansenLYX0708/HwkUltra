@@ -47,7 +47,7 @@ namespace HWKUltra.Tray.Implementations
             RaiseStatusChanged(name, inst);
         }
 
-        public void InitPositions(string name, Point3D leftTop, Point3D rightTop, Point3D leftBottom, Point3D rightBottom)
+        public void InitPositions(string name, AxisPosition leftTop, AxisPosition rightTop, AxisPosition leftBottom, AxisPosition rightBottom)
         {
             var inst = GetInstance(name);
             var leftList = GetEquallyDividedList(leftTop, leftBottom, inst.Rows);
@@ -65,7 +65,7 @@ namespace HWKUltra.Tray.Implementations
             RaiseStatusChanged(name, inst);
         }
 
-        public Point3D GetPocketPosition(string name, int row, int col)
+        public AxisPosition GetPocketPosition(string name, int row, int col)
         {
             var inst = GetInstance(name);
             ValidateRowCol(inst, row, col);
@@ -144,36 +144,38 @@ namespace HWKUltra.Tray.Implementations
         }
 
         /// <summary>
-        /// Interpolate equally spaced 3D points between start and end.
+        /// Interpolate equally spaced positions between start and end.
         /// Ported from original TrayControl.GetEquallyDividedList.
         /// </summary>
-        private static Point3D[] GetEquallyDividedList(Point3D start, Point3D end, int num)
+        private static AxisPosition[] GetEquallyDividedList(AxisPosition start, AxisPosition end, int num)
         {
             if (num < 2)
                 throw new TrayException("num must be >= 2 for equally divided list");
 
-            var result = new Point3D[num];
-            double stepX = (end.X - start.X) / (num - 1);
-            double stepY = (end.Y - start.Y) / (num - 1);
-            double stepZ = (end.Z - start.Z) / (num - 1);
+            var result = new AxisPosition[num];
+            var (sx, sy, sz) = start.ToXYZ();
+            var (ex, ey, ez) = end.ToXYZ();
+            double stepX = (ex - sx) / (num - 1);
+            double stepY = (ey - sy) / (num - 1);
+            double stepZ = (ez - sz) / (num - 1);
 
             for (int i = 0; i < num - 1; i++)
             {
-                result[i] = new Point3D(
-                    start.X + i * stepX,
-                    start.Y + i * stepY,
-                    start.Z + i * stepZ);
+                result[i] = Pos.XYZ(
+                    sx + i * stepX,
+                    sy + i * stepY,
+                    sz + i * stepZ);
             }
-            result[num - 1] = new Point3D(end.X, end.Y, end.Z);
+            result[num - 1] = end;
             return result;
         }
 
         private static void SavePositionsInternal(TrayInstance inst, string filePath)
         {
-            var data = new Point3D[inst.Rows * inst.Cols];
+            var data = new Dictionary<string, double>[inst.Rows * inst.Cols];
             for (int r = 0; r < inst.Rows; r++)
                 for (int c = 0; c < inst.Cols; c++)
-                    data[r * inst.Cols + c] = inst.Pockets[r, c];
+                    data[r * inst.Cols + c] = new Dictionary<string, double>(inst.Pockets[r, c].Values);
 
             var wrapper = new PocketDataWrapper
             {
@@ -205,7 +207,7 @@ namespace HWKUltra.Tray.Implementations
 
             for (int r = 0; r < inst.Rows; r++)
                 for (int c = 0; c < inst.Cols; c++)
-                    inst.Pockets[r, c] = wrapper.Positions[r * inst.Cols + c];
+                    inst.Pockets[r, c] = new AxisPosition(wrapper.Positions[r * inst.Cols + c]);
 
             inst.PositionsInitialized = true;
         }
@@ -227,7 +229,7 @@ namespace HWKUltra.Tray.Implementations
             public string Name { get; }
             public int Rows { get; private set; }
             public int Cols { get; private set; }
-            public Point3D[,] Pockets { get; private set; }
+            public AxisPosition[,] Pockets { get; private set; }
             public SlotState[,] SlotStates { get; private set; }
             public TrayTestState TestState { get; set; } = TrayTestState.Idle;
             public bool PositionsInitialized { get; set; }
@@ -237,7 +239,7 @@ namespace HWKUltra.Tray.Implementations
                 Name = name;
                 Rows = rows;
                 Cols = cols;
-                Pockets = new Point3D[rows, cols];
+                Pockets = new AxisPosition[rows, cols];
                 SlotStates = new SlotState[rows, cols];
                 InitializeDefaults();
             }
@@ -246,7 +248,7 @@ namespace HWKUltra.Tray.Implementations
             {
                 Rows = rows;
                 Cols = cols;
-                Pockets = new Point3D[rows, cols];
+                Pockets = new AxisPosition[rows, cols];
                 SlotStates = new SlotState[rows, cols];
                 InitializeDefaults();
             }
@@ -292,7 +294,7 @@ namespace HWKUltra.Tray.Implementations
                 for (int r = 0; r < Rows; r++)
                     for (int c = 0; c < Cols; c++)
                     {
-                        Pockets[r, c] = new Point3D(0, 0, 0);
+                        Pockets[r, c] = Pos.XYZ(0, 0, 0);
                         SlotStates[r, c] = SlotState.Empty;
                     }
                 PositionsInitialized = false;
@@ -307,7 +309,7 @@ namespace HWKUltra.Tray.Implementations
         {
             public int Rows { get; set; }
             public int Cols { get; set; }
-            public Point3D[] Positions { get; set; } = Array.Empty<Point3D>();
+            public Dictionary<string, double>[] Positions { get; set; } = Array.Empty<Dictionary<string, double>>();
         }
 
         #endregion

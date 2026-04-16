@@ -21,6 +21,10 @@ namespace HWKUltra.LightSource.Core
             _channelMap = channelMap;
         }
 
+        public void Open() => _controller.Open();
+
+        public void Close() => _controller.Close();
+
         /// <summary>
         /// Turn on the specified channel by name.
         /// </summary>

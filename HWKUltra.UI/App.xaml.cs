@@ -46,12 +46,21 @@ namespace HWKUltra.UI
                 services.AddSingleton<INavigationWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
 
+                services.AddSingleton<AuthService>();
+
+                services.AddSingleton<LoginPage>();
+                services.AddSingleton<LoginViewModel>();
                 services.AddSingleton<DashboardPage>();
                 services.AddSingleton<DashboardViewModel>();
                 services.AddSingleton<CreatorPage>();
                 services.AddSingleton<CreatorViewModel>();
+                services.AddSingleton<NodeTestPage>();
+                services.AddSingleton<NodeTestViewModel>();
+                services.AddSingleton<DeviceConfigPage>();
+                services.AddSingleton<DeviceConfigViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
+
 
                 // Creator Services
                 services.AddSingleton<AppSettingsService>();

@@ -61,7 +61,7 @@ namespace HWKUltra.UI.Services
 
                 _navigationWindow!.ShowWindow();
 
-                _navigationWindow.Navigate(typeof(Views.Pages.DashboardPage));
+                _navigationWindow.Navigate(typeof(Views.Pages.LoginPage));
             }
 
             await Task.CompletedTask;

@@ -6,6 +6,7 @@
   xmlns:local="clr-namespace:HWKUltra.UI.Views.Windows"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+  xmlns:converters="clr-namespace:HWKUltra.UI.Helpers"
   Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}"
   Width="1100"
   Height="650"
@@ -22,56 +23,75 @@
   WindowStartupLocation="CenterScreen"
   mc:Ignorable="d"
 >
-  <ui:FluentWindow.InputBindings>
-    <KeyBinding
+    <ui:FluentWindow.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
+    </ui:FluentWindow.Resources>
+
+    <ui:FluentWindow.InputBindings>
+        <KeyBinding
       Key="F"
       Command="{Binding ElementName=AutoSuggestBox, Path=FocusCommand}"
       Modifiers="Control"
     />
-  </ui:FluentWindow.InputBindings>
-  <Grid>
-    <ui:TitleBar
+    </ui:FluentWindow.InputBindings>
+    <Grid>
+        <ui:TitleBar
       x:Name="TitleBar"
       Title="{Binding ViewModel.ApplicationTitle}"
       Grid.Row="0"
       CloseWindowByDoubleClickOnIcon="True"
     >
-      <ui:TitleBar.Icon>
-        <ui:ImageIcon Source="pack://application:,,,/Assets/wpfui-icon-256.png" />
-      </ui:TitleBar.Icon>
-    </ui:TitleBar>
-    <ui:NavigationView
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/Assets/hawkeye-ultra-icon-256.png"
+                       Margin="4,0,0,0" />
+            </ui:TitleBar.Icon>
+            <ui:TitleBar.Header>
+                <StackPanel Orientation="Horizontal" Margin="0,0,8,0">
+                    <ui:SymbolIcon Symbol="Person24" FontSize="14" Margin="0,0,4,0"
+                                  Visibility="{Binding ViewModel.IsNavigationEnabled, Converter={StaticResource BoolToVis}}" />
+                    <TextBlock Text="{Binding ViewModel.CurrentUser}" FontSize="12"
+                               VerticalAlignment="Center" Margin="0,0,8,0"
+                               Visibility="{Binding ViewModel.IsNavigationEnabled, Converter={StaticResource BoolToVis}}" />
+                    <ui:Button Content="Logout" Appearance="Secondary"
+                               FontSize="11" Padding="8,2"
+                               Command="{Binding ViewModel.LogoutCommand}"
+                               Visibility="{Binding ViewModel.IsNavigationEnabled, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+            </ui:TitleBar.Header>
+        </ui:TitleBar>
+
+        <ui:NavigationView
       x:Name="RootNavigation"
-      Padding="42,0,42,0"
+      Padding="42,0,62,0"
       BreadcrumbBar="{Binding ElementName=BreadcrumbBar}"
       FooterMenuItemsSource="{Binding ViewModel.FooterMenuItems, Mode=OneWay}"
       FrameMargin="0"
-      IsBackButtonVisible="Visible"
-      IsPaneToggleVisible="True"
+      IsBackButtonVisible="Collapsed"
+      IsPaneToggleVisible="False"
       IsPaneOpen="False"
       MenuItemsSource="{Binding ViewModel.MenuItems, Mode=OneWay}"
       OpenPaneLength="200"
       PaneDisplayMode="Left"
       TitleBar="{Binding ElementName=TitleBar, Mode=OneWay}"
     >
-      <ui:NavigationView.Header>
-        <ui:BreadcrumbBar x:Name="BreadcrumbBar" Margin="10,10,0,0"/>
-      </ui:NavigationView.Header>
-      <ui:NavigationView.AutoSuggestBox>
-        <ui:AutoSuggestBox x:Name="AutoSuggestBox" PlaceholderText="Search">
-          <ui:AutoSuggestBox.Icon>
-            <ui:IconSourceElement>
-              <ui:SymbolIconSource Symbol="Search24" />
-            </ui:IconSourceElement>
-          </ui:AutoSuggestBox.Icon>
-        </ui:AutoSuggestBox>
-      </ui:NavigationView.AutoSuggestBox>
-      <ui:NavigationView.ContentOverlay>
-        <Grid>
-          <ui:SnackbarPresenter x:Name="SnackbarPresenter"/>
-        </Grid>
-      </ui:NavigationView.ContentOverlay>
-    </ui:NavigationView>
-    <ContentPresenter x:Name="RootContentDialog" Grid.Row="0" />
-  </Grid>
+            <ui:NavigationView.Header>
+                <ui:BreadcrumbBar x:Name="BreadcrumbBar" Margin="10,10,0,0"/>
+            </ui:NavigationView.Header>
+            <ui:NavigationView.AutoSuggestBox>
+                <ui:AutoSuggestBox x:Name="AutoSuggestBox" PlaceholderText="Search">
+                    <ui:AutoSuggestBox.Icon>
+                        <ui:IconSourceElement>
+                            <ui:SymbolIconSource Symbol="Search24" />
+                        </ui:IconSourceElement>
+                    </ui:AutoSuggestBox.Icon>
+                </ui:AutoSuggestBox>
+            </ui:NavigationView.AutoSuggestBox>
+            <ui:NavigationView.ContentOverlay>
+                <Grid>
+                    <ui:SnackbarPresenter x:Name="SnackbarPresenter"/>
+                </Grid>
+            </ui:NavigationView.ContentOverlay>
+        </ui:NavigationView>
+        <ContentPresenter x:Name="RootContentDialog" Grid.Row="0" />
+    </Grid>
 </ui:FluentWindow>

@@ -1,5 +1,5 @@
+using HWKUltra.Core;
 using HWKUltra.Tray.Core;
-using HWKUltra.Tray.Abstractions;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
 
@@ -44,19 +44,19 @@ namespace HWKUltra.Flow.Nodes.Tray.Real
                 if (string.IsNullOrEmpty(name))
                     return FlowResult.Fail("InstanceName is required");
 
-                var lt = new Point3D(
+                var lt = Pos.XYZ(
                     double.Parse(context.GetNodeInput<string>(Id, "LT_X") ?? "0"),
                     double.Parse(context.GetNodeInput<string>(Id, "LT_Y") ?? "0"),
                     double.Parse(context.GetNodeInput<string>(Id, "LT_Z") ?? "0"));
-                var rt = new Point3D(
+                var rt = Pos.XYZ(
                     double.Parse(context.GetNodeInput<string>(Id, "RT_X") ?? "0"),
                     double.Parse(context.GetNodeInput<string>(Id, "RT_Y") ?? "0"),
                     double.Parse(context.GetNodeInput<string>(Id, "RT_Z") ?? "0"));
-                var lb = new Point3D(
+                var lb = Pos.XYZ(
                     double.Parse(context.GetNodeInput<string>(Id, "LB_X") ?? "0"),
                     double.Parse(context.GetNodeInput<string>(Id, "LB_Y") ?? "0"),
                     double.Parse(context.GetNodeInput<string>(Id, "LB_Z") ?? "0"));
-                var rb = new Point3D(
+                var rb = Pos.XYZ(
                     double.Parse(context.GetNodeInput<string>(Id, "RB_X") ?? "0"),
                     double.Parse(context.GetNodeInput<string>(Id, "RB_Y") ?? "0"),
                     double.Parse(context.GetNodeInput<string>(Id, "RB_Z") ?? "0"));

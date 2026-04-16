@@ -21,6 +21,10 @@ namespace HWKUltra.AutoFocus.Core
             _instanceMap = instanceMap;
         }
 
+        public void Open() => _controller.Open();
+
+        public void Close() => _controller.Close();
+
         /// <summary>
         /// Enable auto focus tracking on the specified instance.
         /// </summary>

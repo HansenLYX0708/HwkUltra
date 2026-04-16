@@ -35,13 +35,13 @@ namespace HWKUltra.Tray.Core
             _controller.SetShape(name, rows, cols);
         }
 
-        public void InitPositions(string name, Point3D leftTop, Point3D rightTop, Point3D leftBottom, Point3D rightBottom)
+        public void InitPositions(string name, AxisPosition leftTop, AxisPosition rightTop, AxisPosition leftBottom, AxisPosition rightBottom)
         {
             ValidateInstance(name);
             _controller.InitPositions(name, leftTop, rightTop, leftBottom, rightBottom);
         }
 
-        public Point3D GetPocketPosition(string name, int row, int col)
+        public AxisPosition GetPocketPosition(string name, int row, int col)
         {
             ValidateInstance(name);
             return _controller.GetPocketPosition(name, row, col);

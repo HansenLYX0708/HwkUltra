@@ -1,6 +1,7 @@
 // Tray builder tests - validates TrayController configuration, TrayRouter, and Flow nodes
 using System.Text.Json;
 using HWKUltra.Builder;
+using HWKUltra.Core;
 using HWKUltra.Tray;
 using HWKUltra.Tray.Abstractions;
 using HWKUltra.Tray.Core;
@@ -117,17 +118,19 @@ namespace HWKUltra.UnitTest
 
             // Test 4-corner teach & position retrieval
             router.InitPositions("Tray2",
-                new Point3D(0, 0, 0),
-                new Point3D(90, 0, 0),
-                new Point3D(0, 30, 0),
-                new Point3D(90, 30, 0));
+                Pos.XYZ(0, 0, 0),
+                Pos.XYZ(90, 0, 0),
+                Pos.XYZ(0, 30, 0),
+                Pos.XYZ(90, 30, 0));
 
             var pos00 = router.GetPocketPosition("Tray2", 0, 0);
-            if (Math.Abs(pos00.X) > 0.001 || Math.Abs(pos00.Y) > 0.001)
+            var (x00, y00, _) = pos00.ToXYZ();
+            if (Math.Abs(x00) > 0.001 || Math.Abs(y00) > 0.001)
                 throw new Exception($"Position (0,0) mismatch: {pos00}");
 
             var pos39 = router.GetPocketPosition("Tray2", 3, 9);
-            if (Math.Abs(pos39.X - 90) > 0.001 || Math.Abs(pos39.Y - 30) > 0.001)
+            var (x39, y39, _) = pos39.ToXYZ();
+            if (Math.Abs(x39 - 90) > 0.001 || Math.Abs(y39 - 30) > 0.001)
                 throw new Exception($"Position (3,9) mismatch: {pos39}");
 
             // Test slot state

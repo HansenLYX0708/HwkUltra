@@ -1,0 +1,113 @@
+<UserControl
+    x:Class="HWKUltra.UI.Views.Pages.JsonPropertyEditor"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:local="clr-namespace:HWKUltra.UI.Views.Pages"
+    xmlns:models="clr-namespace:HWKUltra.UI.Models"
+    xmlns:converters="clr-namespace:HWKUltra.UI.Helpers"
+    d:DesignHeight="40"
+    d:DesignWidth="500"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+    </UserControl.Resources>
+
+    <Border Padding="2,2,2,2" CornerRadius="4">
+        <StackPanel>
+            <!-- Leaf value: String / Number / Boolean / Null -->
+            <Grid x:Name="LeafGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Key label -->
+                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="12"
+                           FontWeight="SemiBold" Margin="0,0,8,0"
+                           Text="{Binding DisplayKey}" ToolTip="{Binding Key}" />
+
+                <!-- Value editor (changes based on PropType) -->
+                <ContentPresenter Grid.Column="1" Content="{Binding}" Margin="0,0,4,0">
+                    <ContentPresenter.Resources>
+                        <!-- Default: TextBox for String/Number/Null -->
+                        <DataTemplate DataType="{x:Type models:JsonPropertyModel}">
+                            <ui:TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                        FontSize="12" MinWidth="100" />
+                        </DataTemplate>
+                    </ContentPresenter.Resources>
+                </ContentPresenter>
+
+                <!-- Type badge -->
+                <Border Grid.Column="2" CornerRadius="4" Padding="6,2" VerticalAlignment="Center"
+                        Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                    <TextBlock FontSize="9" Opacity="0.7">
+                        <TextBlock.Text>
+                            <Binding Path="PropType" StringFormat="{}{0}" />
+                        </TextBlock.Text>
+                    </TextBlock>
+                </Border>
+            </Grid>
+
+            <!-- Container: Object / Array with children -->
+            <Expander IsExpanded="{Binding IsExpanded}" Margin="0,2,0,0"
+                      Visibility="{Binding HasChildren, RelativeSource={RelativeSource AncestorType=local:JsonPropertyEditor}}">
+                <Expander.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding DisplayKey}" FontWeight="SemiBold" FontSize="12"
+                                   VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBlock FontSize="11" Opacity="0.6" VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <Binding Path="PropType" StringFormat="({0})" />
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <TextBlock FontSize="11" Opacity="0.5" Margin="6,0,0,0" VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <Binding Path="Children.Count" StringFormat="{}{0} items" />
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                </Expander.Header>
+                <StackPanel Margin="16,4,0,0">
+                    <!-- Array: Add/Remove buttons -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4"
+                                Visibility="{Binding IsArray, RelativeSource={RelativeSource AncestorType=local:JsonPropertyEditor}}">
+                        <ui:Button Content="+ Add Item" FontSize="10" Padding="8,2" Margin="0,0,4,0"
+                                   Appearance="Success"
+                                   Command="{Binding DataContext.ViewModel.AddArrayItemCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                   CommandParameter="{Binding}" />
+                    </StackPanel>
+
+                    <!-- Recursive children -->
+                    <ItemsControl ItemsSource="{Binding Children}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:JsonPropertyModel}">
+                                <Border BorderThickness="0,0,0,1" Margin="0,0,0,2"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <local:JsonPropertyEditor Grid.Column="0" />
+                                        <!-- Remove button for array items -->
+                                        <ui:Button Grid.Column="1" Content="x" FontSize="9" Padding="4,1"
+                                                   VerticalAlignment="Top" Margin="2,2,0,0"
+                                                   Appearance="Danger"
+                                                   Visibility="{Binding IsArrayItem, RelativeSource={RelativeSource AncestorType=local:JsonPropertyEditor}}"
+                                                   Command="{Binding DataContext.ViewModel.RemoveArrayItemCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                   CommandParameter="{Binding}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Expander>
+        </StackPanel>
+    </Border>
+</UserControl>
