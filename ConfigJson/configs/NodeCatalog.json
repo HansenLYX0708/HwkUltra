@@ -9,7 +9,8 @@
     { "Name": "Tray", "Color": "#795548", "Order": 6 },
     { "Name": "BarcodeScanner", "Color": "#3F51B5", "Order": 7 },
     { "Name": "Logic", "Color": "#9E9E9E", "Order": 8 },
-    { "Name": "Advanced", "Color": "#E91E63", "Order": 9 }
+    { "Name": "Synchronization", "Color": "#FF9800", "Order": 9 },
+    { "Name": "Advanced", "Color": "#E91E63", "Order": 10 }
   ],
   "Nodes": [
     { "Type": "AxisHome", "DisplayName": "Axis Home", "Category": "Motion" },
@@ -61,6 +62,7 @@
     { "Type": "TrayGetSlotState", "DisplayName": "Tray Get Slot State", "Category": "Tray" },
     { "Type": "TrayReset", "DisplayName": "Tray Reset", "Category": "Tray" },
     { "Type": "TrayGetInfo", "DisplayName": "Tray Get Info", "Category": "Tray" },
+    { "Type": "TrayIterator", "DisplayName": "Tray Iterator", "Category": "Tray" },
 
     { "Type": "BarcodeScannerOpen", "DisplayName": "BarcodeScanner Open", "Category": "BarcodeScanner" },
     { "Type": "BarcodeScannerClose", "DisplayName": "BarcodeScanner Close", "Category": "BarcodeScanner" },
@@ -70,6 +72,15 @@
     { "Type": "Delay", "DisplayName": "Delay", "Category": "Logic" },
     { "Type": "Branch", "DisplayName": "Branch", "Category": "Logic" },
     { "Type": "Loop", "DisplayName": "Loop", "Category": "Logic" },
+    { "Type": "SubFlow", "DisplayName": "Sub-Flow", "Category": "Logic", "DefaultWidth": 180, "DefaultHeight": 90 },
+    { "Type": "Parallel", "DisplayName": "Parallel Execution", "Category": "Logic", "DefaultWidth": 200, "DefaultHeight": 100 },
+
+    { "Type": "SetSignal", "DisplayName": "Set Signal", "Category": "Synchronization" },
+    { "Type": "WaitForSignal", "DisplayName": "Wait For Signal", "Category": "Synchronization" },
+    { "Type": "AcquireLock", "DisplayName": "Acquire Lock", "Category": "Synchronization" },
+    { "Type": "ReleaseLock", "DisplayName": "Release Lock", "Category": "Synchronization" },
+    { "Type": "SetSharedVariable", "DisplayName": "Set Shared Variable", "Category": "Synchronization" },
+    { "Type": "GetSharedVariable", "DisplayName": "Get Shared Variable", "Category": "Synchronization" },
 
     { "Type": "OnTheFlyCapture", "DisplayName": "On-The-Fly Capture", "Category": "Advanced" }
   ]

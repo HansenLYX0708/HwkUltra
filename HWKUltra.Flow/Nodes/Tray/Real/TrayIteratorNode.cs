@@ -47,6 +47,10 @@ namespace HWKUltra.Flow.Nodes.Tray.Real
                 var resetStr = context.GetNodeInput<string>(Id, "Reset");
                 var reset = resetStr == "true" || resetStr == "True";
 
+                // Auto-clear reset so looping back doesn't restart from beginning
+                if (reset)
+                    context.Variables[$"{Id}:Reset"] = "false";
+
                 if (string.IsNullOrEmpty(name))
                     return FlowResult.Fail("InstanceName is required");
 
@@ -128,6 +132,10 @@ namespace HWKUltra.Flow.Nodes.Tray.Real
             var resetStr = context.GetNodeInput<string>(Id, "Reset");
             var reset = resetStr == "true" || resetStr == "True";
             var filterState = context.GetNodeInput<int>(Id, "FilterState");
+
+            // Auto-clear reset so looping back doesn't restart from beginning
+            if (reset)
+                context.Variables[$"{Id}:Reset"] = "false";
 
             await Task.Delay(SimulatedDelayMs, context.CancellationToken);
 

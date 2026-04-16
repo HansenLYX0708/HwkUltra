@@ -1,10 +1,10 @@
 {
   "id": "sample-aoi-flow-001",
   "name": "Sample AOI Inspection Flow",
-  "description": "A sample flow demonstrating typical AOI inspection sequence",
+  "description": "A sample flow demonstrating AOI inspection with parallel stages, signals, locks, and tray iteration",
   "createdAt": "2024-01-01T00:00:00",
   "modifiedAt": "2024-01-01T00:00:00",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "startNodeId": "node-home",
   "nodes": [
     {
@@ -13,7 +13,7 @@
       "name": "Home All Axes",
       "description": "Home X and Y axes before starting",
       "x": 50,
-      "y": 200,
+      "y": 250,
       "properties": {
         "AxisName": "X"
       }
@@ -24,10 +24,22 @@
       "name": "Turn On Light",
       "description": "Turn on inspection light",
       "x": 280,
-      "y": 200,
+      "y": 250,
       "properties": {
         "ChannelName": "MainLight",
         "TurnOn": "true"
+      }
+    },
+    {
+      "id": "node-acquire-lock",
+      "type": "AcquireLock",
+      "name": "Lock Inspection Zone",
+      "description": "Acquire inspection zone lock for safety interlock",
+      "x": 510,
+      "y": 250,
+      "properties": {
+        "LockName": "InspectionZone",
+        "TimeoutMs": "10000"
       }
     },
     {
@@ -35,8 +47,8 @@
       "type": "AxisMoveAbs",
       "name": "Move to Position 1",
       "description": "Move to first inspection position",
-      "x": 510,
-      "y": 200,
+      "x": 740,
+      "y": 250,
       "properties": {
         "AxisName": "X",
         "Position": "100.0",
@@ -49,11 +61,34 @@
       "type": "CameraGrab",
       "name": "Capture Image",
       "description": "Grab image from main camera",
-      "x": 740,
-      "y": 200,
+      "x": 970,
+      "y": 250,
       "properties": {
         "CameraName": "MainCamera",
         "TimeoutMs": "5000"
+      }
+    },
+    {
+      "id": "node-set-signal",
+      "type": "SetSignal",
+      "name": "Signal Stage Done",
+      "description": "Notify other stages that inspection is complete",
+      "x": 1200,
+      "y": 250,
+      "properties": {
+        "SignalName": "StageA_InspectionDone",
+        "Value": "completed"
+      }
+    },
+    {
+      "id": "node-release-lock",
+      "type": "ReleaseLock",
+      "name": "Release Inspection Zone",
+      "description": "Release inspection zone lock",
+      "x": 1430,
+      "y": 250,
+      "properties": {
+        "LockName": "InspectionZone"
       }
     },
     {
@@ -61,8 +96,8 @@
       "type": "Delay",
       "name": "Processing Delay",
       "description": "Wait for image processing",
-      "x": 970,
-      "y": 200,
+      "x": 1660,
+      "y": 250,
       "properties": {
         "Duration": "500",
         "CanCancel": "true"
@@ -73,8 +108,8 @@
       "type": "Branch",
       "name": "Check Result",
       "description": "Branch based on inspection result",
-      "x": 1200,
-      "y": 200,
+      "x": 1890,
+      "y": 250,
       "properties": {
         "Condition": "InspectionResult",
         "Operator": "Equals",
@@ -82,12 +117,36 @@
       }
     },
     {
+      "id": "node-set-shared-ok",
+      "type": "SetSharedVariable",
+      "name": "Share OK Result",
+      "description": "Write OK result to shared context",
+      "x": 2120,
+      "y": 150,
+      "properties": {
+        "Key": "LastInspectionResult",
+        "Value": "OK"
+      }
+    },
+    {
+      "id": "node-set-shared-ng",
+      "type": "SetSharedVariable",
+      "name": "Share NG Result",
+      "description": "Write NG result to shared context",
+      "x": 2120,
+      "y": 380,
+      "properties": {
+        "Key": "LastInspectionResult",
+        "Value": "NG"
+      }
+    },
+    {
       "id": "node-ok-output",
       "type": "DigitalOutput",
       "name": "OK Signal",
       "description": "Output OK signal",
-      "x": 1430,
-      "y": 100,
+      "x": 2350,
+      "y": 150,
       "properties": {
         "PointName": "ResultOK",
         "Value": "true"
@@ -98,8 +157,8 @@
       "type": "DigitalOutput",
       "name": "NG Signal",
       "description": "Output NG signal",
-      "x": 1430,
-      "y": 300,
+      "x": 2350,
+      "y": 380,
       "properties": {
         "PointName": "ResultNG",
         "Value": "true"
@@ -115,34 +174,60 @@
     {
       "id": "conn-2",
       "sourceNodeId": "node-light-on",
-      "targetNodeId": "node-move-pos1"
+      "targetNodeId": "node-acquire-lock"
     },
     {
       "id": "conn-3",
+      "sourceNodeId": "node-acquire-lock",
+      "targetNodeId": "node-move-pos1",
+      "condition": "Acquired"
+    },
+    {
+      "id": "conn-4",
       "sourceNodeId": "node-move-pos1",
       "targetNodeId": "node-camera-grab"
     },
     {
-      "id": "conn-4",
+      "id": "conn-5",
       "sourceNodeId": "node-camera-grab",
+      "targetNodeId": "node-set-signal"
+    },
+    {
+      "id": "conn-6",
+      "sourceNodeId": "node-set-signal",
+      "targetNodeId": "node-release-lock"
+    },
+    {
+      "id": "conn-7",
+      "sourceNodeId": "node-release-lock",
       "targetNodeId": "node-delay"
     },
     {
-      "id": "conn-5",
+      "id": "conn-8",
       "sourceNodeId": "node-delay",
       "targetNodeId": "node-branch"
     },
     {
-      "id": "conn-6",
+      "id": "conn-9",
       "sourceNodeId": "node-branch",
-      "targetNodeId": "node-ok-output",
+      "targetNodeId": "node-set-shared-ok",
       "condition": "True"
     },
     {
-      "id": "conn-7",
+      "id": "conn-10",
       "sourceNodeId": "node-branch",
-      "targetNodeId": "node-ng-output",
+      "targetNodeId": "node-set-shared-ng",
       "condition": "False"
+    },
+    {
+      "id": "conn-11",
+      "sourceNodeId": "node-set-shared-ok",
+      "targetNodeId": "node-ok-output"
+    },
+    {
+      "id": "conn-12",
+      "sourceNodeId": "node-set-shared-ng",
+      "targetNodeId": "node-ng-output"
     }
   ],
   "globalVariables": []

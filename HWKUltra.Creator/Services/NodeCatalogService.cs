@@ -74,6 +74,7 @@ namespace HWKUltra.Creator.Services
             ("TrayGetSlotState", "Tray", "Tray Get Slot State"),
             ("TrayReset", "Tray", "Tray Reset"),
             ("TrayGetInfo", "Tray", "Tray Get Info"),
+            ("TrayIterator", "Tray", "Tray Iterator"),
 
             // BarcodeScanner
             ("BarcodeScannerOpen", "BarcodeScanner", "BarcodeScanner Open"),
@@ -85,6 +86,16 @@ namespace HWKUltra.Creator.Services
             ("Delay", "Logic", "Delay"),
             ("Branch", "Logic", "Branch"),
             ("Loop", "Logic", "Loop"),
+            ("SubFlow", "Logic", "Sub-Flow"),
+            ("Parallel", "Logic", "Parallel Execution"),
+
+            // Synchronization
+            ("SetSignal", "Synchronization", "Set Signal"),
+            ("WaitForSignal", "Synchronization", "Wait For Signal"),
+            ("AcquireLock", "Synchronization", "Acquire Lock"),
+            ("ReleaseLock", "Synchronization", "Release Lock"),
+            ("SetSharedVariable", "Synchronization", "Set Shared Variable"),
+            ("GetSharedVariable", "Synchronization", "Get Shared Variable"),
 
             // Advanced
             ("OnTheFlyCapture", "Advanced", "On-The-Fly Capture"),

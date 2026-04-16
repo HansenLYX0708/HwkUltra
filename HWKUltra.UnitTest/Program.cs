@@ -60,6 +60,10 @@ namespace HWKUltra.UnitTest
             Console.WriteLine("\n[Phase 7] Flow Parallel Extension Tests");
             await FlowParallelTest.RunAllTests();
 
+            // Phase 8: Flow Integration Tests (full AOI inspection with all new nodes)
+            Console.WriteLine("\n[Phase 8] Flow Integration Tests");
+            await FlowIntegrationTest.RunAllTests();
+
             Console.WriteLine("\n========== All Tests Complete ==========");
         }
     }

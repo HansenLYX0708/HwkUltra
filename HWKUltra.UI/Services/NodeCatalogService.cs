@@ -162,7 +162,8 @@ namespace HWKUltra.UI.Services
                     new() { Name = "Tray", Color = "#795548", Order = 6 },
                     new() { Name = "BarcodeScanner", Color = "#3F51B5", Order = 7 },
                     new() { Name = "Logic", Color = "#9E9E9E", Order = 8 },
-                    new() { Name = "Advanced", Color = "#E91E63", Order = 9 }
+                    new() { Name = "Synchronization", Color = "#FF9800", Order = 9 },
+                    new() { Name = "Advanced", Color = "#E91E63", Order = 10 }
                 },
                 Nodes = new List<NodeTypeConfig>
                 {
@@ -222,6 +223,7 @@ namespace HWKUltra.UI.Services
                     new() { Type = "TrayGetSlotState", DisplayName = "Tray Get Slot State", Category = "Tray" },
                     new() { Type = "TrayReset", DisplayName = "Tray Reset", Category = "Tray" },
                     new() { Type = "TrayGetInfo", DisplayName = "Tray Get Info", Category = "Tray" },
+                    new() { Type = "TrayIterator", DisplayName = "Tray Iterator", Category = "Tray" },
 
                     // BarcodeScanner
                     new() { Type = "BarcodeScannerOpen", DisplayName = "BarcodeScanner Open", Category = "BarcodeScanner" },
@@ -233,6 +235,16 @@ namespace HWKUltra.UI.Services
                     new() { Type = "Delay", DisplayName = "Delay", Category = "Logic" },
                     new() { Type = "Branch", DisplayName = "Branch", Category = "Logic" },
                     new() { Type = "Loop", DisplayName = "Loop", Category = "Logic" },
+                    new() { Type = "SubFlow", DisplayName = "Sub-Flow", Category = "Logic", DefaultWidth = 180, DefaultHeight = 90 },
+                    new() { Type = "Parallel", DisplayName = "Parallel Execution", Category = "Logic", DefaultWidth = 200, DefaultHeight = 100 },
+
+                    // Synchronization
+                    new() { Type = "SetSignal", DisplayName = "Set Signal", Category = "Synchronization" },
+                    new() { Type = "WaitForSignal", DisplayName = "Wait For Signal", Category = "Synchronization" },
+                    new() { Type = "AcquireLock", DisplayName = "Acquire Lock", Category = "Synchronization" },
+                    new() { Type = "ReleaseLock", DisplayName = "Release Lock", Category = "Synchronization" },
+                    new() { Type = "SetSharedVariable", DisplayName = "Set Shared Variable", Category = "Synchronization" },
+                    new() { Type = "GetSharedVariable", DisplayName = "Get Shared Variable", Category = "Synchronization" },
 
                     // Advanced
                     new() { Type = "OnTheFlyCapture", DisplayName = "On-The-Fly Capture", Category = "Advanced" }

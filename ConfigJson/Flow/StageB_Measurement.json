@@ -1,0 +1,108 @@
+{
+  "id": "stage-b-measurement-001",
+  "name": "Stage B - Measurement",
+  "description": "Laser measurement for each tray slot, synchronized with Stage A via signals",
+  "version": "1.0.0",
+  "startNodeId": "b-status",
+  "nodes": [
+    {
+      "id": "b-status",
+      "type": "SetSharedVariable",
+      "name": "Set StageB Running",
+      "x": 50, "y": 200,
+      "properties": { "Key": "StageB_Status", "Value": "Running" }
+    },
+    {
+      "id": "b-iter",
+      "type": "TrayIterator",
+      "name": "Iterate Tray Slots",
+      "x": 280, "y": 200,
+      "properties": { "InstanceName": "MainTray", "Reset": "true", "FilterState": "-1" }
+    },
+    {
+      "id": "b-wait-slot",
+      "type": "WaitForSignal",
+      "name": "Wait Slot Ready",
+      "x": 510, "y": 200,
+      "properties": { "SignalName": "SlotReady", "TimeoutMs": "10000", "AutoReset": "true" }
+    },
+    {
+      "id": "b-get-vision",
+      "type": "GetSharedVariable",
+      "name": "Get Vision Result",
+      "x": 740, "y": 200,
+      "properties": { "Key": "SlotVisionResult", "DefaultValue": "UNKNOWN" }
+    },
+    {
+      "id": "b-lock",
+      "type": "AcquireLock",
+      "name": "Lock Measurement Zone",
+      "x": 970, "y": 200,
+      "properties": { "LockName": "MeasurementZone", "TimeoutMs": "10000" }
+    },
+    {
+      "id": "b-move",
+      "type": "AxisMoveAbs",
+      "name": "Move Y to Measure",
+      "x": 1200, "y": 200,
+      "properties": { "AxisName": "Y", "Position": "200.0", "Velocity": "50000", "WaitForComplete": "true" }
+    },
+    {
+      "id": "b-delay",
+      "type": "Delay",
+      "name": "Measurement Processing",
+      "x": 1430, "y": 200,
+      "properties": { "Duration": "10", "CanCancel": "true" }
+    },
+    {
+      "id": "b-set-measure",
+      "type": "SetSharedVariable",
+      "name": "Set Measure Result",
+      "x": 1660, "y": 200,
+      "properties": { "Key": "SlotMeasureResult", "Value": "OK" }
+    },
+    {
+      "id": "b-unlock",
+      "type": "ReleaseLock",
+      "name": "Release Measurement Zone",
+      "x": 1890, "y": 200,
+      "properties": { "LockName": "MeasurementZone" }
+    },
+    {
+      "id": "b-signal-ack",
+      "type": "SetSignal",
+      "name": "Signal Slot Processed",
+      "x": 2120, "y": 200,
+      "properties": { "SignalName": "SlotProcessed", "Value": "measured" }
+    },
+    {
+      "id": "b-done-status",
+      "type": "SetSharedVariable",
+      "name": "Set StageB Complete",
+      "x": 510, "y": 400,
+      "properties": { "Key": "StageB_Status", "Value": "Complete" }
+    },
+    {
+      "id": "b-set-final",
+      "type": "SetSharedVariable",
+      "name": "Set Final Result",
+      "x": 740, "y": 400,
+      "properties": { "Key": "InspectionResult", "Value": "PASS" }
+    }
+  ],
+  "connections": [
+    { "id": "c1", "sourceNodeId": "b-status", "targetNodeId": "b-iter" },
+    { "id": "c2", "sourceNodeId": "b-iter", "targetNodeId": "b-wait-slot", "condition": "Next" },
+    { "id": "c3", "sourceNodeId": "b-wait-slot", "targetNodeId": "b-get-vision", "condition": "Received" },
+    { "id": "c4", "sourceNodeId": "b-get-vision", "targetNodeId": "b-lock" },
+    { "id": "c5", "sourceNodeId": "b-lock", "targetNodeId": "b-move", "condition": "Acquired" },
+    { "id": "c6", "sourceNodeId": "b-move", "targetNodeId": "b-delay" },
+    { "id": "c7", "sourceNodeId": "b-delay", "targetNodeId": "b-set-measure" },
+    { "id": "c8", "sourceNodeId": "b-set-measure", "targetNodeId": "b-unlock" },
+    { "id": "c9", "sourceNodeId": "b-unlock", "targetNodeId": "b-signal-ack" },
+    { "id": "c10", "sourceNodeId": "b-signal-ack", "targetNodeId": "b-iter" },
+    { "id": "c11", "sourceNodeId": "b-iter", "targetNodeId": "b-done-status", "condition": "Done" },
+    { "id": "c12", "sourceNodeId": "b-done-status", "targetNodeId": "b-set-final" }
+  ],
+  "globalVariables": []
+}

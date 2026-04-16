@@ -35,6 +35,10 @@ namespace HWKUltra.Flow.Nodes.Tray.Simulation
             var resetStr = context.GetNodeInput<string>(Id, "Reset");
             var reset = resetStr == "true" || resetStr == "True";
 
+            // Auto-clear reset so looping back doesn't restart from beginning
+            if (reset)
+                context.Variables[$"{Id}:Reset"] = "false";
+
             await Task.Delay(10, context.CancellationToken);
 
             var iterKey = $"_TrayIterator_{Id}";

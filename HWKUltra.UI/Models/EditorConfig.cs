@@ -21,6 +21,7 @@ namespace HWKUltra.UI.Models
             ["Tray"] = "#795548",
             ["BarcodeScanner"] = "#3F51B5",
             ["Logic"] = "#9E9E9E",
+            ["Synchronization"] = "#FF9800",
             ["Advanced"] = "#E91E63"
         };
     }
