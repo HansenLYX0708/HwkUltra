@@ -10,7 +10,7 @@ namespace HWKUltra.UI.Views.Pages
         public TeachDataPage(TeachDataViewModel viewModel)
         {
             ViewModel = viewModel;
-            DataContext = this;
+            DataContext = viewModel;
             InitializeComponent();
         }
     }
