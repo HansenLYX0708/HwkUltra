@@ -58,6 +58,8 @@ namespace HWKUltra.UI
                 services.AddSingleton<NodeTestViewModel>();
                 services.AddSingleton<DeviceConfigPage>();
                 services.AddSingleton<DeviceConfigViewModel>();
+                services.AddSingleton<TeachDataPage>();
+                services.AddSingleton<TeachDataViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
 

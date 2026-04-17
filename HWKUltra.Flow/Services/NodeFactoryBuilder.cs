@@ -15,6 +15,7 @@ using HWKUltra.Tray.Core;
 using HWKUltra.BarcodeScanner.Core;
 using HWKUltra.BarcodeScanner.Abstractions;
 using HWKUltra.Communication.Core;
+using HWKUltra.Core;
 
 namespace HWKUltra.Flow.Services
 {
@@ -37,6 +38,7 @@ namespace HWKUltra.Flow.Services
         public string? TrayConfigPath { get; set; }
         public string? BarcodeScannerConfigPath { get; set; }
         public string? CommunicationConfigPath { get; set; }
+        public string? TeachDataConfigPath { get; set; }
 
         /// <summary>
         /// Build log: records the load status of each device category
@@ -55,6 +57,7 @@ namespace HWKUltra.Flow.Services
         public TrayRouter? TrayRouter { get; private set; }
         public BarcodeScannerRouter? BarcodeScannerRouter { get; private set; }
         public CommunicationRouter? CommunicationRouter { get; private set; }
+        public TeachDataService? TeachDataService { get; private set; }
 
         /// <summary>
         /// Build a DefaultNodeFactory in pure simulation mode (all routers null)
@@ -132,6 +135,9 @@ namespace HWKUltra.Flow.Services
                 return builder.FromJson(json).BuildRouter();
             });
 
+            // TeachData (not a device router — it's a data service)
+            TeachDataService = TryLoadTeachData(TeachDataConfigPath);
+
             return new DefaultNodeFactory(
                 MotionRouter,
                 IORouter,
@@ -141,7 +147,8 @@ namespace HWKUltra.Flow.Services
                 MeasurementRouter,
                 TrayRouter,
                 BarcodeScannerRouter,
-                CommunicationRouter);
+                CommunicationRouter,
+                TeachDataService);
         }
 
         /// <summary>
@@ -219,6 +226,32 @@ namespace HWKUltra.Flow.Services
             catch (Exception ex)
             {
                 log.Add($"[{label}] FAIL \u2014 {ex.Message}");
+            }
+        }
+
+        private TeachDataService? TryLoadTeachData(string? configPath)
+        {
+            if (string.IsNullOrEmpty(configPath))
+            {
+                BuildLog.Add(new DeviceBuildStatus("TeachData", true, "Not configured (no config path)"));
+                return null;
+            }
+            if (!File.Exists(configPath))
+            {
+                BuildLog.Add(new DeviceBuildStatus("TeachData", true, $"File not found: {configPath}"));
+                return null;
+            }
+            try
+            {
+                var svc = new TeachDataService();
+                svc.Load(configPath);
+                BuildLog.Add(new DeviceBuildStatus("TeachData", false, $"Loaded from {Path.GetFileName(configPath)} ({svc.GetPositionNames().Count} positions)"));
+                return svc;
+            }
+            catch (Exception ex)
+            {
+                BuildLog.Add(new DeviceBuildStatus("TeachData", true, $"Load error: {ex.Message}"));
+                return null;
             }
         }
 

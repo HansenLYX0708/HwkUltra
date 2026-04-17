@@ -88,6 +88,13 @@ namespace HWKUltra.UI.ViewModels.Windows
                     Icon = new SymbolIcon { Symbol = SymbolRegular.WrenchScrewdriver24 },
                     TargetPageType = typeof(Views.Pages.DeviceConfigPage)
                 });
+
+                MenuItems.Add(new NavigationViewItem()
+                {
+                    Content = "Teach Data",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Location24 },
+                    TargetPageType = typeof(Views.Pages.TeachDataPage)
+                });
             }
 
             // Footer items — always visible when logged in

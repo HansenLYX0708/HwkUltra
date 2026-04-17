@@ -1,0 +1,96 @@
+{
+  "groups": [
+    {
+      "name": "BarcodeScanner",
+      "description": "扫码枪相关位置",
+      "requiredAxes": ["X", "Y", "Z"]
+    },
+    {
+      "name": "Calibration",
+      "description": "校准块相关位置",
+      "requiredAxes": ["X", "Y", "Z"]
+    },
+    {
+      "name": "Tray",
+      "description": "料盘默认位置",
+      "requiredAxes": ["X", "Y"]
+    },
+    {
+      "name": "LoadUnload",
+      "description": "上下料位置",
+      "requiredAxes": ["X", "Y", "Z"]
+    },
+    {
+      "name": "Wait",
+      "description": "安全等待位置",
+      "requiredAxes": ["X", "Y", "Z"]
+    },
+    {
+      "name": "Inspection",
+      "description": "检测相关位置",
+      "requiredAxes": ["X", "Y", "Z"]
+    }
+  ],
+  "positions": [
+    {
+      "name": "BarcodeScannerPos",
+      "group": "BarcodeScanner",
+      "description": "扫码枪工作位置",
+      "axes": { "X": 100.0, "Y": 200.0, "Z": 50.0 }
+    },
+    {
+      "name": "CalibrationBlock",
+      "group": "Calibration",
+      "description": "校准块中心位置",
+      "axes": { "X": 300.0, "Y": 150.0, "Z": 30.0 }
+    },
+    {
+      "name": "CalibrationFocus",
+      "group": "Calibration",
+      "description": "校准对焦高度",
+      "axes": { "Z": 25.0 }
+    },
+    {
+      "name": "TrayInputDefault",
+      "group": "Tray",
+      "description": "进料盘默认起始位置",
+      "axes": { "X": 0.0, "Y": 0.0 }
+    },
+    {
+      "name": "TrayOutputDefault",
+      "group": "Tray",
+      "description": "出料盘默认起始位置",
+      "axes": { "X": 400.0, "Y": 0.0 }
+    },
+    {
+      "name": "LoadPos",
+      "group": "LoadUnload",
+      "description": "上料位置",
+      "axes": { "X": 500.0, "Y": 0.0, "Z": 0.0 }
+    },
+    {
+      "name": "UnloadPos",
+      "group": "LoadUnload",
+      "description": "下料位置",
+      "axes": { "X": 500.0, "Y": 400.0, "Z": 0.0 }
+    },
+    {
+      "name": "WaitPos",
+      "group": "Wait",
+      "description": "安全等待位置（全轴）",
+      "axes": { "X": 0.0, "Y": 0.0, "Z": 100.0 }
+    },
+    {
+      "name": "WaitPosZ",
+      "group": "Wait",
+      "description": "Z轴安全高度",
+      "axes": { "Z": 100.0 }
+    },
+    {
+      "name": "InspectionStart",
+      "group": "Inspection",
+      "description": "检测起始位置",
+      "axes": { "X": 50.0, "Y": 50.0, "Z": 40.0 }
+    }
+  ]
+}

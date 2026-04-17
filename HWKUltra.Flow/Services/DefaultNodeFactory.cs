@@ -17,8 +17,11 @@ using HWKUltra.Flow.Nodes.BarcodeScanner.Real;
 using HWKUltra.Flow.Nodes.BarcodeScanner.Simulation;
 using HWKUltra.Flow.Nodes.Communication.Real;
 using HWKUltra.Flow.Nodes.Communication.Simulation;
+using HWKUltra.Flow.Nodes.TeachData.Real;
+using HWKUltra.Flow.Nodes.TeachData.Simulation;
 using HWKUltra.Flow.Nodes.Logic;
 using HWKUltra.Flow.Nodes.Advanced.Real;
+using HWKUltra.Core;
 using HWKUltra.Motion.Core;
 using HWKUltra.DeviceIO.Core;
 using HWKUltra.LightSource.Core;
@@ -46,6 +49,7 @@ namespace HWKUltra.Flow.Services
         private readonly TrayRouter? _trayRouter;
         private readonly BarcodeScannerRouter? _barcodeScannerRouter;
         private readonly CommunicationRouter? _communicationRouter;
+        private readonly TeachDataService? _teachDataService;
 
         public bool UseSimulation { get; set; } = false;
 
@@ -58,7 +62,8 @@ namespace HWKUltra.Flow.Services
             MeasurementRouter? measurementRouter = null,
             TrayRouter? trayRouter = null,
             BarcodeScannerRouter? barcodeScannerRouter = null,
-            CommunicationRouter? communicationRouter = null)
+            CommunicationRouter? communicationRouter = null,
+            TeachDataService? teachDataService = null)
         {
             _motionRouter = motionRouter;
             _ioRouter = ioRouter;
@@ -69,6 +74,7 @@ namespace HWKUltra.Flow.Services
             _trayRouter = trayRouter;
             _barcodeScannerRouter = barcodeScannerRouter;
             _communicationRouter = communicationRouter;
+            _teachDataService = teachDataService;
         }
 
         public IFlowNode CreateNode(string type, Dictionary<string, string> properties)
@@ -180,6 +186,11 @@ namespace HWKUltra.Flow.Services
                 // Tray Iterator
                 "TrayIterator" => new TrayIteratorNode(_trayRouter),
 
+                // TeachData (uses MotionRouter + TeachDataService)
+                "MoveToTeachPosition" => new MoveToTeachPositionNode(_motionRouter, _teachDataService),
+                "GetTeachPosition" => new GetTeachPositionNode(_teachDataService),
+                "SetTeachPosition" => new SetTeachPositionNode(_teachDataService),
+
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),
                 "Branch" => new BranchNode(),
@@ -288,6 +299,11 @@ namespace HWKUltra.Flow.Services
 
                 // Tray Iterator Simulation
                 "TrayIterator" => new SimTrayIteratorNode(),
+
+                // TeachData Simulation
+                "MoveToTeachPosition" => new SimMoveToTeachPositionNode(),
+                "GetTeachPosition" => new SimGetTeachPositionNode(),
+                "SetTeachPosition" => new SimSetTeachPositionNode(),
 
                 // Logic Control - no hardware dependency
                 "Delay" => new DelayNode(),

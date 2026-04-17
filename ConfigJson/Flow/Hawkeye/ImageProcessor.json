@@ -1,0 +1,29 @@
+{
+  "id": "hawkeye-image-processor-001",
+  "name": "Image Processor (Multi-threaded)",
+  "description": "Runs N parallel worker flows that listen for NewImage signals and process queued images concurrently. Stops when TestSessionEnd signal arrives. Step 9/10/11/12: capture and processing are decoupled via signals and shared variables; multi-threaded via Parallel node.",
+  "version": "1.0.0",
+  "startNodeId": "ip-start",
+  "nodes": [
+    { "id": "ip-start", "type": "SetSharedVariable", "name": "Init Processor",
+      "x": 50, "y": 180,
+      "properties": { "Key": "ImageProcessor_State", "Value": "Running" } },
+
+    { "id": "ip-workers", "type": "Parallel", "name": "Image Workers (x4)",
+      "x": 260, "y": 180,
+      "properties": {
+        "FlowPaths": "ConfigJson/Flow/Hawkeye/ImageWorker.json,ConfigJson/Flow/Hawkeye/ImageWorker.json,ConfigJson/Flow/Hawkeye/ImageWorker.json,ConfigJson/Flow/Hawkeye/ImageWorker.json",
+        "WaitMode": "All",
+        "TimeoutMs": "1800000"
+      } },
+
+    { "id": "ip-done", "type": "SetSharedVariable", "name": "Processor Done",
+      "x": 470, "y": 180,
+      "properties": { "Key": "ImageProcessor_State", "Value": "Done" } }
+  ],
+  "connections": [
+    { "id": "c1", "sourceNodeId": "ip-start",   "targetNodeId": "ip-workers" },
+    { "id": "c2", "sourceNodeId": "ip-workers", "targetNodeId": "ip-done" }
+  ],
+  "globalVariables": []
+}

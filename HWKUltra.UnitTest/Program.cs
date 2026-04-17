@@ -68,6 +68,10 @@ namespace HWKUltra.UnitTest
             Console.WriteLine("\n[Phase 8] Flow Integration Tests");
             await FlowIntegrationTest.RunAllTests();
 
+            // Phase 9: TeachData Tests (models, service, flow nodes)
+            Console.WriteLine("\n[Phase 9] TeachData Tests");
+            TeachDataTest.RunAllTests();
+
             Console.WriteLine("\n========== All Tests Complete ==========");
         }
     }

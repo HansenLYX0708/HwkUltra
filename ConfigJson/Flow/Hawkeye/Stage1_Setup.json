@@ -1,0 +1,69 @@
+{
+  "id": "hawkeye-stage1-setup-001",
+  "name": "Stage1 Setup (Load + IO Wait)",
+  "description": "Stage1: move to load position, wait for user to place tray and press start button (IO trigger). On trigger, signal pretest-ready and exit.",
+  "version": "1.0.0",
+  "startNodeId": "s1-state-wait",
+  "nodes": [
+    {
+      "id": "s1-state-wait",
+      "type": "SetSharedVariable",
+      "name": "Set Stage1 WaitingLoad",
+      "x": 50, "y": 150,
+      "properties": { "Key": "Stage1_State", "Value": "WaitingLoad" }
+    },
+    {
+      "id": "s1-move-load",
+      "type": "MoveToTeachPosition",
+      "name": "Move Stage1 to Load Position",
+      "x": 260, "y": 150,
+      "properties": {
+        "PositionName": "Stage1_LoadPos",
+        "GroupName": "Stage1_XYZ",
+        "Velocity": "40000",
+        "Acceleration": "500000",
+        "WaitForComplete": "true"
+      }
+    },
+    {
+      "id": "s1-state-io",
+      "type": "SetSharedVariable",
+      "name": "Set Stage1 WaitingIO",
+      "x": 470, "y": 150,
+      "properties": { "Key": "Stage1_State", "Value": "WaitingIO" }
+    },
+    {
+      "id": "s1-io-wait",
+      "type": "DigitalInput",
+      "name": "Wait Stage1 Start Button",
+      "x": 680, "y": 150,
+      "properties": {
+        "InputName": "Stage1_StartButton",
+        "WaitForTrue": "true",
+        "Timeout": "0"
+      }
+    },
+    {
+      "id": "s1-state-pretest",
+      "type": "SetSharedVariable",
+      "name": "Set Stage1 Pretest",
+      "x": 890, "y": 150,
+      "properties": { "Key": "Stage1_State", "Value": "Pretest" }
+    },
+    {
+      "id": "s1-signal-ready",
+      "type": "SetSignal",
+      "name": "Signal Stage1 IO Ready",
+      "x": 1100, "y": 150,
+      "properties": { "SignalName": "Stage1_IOReady", "Value": "ready" }
+    }
+  ],
+  "connections": [
+    { "id": "c1", "sourceNodeId": "s1-state-wait", "targetNodeId": "s1-move-load" },
+    { "id": "c2", "sourceNodeId": "s1-move-load", "targetNodeId": "s1-state-io" },
+    { "id": "c3", "sourceNodeId": "s1-state-io", "targetNodeId": "s1-io-wait" },
+    { "id": "c4", "sourceNodeId": "s1-io-wait", "targetNodeId": "s1-state-pretest" },
+    { "id": "c5", "sourceNodeId": "s1-state-pretest", "targetNodeId": "s1-signal-ready" }
+  ],
+  "globalVariables": []
+}

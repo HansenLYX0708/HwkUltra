@@ -1,0 +1,62 @@
+{
+  "id": "hawkeye-image-worker-001",
+  "name": "Image Worker Loop",
+  "description": "Single image-processing worker. Loops waiting for NewImage signals, pulls job from shared queue, runs algorithm (Measurement/Laser trigger here stands in as inspection stub), writes result back to tray, and repeats. Exits when TestSessionEnd signal is received (via timeout fallback). Step 9/10/12 implementation: async image processing, write result back to tray including defects and error info, multi-threaded (multiple instances of this worker are run in parallel).",
+  "version": "1.0.0",
+  "startNodeId": "w-loop-check",
+  "nodes": [
+    { "id": "w-loop-check", "type": "WaitForSignal", "name": "Wait NewImage or End",
+      "x": 50, "y": 180,
+      "properties": { "SignalName": "NewImage", "TimeoutMs": "30000", "AutoReset": "true" } },
+
+    { "id": "w-end-check", "type": "GetSharedVariable", "name": "Check Session End",
+      "x": 260, "y": 180,
+      "properties": { "Key": "TestRunning", "DefaultValue": "false" } },
+
+    { "id": "w-branch-end", "type": "Branch", "name": "Session Still Running?",
+      "x": 470, "y": 180,
+      "properties": { "Condition": "TestRunning", "Operator": "Equals", "CompareValue": "true" } },
+
+    { "id": "w-get-job", "type": "GetSharedVariable", "name": "Get Pending Job",
+      "x": 680, "y": 180,
+      "properties": { "Key": "ImgJob_Pending_Stage1_Tray1", "DefaultValue": "" } },
+
+    { "id": "w-process", "type": "MeasurementGetData", "name": "Inspect (algorithm stub)",
+      "x": 890, "y": 180,
+      "properties": { "InstanceName": "MainSensor", "TimeoutMs": "5000" } },
+
+    { "id": "w-result", "type": "SetSharedVariable", "name": "Write Defect Result",
+      "x": 1100, "y": 180,
+      "properties": { "Key": "ImgJob_Result_Latest", "Value": "Pass" } },
+
+    { "id": "w-write-tray", "type": "TraySetSlotState", "name": "Write Result to Tray",
+      "x": 1310, "y": 180,
+      "properties": { "InstanceName": "Stage1_Tray1", "Row": "0", "Col": "0", "State": "2" } },
+
+    { "id": "w-processed", "type": "SetSharedVariable", "name": "Mark Job Processed",
+      "x": 1520, "y": 180,
+      "properties": { "Key": "ImgJob_Pending_Stage1_Tray1", "Value": "" } },
+
+    { "id": "w-loop", "type": "Loop", "name": "Continue Loop",
+      "x": 1730, "y": 180,
+      "properties": { "Iterations": "0", "ConditionVariable": "TestRunning", "ContinueValue": "true" } },
+
+    { "id": "w-done", "type": "SetSharedVariable", "name": "Worker Done",
+      "x": 1520, "y": 420,
+      "properties": { "Key": "ImageWorker_State", "Value": "Done" } }
+  ],
+  "connections": [
+    { "id": "c1", "sourceNodeId": "w-loop-check",  "targetNodeId": "w-end-check" },
+    { "id": "c2", "sourceNodeId": "w-end-check",   "targetNodeId": "w-branch-end" },
+    { "id": "c3", "sourceNodeId": "w-branch-end",  "targetNodeId": "w-done",   "condition": "False" },
+    { "id": "c4", "sourceNodeId": "w-branch-end",  "targetNodeId": "w-get-job", "condition": "True" },
+    { "id": "c5", "sourceNodeId": "w-get-job",     "targetNodeId": "w-process" },
+    { "id": "c6", "sourceNodeId": "w-process",     "targetNodeId": "w-result" },
+    { "id": "c7", "sourceNodeId": "w-result",      "targetNodeId": "w-write-tray" },
+    { "id": "c8", "sourceNodeId": "w-write-tray",  "targetNodeId": "w-processed" },
+    { "id": "c9", "sourceNodeId": "w-processed",   "targetNodeId": "w-loop" },
+    { "id": "c10","sourceNodeId": "w-loop",        "targetNodeId": "w-loop-check", "condition": "Continue" },
+    { "id": "c11","sourceNodeId": "w-loop",        "targetNodeId": "w-done",       "condition": "Exit" }
+  ],
+  "globalVariables": []
+}

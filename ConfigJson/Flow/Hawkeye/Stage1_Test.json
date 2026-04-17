@@ -1,0 +1,56 @@
+{
+  "id": "hawkeye-stage1-test-001",
+  "name": "Stage1 Test (4 trays)",
+  "description": "Stage1 main test: wait for both stages ready (Step 4), then run 4 per-tray sub-flows sequentially; return to load/unload when done.",
+  "version": "1.0.0",
+  "startNodeId": "s1t-wait-both",
+  "nodes": [
+    { "id": "s1t-wait-both", "type": "WaitForSignal", "name": "Wait BothStagesReady",
+      "x": 50, "y": 180,
+      "properties": { "SignalName": "BothStagesReady", "TimeoutMs": "600000", "AutoReset": "false" } },
+
+    { "id": "s1t-state-testing", "type": "SetSharedVariable", "name": "Set Stage1 Testing",
+      "x": 260, "y": 180,
+      "properties": { "Key": "Stage1_State", "Value": "Testing" } },
+
+    { "id": "s1t-t1", "type": "SubFlow", "name": "Tray1 Test",
+      "x": 470, "y": 180,
+      "properties": { "FlowPath": "ConfigJson/Flow/Hawkeye/TrayTest_S1_T1.json" } },
+
+    { "id": "s1t-t2", "type": "SubFlow", "name": "Tray2 Test",
+      "x": 680, "y": 180,
+      "properties": { "FlowPath": "ConfigJson/Flow/Hawkeye/TrayTest_S1_T2.json" } },
+
+    { "id": "s1t-t3", "type": "SubFlow", "name": "Tray3 Test",
+      "x": 890, "y": 180,
+      "properties": { "FlowPath": "ConfigJson/Flow/Hawkeye/TrayTest_S1_T3.json" } },
+
+    { "id": "s1t-t4", "type": "SubFlow", "name": "Tray4 Test",
+      "x": 1100, "y": 180,
+      "properties": { "FlowPath": "ConfigJson/Flow/Hawkeye/TrayTest_S1_T4.json" } },
+
+    { "id": "s1t-return-load", "type": "MoveToTeachPosition", "name": "Return Stage1 to Load/Unload",
+      "x": 1310, "y": 180,
+      "properties": { "PositionName": "Stage1_LoadPos", "GroupName": "Stage1_XYZ",
+                      "Velocity": "40000", "WaitForComplete": "true" } },
+
+    { "id": "s1t-state-done", "type": "SetSharedVariable", "name": "Set Stage1 Done",
+      "x": 1520, "y": 180,
+      "properties": { "Key": "Stage1_State", "Value": "Done" } },
+
+    { "id": "s1t-signal-done", "type": "SetSignal", "name": "Signal Stage1 Done",
+      "x": 1730, "y": 180,
+      "properties": { "SignalName": "Stage1_Complete", "Value": "done" } }
+  ],
+  "connections": [
+    { "id": "c1", "sourceNodeId": "s1t-wait-both",    "targetNodeId": "s1t-state-testing", "condition": "Received" },
+    { "id": "c2", "sourceNodeId": "s1t-state-testing", "targetNodeId": "s1t-t1" },
+    { "id": "c3", "sourceNodeId": "s1t-t1",            "targetNodeId": "s1t-t2" },
+    { "id": "c4", "sourceNodeId": "s1t-t2",            "targetNodeId": "s1t-t3" },
+    { "id": "c5", "sourceNodeId": "s1t-t3",            "targetNodeId": "s1t-t4" },
+    { "id": "c6", "sourceNodeId": "s1t-t4",            "targetNodeId": "s1t-return-load" },
+    { "id": "c7", "sourceNodeId": "s1t-return-load",   "targetNodeId": "s1t-state-done" },
+    { "id": "c8", "sourceNodeId": "s1t-state-done",    "targetNodeId": "s1t-signal-done" }
+  ],
+  "globalVariables": []
+}

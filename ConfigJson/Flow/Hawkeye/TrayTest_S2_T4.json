@@ -1,0 +1,127 @@
+{
+  "id": "hawkeye-tray-test-s2-t4",
+  "name": "Stage2 Tray4 Test",
+  "description": "Per-tray test for Stage2 Tray4: barcode -> StartScan -> calibrate -> wide-field image capture -> enqueue for async image worker. VisionZone lock held only during actual vision point usage so the other stage can continue.",
+  "version": "1.0.0",
+  "startNodeId": "t-mark-start",
+  "nodes": [
+    { "id": "t-mark-start", "type": "SetSharedVariable", "name": "Mark Tray4 Start",
+      "x": 50, "y": 180,
+      "properties": { "Key": "Stage2_Tray4_Result", "Value": "InProgress" } },
+
+    { "id": "t-lock-bc", "type": "AcquireLock", "name": "Lock VisionZone (Barcode)",
+      "x": 260, "y": 180,
+      "properties": { "LockName": "VisionZone", "TimeoutMs": "120000" } },
+
+    { "id": "t-move-bc", "type": "MoveToTeachPosition", "name": "Move to Barcode Pos",
+      "x": 470, "y": 180,
+      "properties": { "PositionName": "Stage2_Tray4_BarcodePos", "GroupName": "Stage2_XYZ",
+                      "Velocity": "40000", "Acceleration": "500000", "WaitForComplete": "true" } },
+
+    { "id": "t-scan-trig", "type": "BarcodeScannerTrigger", "name": "Trigger Scanner",
+      "x": 680, "y": 180,
+      "properties": { "InstanceName": "Stage2_Scanner" } },
+
+    { "id": "t-scan-get", "type": "BarcodeScannerGetLast", "name": "Get Barcode",
+      "x": 890, "y": 180,
+      "properties": { "InstanceName": "Stage2_Scanner" } },
+
+    { "id": "t-unlock-bc", "type": "ReleaseLock", "name": "Release VisionZone",
+      "x": 1100, "y": 180,
+      "properties": { "LockName": "VisionZone" } },
+
+    { "id": "t-branch-bc", "type": "Branch", "name": "Barcode OK?",
+      "x": 1310, "y": 180,
+      "properties": { "Condition": "Barcode", "Operator": "NotEquals", "CompareValue": "" } },
+
+    { "id": "t-fail-bc", "type": "SetSharedVariable", "name": "Record BC Fail",
+      "x": 1310, "y": 420,
+      "properties": { "Key": "Stage2_Tray4_Result", "Value": "Skipped_BarcodeFail" } },
+
+    { "id": "t-startscan", "type": "CommunicationStartScan", "name": "Host StartScan (TrayMap)",
+      "x": 1520, "y": 180,
+      "properties": { "TimeoutMs": "30000" } },
+
+    { "id": "t-lock-cal", "type": "AcquireLock", "name": "Lock VisionZone (Calibration)",
+      "x": 1730, "y": 180,
+      "properties": { "LockName": "VisionZone", "TimeoutMs": "120000" } },
+
+    { "id": "t-move-cal", "type": "MoveToTeachPosition", "name": "Move to Calibration Pos",
+      "x": 1940, "y": 180,
+      "properties": { "PositionName": "Stage2_Tray4_CalibrationPos", "GroupName": "Stage2_XYZ",
+                      "Velocity": "30000", "WaitForComplete": "true" } },
+
+    { "id": "t-cal-grab", "type": "CameraGrab", "name": "Calibration Grab",
+      "x": 2150, "y": 180,
+      "properties": { "CameraName": "MainCamera", "TimeoutMs": "5000" } },
+
+    { "id": "t-unlock-cal", "type": "ReleaseLock", "name": "Release VisionZone",
+      "x": 2360, "y": 180,
+      "properties": { "LockName": "VisionZone" } },
+
+    { "id": "t-branch-cal", "type": "Branch", "name": "Calibration OK?",
+      "x": 2570, "y": 180,
+      "properties": { "Condition": "CalibrationResult", "Operator": "NotEquals", "CompareValue": "Failed" } },
+
+    { "id": "t-fail-cal", "type": "SetSharedVariable", "name": "Record Calibration Fail",
+      "x": 2570, "y": 420,
+      "properties": { "Key": "Stage2_Tray4_Result", "Value": "Skipped_CalibrationFail" } },
+
+    { "id": "t-lock-cap", "type": "AcquireLock", "name": "Lock VisionZone (Capture)",
+      "x": 2780, "y": 180,
+      "properties": { "LockName": "VisionZone", "TimeoutMs": "120000" } },
+
+    { "id": "t-move-cap", "type": "MoveToTeachPosition", "name": "Move to Tray Capture Pos",
+      "x": 2990, "y": 180,
+      "properties": { "PositionName": "Stage2_Tray4_CapturePos", "GroupName": "Stage2_XYZ",
+                      "Velocity": "30000", "WaitForComplete": "true" } },
+
+    { "id": "t-grab", "type": "CameraGrab", "name": "Grab Tray Image",
+      "x": 3200, "y": 180,
+      "properties": { "CameraName": "MainCamera", "TimeoutMs": "3000" } },
+
+    { "id": "t-unlock-cap", "type": "ReleaseLock", "name": "Release VisionZone",
+      "x": 3410, "y": 180,
+      "properties": { "LockName": "VisionZone" } },
+
+    { "id": "t-enqueue", "type": "SetSharedVariable", "name": "Enqueue Image Job",
+      "x": 3620, "y": 180,
+      "properties": { "Key": "ImgJob_Pending_Stage2_Tray4", "Value": "Stage2_Tray4" } },
+
+    { "id": "t-signal-img", "type": "SetSignal", "name": "Signal NewImage",
+      "x": 3830, "y": 180,
+      "properties": { "SignalName": "NewImage", "Value": "Stage2_Tray4" } },
+
+    { "id": "t-done", "type": "SetSharedVariable", "name": "Mark Tray4 Complete",
+      "x": 4040, "y": 180,
+      "properties": { "Key": "Stage2_Tray4_Result", "Value": "CaptureComplete" } }
+  ],
+  "connections": [
+    { "id": "c1",  "sourceNodeId": "t-mark-start", "targetNodeId": "t-lock-bc" },
+    { "id": "c2",  "sourceNodeId": "t-lock-bc",    "targetNodeId": "t-move-bc", "condition": "Acquired" },
+    { "id": "c3",  "sourceNodeId": "t-move-bc",    "targetNodeId": "t-scan-trig" },
+    { "id": "c4",  "sourceNodeId": "t-scan-trig",  "targetNodeId": "t-scan-get" },
+    { "id": "c5",  "sourceNodeId": "t-scan-get",   "targetNodeId": "t-unlock-bc" },
+    { "id": "c6",  "sourceNodeId": "t-unlock-bc",  "targetNodeId": "t-branch-bc" },
+
+    { "id": "c7",  "sourceNodeId": "t-branch-bc",  "targetNodeId": "t-fail-bc", "condition": "False" },
+
+    { "id": "c8",  "sourceNodeId": "t-branch-bc",  "targetNodeId": "t-startscan", "condition": "True" },
+    { "id": "c9",  "sourceNodeId": "t-startscan",  "targetNodeId": "t-lock-cal" },
+    { "id": "c10", "sourceNodeId": "t-lock-cal",   "targetNodeId": "t-move-cal", "condition": "Acquired" },
+    { "id": "c11", "sourceNodeId": "t-move-cal",   "targetNodeId": "t-cal-grab" },
+    { "id": "c12", "sourceNodeId": "t-cal-grab",   "targetNodeId": "t-unlock-cal" },
+    { "id": "c13", "sourceNodeId": "t-unlock-cal", "targetNodeId": "t-branch-cal" },
+
+    { "id": "c14", "sourceNodeId": "t-branch-cal", "targetNodeId": "t-fail-cal", "condition": "False" },
+
+    { "id": "c15", "sourceNodeId": "t-branch-cal", "targetNodeId": "t-lock-cap", "condition": "True" },
+    { "id": "c16", "sourceNodeId": "t-lock-cap",   "targetNodeId": "t-move-cap", "condition": "Acquired" },
+    { "id": "c17", "sourceNodeId": "t-move-cap",   "targetNodeId": "t-grab" },
+    { "id": "c18", "sourceNodeId": "t-grab",       "targetNodeId": "t-unlock-cap" },
+    { "id": "c19", "sourceNodeId": "t-unlock-cap", "targetNodeId": "t-enqueue" },
+    { "id": "c20", "sourceNodeId": "t-enqueue",    "targetNodeId": "t-signal-img" },
+    { "id": "c21", "sourceNodeId": "t-signal-img", "targetNodeId": "t-done" }
+  ],
+  "globalVariables": []
+}
