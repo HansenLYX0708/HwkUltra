@@ -48,5 +48,26 @@
             "Cols": 30,
             "PositionDataPath": ""
         }
+    ],
+    "SlotStates": [
+        { "Code": "Empty", "Category": "State", "Description": "Empty slot" },
+        { "Code": "Present", "Category": "State", "Description": "Slider present, untested" },
+        { "Code": "Pass", "Category": "State", "Description": "Passed inspection" },
+        { "Code": "Fail", "Category": "State", "Description": "Failed inspection" },
+        { "Code": "Error", "Category": "State", "Description": "Inspection error" },
+        { "Code": "Unknown", "Category": "State", "Description": "Unknown state" }
+    ],
+    "DefectCodes": [
+        { "Code": "A2", "Category": "Defect", "Description": "Rail defect", "Severity": "Major" },
+        { "Code": "A5", "Category": "Defect", "Description": "Contamination", "Severity": "Minor" },
+        { "Code": "A7", "Category": "Defect", "Description": "Scratch", "Severity": "Minor" },
+        { "Code": "A8", "Category": "Defect", "Description": "Stain", "Severity": "Minor" },
+        { "Code": "P0532", "Category": "Defect", "Description": "Chip crack", "Severity": "Critical" },
+        { "Code": "P0533", "Category": "Defect", "Description": "Chip missing", "Severity": "Critical" },
+        { "Code": "P0534", "Category": "Defect", "Description": "Wire bond defect", "Severity": "Major" },
+        { "Code": "P0535", "Category": "Defect", "Description": "Solder defect", "Severity": "Major" },
+        { "Code": "P0536", "Category": "Defect", "Description": "Epoxy overflow", "Severity": "Minor" },
+        { "Code": "OFF", "Category": "Defect", "Description": "Slider off (empty position)", "Severity": "" },
+        { "Code": "OFF-T", "Category": "Defect", "Description": "Slider off (test position)", "Severity": "" }
     ]
 }

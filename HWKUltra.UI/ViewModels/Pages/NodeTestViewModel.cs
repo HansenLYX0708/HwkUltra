@@ -73,6 +73,9 @@ namespace HWKUltra.UI.ViewModels.Pages
         private string _barcodeScannerConfigPath = string.Empty;
 
         [ObservableProperty]
+        private string _communicationConfigPath = string.Empty;
+
+        [ObservableProperty]
         private string _environmentStatus = "Not initialized";
 
         [ObservableProperty]
@@ -124,6 +127,7 @@ namespace HWKUltra.UI.ViewModels.Pages
                     case "Measurement": MeasurementConfigPath = dialog.FileName; break;
                     case "Tray": TrayConfigPath = dialog.FileName; break;
                     case "BarcodeScanner": BarcodeScannerConfigPath = dialog.FileName; break;
+                    case "Communication": CommunicationConfigPath = dialog.FileName; break;
                 }
             }
         }
@@ -170,6 +174,7 @@ namespace HWKUltra.UI.ViewModels.Pages
                 case "Measurement": MeasurementConfigPath = path; break;
                 case "Tray": TrayConfigPath = path; break;
                 case "BarcodeScanner": BarcodeScannerConfigPath = path; break;
+                case "Communication": CommunicationConfigPath = path; break;
             }
         }
 
@@ -185,6 +190,7 @@ namespace HWKUltra.UI.ViewModels.Pages
                 ["Measurement"] = MeasurementConfigPath,
                 ["Tray"] = TrayConfigPath,
                 ["BarcodeScanner"] = BarcodeScannerConfigPath,
+                ["Communication"] = CommunicationConfigPath,
             };
 
             foreach (var kvp in paths)
@@ -234,6 +240,7 @@ namespace HWKUltra.UI.ViewModels.Pages
                         MeasurementConfigPath = string.IsNullOrEmpty(MeasurementConfigPath) ? null : MeasurementConfigPath,
                         TrayConfigPath = string.IsNullOrEmpty(TrayConfigPath) ? null : TrayConfigPath,
                         BarcodeScannerConfigPath = string.IsNullOrEmpty(BarcodeScannerConfigPath) ? null : BarcodeScannerConfigPath,
+                        CommunicationConfigPath = string.IsNullOrEmpty(CommunicationConfigPath) ? null : CommunicationConfigPath,
                     };
                     _nodeFactory = _factoryBuilder.Build();
                     foreach (var s in _factoryBuilder.BuildLog)

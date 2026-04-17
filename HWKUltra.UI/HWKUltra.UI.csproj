@@ -72,6 +72,9 @@
     <None Include="..\ConfigJson\BarcodeScanner\**\*.json" LinkBase="ConfigJson\BarcodeScanner">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\ConfigJson\Communication\**\*.json" LinkBase="ConfigJson\Communication">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

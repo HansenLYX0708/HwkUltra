@@ -90,6 +90,11 @@ namespace HWKUltra.Flow.Models
         public double Y { get; set; }
 
         /// <summary>
+        /// Whether the node ports are flipped (input on right, output on left)
+        /// </summary>
+        public bool IsFlipped { get; set; }
+
+        /// <summary>
         /// Node property configuration
         /// </summary>
         public Dictionary<string, string> Properties { get; set; } = new();

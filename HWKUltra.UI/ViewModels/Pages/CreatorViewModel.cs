@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows;
 using Microsoft.Win32;
 using Wpf.Ui.Abstractions.Controls;
 using HWKUltra.Flow.Abstractions;
@@ -295,32 +296,42 @@ namespace HWKUltra.UI.ViewModels.Pages
             {
                 Connections.Remove(SelectedConnection);
                 SelectedConnection = null;
+                StatusText = "Connection deleted";
                 return;
             }
 
-            if (SelectedNode != null)
+            // Multi-select delete
+            var toDelete = SelectedNodes.Count > 0
+                ? SelectedNodes.ToList()
+                : (SelectedNode != null ? new List<FlowNodeViewModel> { SelectedNode } : new List<FlowNodeViewModel>());
+
+            if (toDelete.Count == 0) return;
+
+            var deletedIds = new HashSet<string>(toDelete.Select(n => n.Id));
+
+            // Remove all connections to/from deleted nodes
+            var related = Connections
+                .Where(c => deletedIds.Contains(c.SourceNodeId) || deletedIds.Contains(c.TargetNodeId))
+                .ToList();
+            foreach (var conn in related)
+                Connections.Remove(conn);
+
+            // Reassign start node if needed
+            bool startDeleted = toDelete.Any(n => n.IsStartNode);
+
+            foreach (var node in toDelete)
+                Nodes.Remove(node);
+
+            if (startDeleted && Nodes.Count > 0)
             {
-                // Remove all connections to/from this node
-                var related = Connections
-                    .Where(c => c.SourceNodeId == SelectedNode.Id || c.TargetNodeId == SelectedNode.Id)
-                    .ToList();
-                foreach (var conn in related)
-                    Connections.Remove(conn);
-
-                // If this was the start node, reassign
-                if (SelectedNode.IsStartNode && Nodes.Count > 1)
-                {
-                    var next = Nodes.FirstOrDefault(n => n.Id != SelectedNode.Id);
-                    if (next != null)
-                    {
-                        StartNodeId = next.Id;
-                        next.IsStartNode = true;
-                    }
-                }
-
-                Nodes.Remove(SelectedNode);
-                SelectedNode = null;
+                var next = Nodes.First();
+                StartNodeId = next.Id;
+                next.IsStartNode = true;
             }
+
+            ClearSelection();
+            SelectedNode = null;
+            StatusText = $"Deleted {toDelete.Count} node(s), {related.Count} connection(s)";
         }
 
         private void UpdateDefinitionFromCanvas()
@@ -456,6 +467,11 @@ namespace HWKUltra.UI.ViewModels.Pages
 
         #region Selection Methods
 
+        /// <summary>
+        /// Tracks all currently selected nodes (for multi-select)
+        /// </summary>
+        public HashSet<FlowNodeViewModel> SelectedNodes { get; } = new();
+
         [RelayCommand]
         private void SetStartNode(FlowNodeViewModel node)
         {
@@ -466,22 +482,132 @@ namespace HWKUltra.UI.ViewModels.Pages
             StartNodeId = node.Id;
         }
 
-        public void SelectNode(FlowNodeViewModel? node)
+        /// <summary>
+        /// Select a single node (clears previous selection unless additive)
+        /// </summary>
+        public void SelectNode(FlowNodeViewModel? node, bool additive = false)
         {
             SelectedConnection = null;
-            SelectedNode = node;
+
+            if (node == null)
+            {
+                // Clear all
+                ClearSelection();
+                SelectedNode = null;
+                return;
+            }
+
+            if (additive)
+            {
+                // Toggle in multi-select set
+                if (SelectedNodes.Contains(node))
+                {
+                    SelectedNodes.Remove(node);
+                    node.IsSelected = false;
+                    // Update primary selected node
+                    SelectedNode = SelectedNodes.LastOrDefault();
+                }
+                else
+                {
+                    SelectedNodes.Add(node);
+                    node.IsSelected = true;
+                    SelectedNode = node;
+                }
+            }
+            else
+            {
+                // Single select — clear previous
+                ClearSelection();
+                SelectedNodes.Add(node);
+                node.IsSelected = true;
+                SelectedNode = node;
+            }
+
+            HasSelection = SelectedNodes.Count > 0 || SelectedConnection != null;
+            IsNodeSelected = SelectedNode != null;
+            UpdateStatusText();
         }
 
         public void SelectConnection(FlowConnectionViewModel? connection)
         {
+            ClearSelection();
             SelectedNode = null;
             SelectedConnection = connection;
+        }
+
+        /// <summary>
+        /// Select all nodes on canvas
+        /// </summary>
+        [RelayCommand]
+        private void SelectAll()
+        {
+            SelectedConnection = null;
+            SelectedNodes.Clear();
+            foreach (var n in Nodes)
+            {
+                n.IsSelected = true;
+                SelectedNodes.Add(n);
+            }
+            SelectedNode = Nodes.LastOrDefault();
+            HasSelection = SelectedNodes.Count > 0;
+            IsNodeSelected = SelectedNode != null;
+            UpdateStatusText();
+        }
+
+        /// <summary>
+        /// Add nodes within a rectangle to selection
+        /// </summary>
+        public void SelectNodesInRect(Rect rect, bool additive = false)
+        {
+            if (!additive)
+            {
+                ClearSelection();
+            }
+
+            foreach (var node in Nodes)
+            {
+                var nodeBounds = new Rect(node.X, node.Y, node.Width, node.Height);
+                if (rect.IntersectsWith(nodeBounds))
+                {
+                    SelectedNodes.Add(node);
+                    node.IsSelected = true;
+                }
+            }
+
+            SelectedNode = SelectedNodes.LastOrDefault();
+            HasSelection = SelectedNodes.Count > 0;
+            IsNodeSelected = SelectedNode != null;
+            UpdateStatusText();
+        }
+
+        /// <summary>
+        /// Flip selected nodes (swap input/output port sides)
+        /// </summary>
+        [RelayCommand]
+        private void FlipSelected()
+        {
+            if (SelectedNodes.Count == 0 && SelectedNode != null)
+                SelectedNodes.Add(SelectedNode);
+
+            foreach (var node in SelectedNodes)
+                node.IsFlipped = !node.IsFlipped;
+
+            StatusText = $"Flipped {SelectedNodes.Count} node(s)";
+        }
+
+        private void ClearSelection()
+        {
+            foreach (var n in SelectedNodes)
+                n.IsSelected = false;
+            SelectedNodes.Clear();
+            foreach (var c in Connections)
+                c.IsSelected = false;
         }
 
         private void UpdateNodeSelectionStates()
         {
             foreach (var n in Nodes)
-                n.IsSelected = (n == SelectedNode);
+                n.IsSelected = SelectedNodes.Contains(n);
             foreach (var c in Connections)
                 c.IsSelected = false;
         }
@@ -492,6 +618,18 @@ namespace HWKUltra.UI.ViewModels.Pages
                 n.IsSelected = false;
             foreach (var c in Connections)
                 c.IsSelected = (c == SelectedConnection);
+        }
+
+        private void UpdateStatusText()
+        {
+            if (SelectedNodes.Count > 1)
+                StatusText = $"{SelectedNodes.Count} nodes selected";
+            else if (SelectedNode != null)
+                StatusText = $"Selected: {SelectedNode.Name}";
+            else if (SelectedConnection != null)
+                StatusText = "Connection selected";
+            else
+                StatusText = "Ready";
         }
 
         #endregion
@@ -538,6 +676,9 @@ namespace HWKUltra.UI.ViewModels.Pages
         [ObservableProperty]
         private bool _isStartNode;
 
+        [ObservableProperty]
+        private bool _isFlipped;
+
         public ObservableCollection<NodePropertyViewModel> Properties { get; } = new();
         public ObservableCollection<FlowParameter> InputDefinitions { get; } = new();
         public ObservableCollection<FlowParameter> OutputDefinitions { get; } = new();
@@ -552,6 +693,7 @@ namespace HWKUltra.UI.ViewModels.Pages
                 Description = def.Description,
                 X = def.X,
                 Y = def.Y,
+                IsFlipped = def.IsFlipped,
                 Width = catalogEntry?.DefaultWidth ?? 160,
                 Height = catalogEntry?.DefaultHeight ?? 80,
                 Category = catalogEntry?.Category ?? "Unknown",
@@ -604,7 +746,8 @@ namespace HWKUltra.UI.ViewModels.Pages
                 Name = Name,
                 Description = Description,
                 X = X,
-                Y = Y
+                Y = Y,
+                IsFlipped = IsFlipped
             };
 
             foreach (var prop in Properties)
@@ -666,10 +809,13 @@ namespace HWKUltra.UI.ViewModels.Pages
                     value.PropertyChanged += (s, e) =>
                     {
                         if (e.PropertyName is nameof(FlowNodeViewModel.X) or nameof(FlowNodeViewModel.Y)
-                            or nameof(FlowNodeViewModel.Width) or nameof(FlowNodeViewModel.Height))
+                            or nameof(FlowNodeViewModel.Width) or nameof(FlowNodeViewModel.Height)
+                            or nameof(FlowNodeViewModel.IsFlipped))
                         {
                             OnPropertyChanged(nameof(SourceX));
                             OnPropertyChanged(nameof(SourceY));
+                            OnPropertyChanged(nameof(MidX));
+                            OnPropertyChanged(nameof(MidY));
                             OnPropertyChanged(nameof(PathData));
                         }
                     };
@@ -688,10 +834,13 @@ namespace HWKUltra.UI.ViewModels.Pages
                     value.PropertyChanged += (s, e) =>
                     {
                         if (e.PropertyName is nameof(FlowNodeViewModel.X) or nameof(FlowNodeViewModel.Y)
-                            or nameof(FlowNodeViewModel.Width) or nameof(FlowNodeViewModel.Height))
+                            or nameof(FlowNodeViewModel.Width) or nameof(FlowNodeViewModel.Height)
+                            or nameof(FlowNodeViewModel.IsFlipped))
                         {
                             OnPropertyChanged(nameof(TargetX));
                             OnPropertyChanged(nameof(TargetY));
+                            OnPropertyChanged(nameof(MidX));
+                            OnPropertyChanged(nameof(MidY));
                             OnPropertyChanged(nameof(PathData));
                         }
                     };
@@ -699,9 +848,15 @@ namespace HWKUltra.UI.ViewModels.Pages
             }
         }
 
-        public double SourceX => (SourceNode?.X ?? 0) + (SourceNode?.Width ?? 160);
+        // Output port: right side normally, left side if flipped
+        public double SourceX => (SourceNode?.IsFlipped == true)
+            ? (SourceNode?.X ?? 0)
+            : (SourceNode?.X ?? 0) + (SourceNode?.Width ?? 160);
         public double SourceY => (SourceNode?.Y ?? 0) + (SourceNode?.Height ?? 80) / 2;
-        public double TargetX => TargetNode?.X ?? 0;
+        // Input port: left side normally, right side if flipped
+        public double TargetX => (TargetNode?.IsFlipped == true)
+            ? (TargetNode?.X ?? 0) + (TargetNode?.Width ?? 160)
+            : (TargetNode?.X ?? 0);
         public double TargetY => (TargetNode?.Y ?? 0) + (TargetNode?.Height ?? 80) / 2;
         public double MidX => (SourceX + TargetX) / 2;
         public double MidY => (SourceY + TargetY) / 2;

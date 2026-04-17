@@ -14,6 +14,7 @@ using HWKUltra.Measurement.Abstractions;
 using HWKUltra.Tray.Core;
 using HWKUltra.BarcodeScanner.Core;
 using HWKUltra.BarcodeScanner.Abstractions;
+using HWKUltra.Communication.Core;
 
 namespace HWKUltra.Flow.Services
 {
@@ -35,6 +36,7 @@ namespace HWKUltra.Flow.Services
         public string? MeasurementConfigPath { get; set; }
         public string? TrayConfigPath { get; set; }
         public string? BarcodeScannerConfigPath { get; set; }
+        public string? CommunicationConfigPath { get; set; }
 
         /// <summary>
         /// Build log: records the load status of each device category
@@ -52,6 +54,7 @@ namespace HWKUltra.Flow.Services
         public MeasurementRouter? MeasurementRouter { get; private set; }
         public TrayRouter? TrayRouter { get; private set; }
         public BarcodeScannerRouter? BarcodeScannerRouter { get; private set; }
+        public CommunicationRouter? CommunicationRouter { get; private set; }
 
         /// <summary>
         /// Build a DefaultNodeFactory in pure simulation mode (all routers null)
@@ -122,6 +125,13 @@ namespace HWKUltra.Flow.Services
                 return builder.FromJson(json).BuildRouter();
             });
 
+            CommunicationRouter = TryBuildRouter("Communication", CommunicationConfigPath, path =>
+            {
+                var json = File.ReadAllText(path);
+                var builder = new WDConnectCommunicationBuilder();
+                return builder.FromJson(json).BuildRouter();
+            });
+
             return new DefaultNodeFactory(
                 MotionRouter,
                 IORouter,
@@ -130,7 +140,8 @@ namespace HWKUltra.Flow.Services
                 AutoFocusRouter,
                 MeasurementRouter,
                 TrayRouter,
-                BarcodeScannerRouter);
+                BarcodeScannerRouter,
+                CommunicationRouter);
         }
 
         /// <summary>
@@ -160,6 +171,9 @@ namespace HWKUltra.Flow.Services
             if (TrayRouter != null)
                 log.Add("[Tray] OK \u2014 Ready (no connection needed)");
 
+            // Communication
+            TryAction(log, "Communication", CommunicationRouter, r => r.Open());
+
             return log;
         }
 
@@ -185,6 +199,7 @@ namespace HWKUltra.Flow.Services
                 foreach (var name in BarcodeScannerRouter.InstanceNames)
                     TryAction(log, $"BarcodeScanner/{name}", BarcodeScannerRouter, r => r.Close(name));
             }
+            TryAction(log, "Communication", CommunicationRouter, r => r.Close());
 
             return log;
         }

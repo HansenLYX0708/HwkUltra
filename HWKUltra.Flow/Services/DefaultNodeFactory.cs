@@ -15,6 +15,8 @@ using HWKUltra.Flow.Nodes.Tray.Real;
 using HWKUltra.Flow.Nodes.Tray.Simulation;
 using HWKUltra.Flow.Nodes.BarcodeScanner.Real;
 using HWKUltra.Flow.Nodes.BarcodeScanner.Simulation;
+using HWKUltra.Flow.Nodes.Communication.Real;
+using HWKUltra.Flow.Nodes.Communication.Simulation;
 using HWKUltra.Flow.Nodes.Logic;
 using HWKUltra.Flow.Nodes.Advanced.Real;
 using HWKUltra.Motion.Core;
@@ -25,6 +27,7 @@ using HWKUltra.AutoFocus.Core;
 using HWKUltra.Measurement.Core;
 using HWKUltra.Tray.Core;
 using HWKUltra.BarcodeScanner.Core;
+using HWKUltra.Communication.Core;
 
 namespace HWKUltra.Flow.Services
 {
@@ -42,6 +45,7 @@ namespace HWKUltra.Flow.Services
         private readonly MeasurementRouter? _measurementRouter;
         private readonly TrayRouter? _trayRouter;
         private readonly BarcodeScannerRouter? _barcodeScannerRouter;
+        private readonly CommunicationRouter? _communicationRouter;
 
         public bool UseSimulation { get; set; } = false;
 
@@ -53,7 +57,8 @@ namespace HWKUltra.Flow.Services
             AutoFocusRouter? autoFocusRouter = null,
             MeasurementRouter? measurementRouter = null,
             TrayRouter? trayRouter = null,
-            BarcodeScannerRouter? barcodeScannerRouter = null)
+            BarcodeScannerRouter? barcodeScannerRouter = null,
+            CommunicationRouter? communicationRouter = null)
         {
             _motionRouter = motionRouter;
             _ioRouter = ioRouter;
@@ -63,6 +68,7 @@ namespace HWKUltra.Flow.Services
             _measurementRouter = measurementRouter;
             _trayRouter = trayRouter;
             _barcodeScannerRouter = barcodeScannerRouter;
+            _communicationRouter = communicationRouter;
         }
 
         public IFlowNode CreateNode(string type, Dictionary<string, string> properties)
@@ -160,6 +166,16 @@ namespace HWKUltra.Flow.Services
                 "BarcodeScannerClose" => new BarcodeScannerCloseNode(_barcodeScannerRouter),
                 "BarcodeScannerTrigger" => new BarcodeScannerTriggerNode(_barcodeScannerRouter),
                 "BarcodeScannerGetLast" => new BarcodeScannerGetLastNode(_barcodeScannerRouter),
+
+                // Communication (null → auto simulation)
+                "CommunicationOpen" => new CommunicationOpenNode(_communicationRouter),
+                "CommunicationClose" => new CommunicationCloseNode(_communicationRouter),
+                "CommunicationStartScan" => new CommunicationStartScanNode(_communicationRouter),
+                "CommunicationLoad" => new CommunicationLoadNode(_communicationRouter),
+                "CommunicationUnload" => new CommunicationUnloadNode(_communicationRouter),
+                "CommunicationComplete" => new CommunicationCompleteNode(_communicationRouter),
+                "CommunicationAbort" => new CommunicationAbortNode(_communicationRouter),
+                "CommunicationLogin" => new CommunicationLoginNode(_communicationRouter),
 
                 // Tray Iterator
                 "TrayIterator" => new TrayIteratorNode(_trayRouter),
@@ -259,6 +275,16 @@ namespace HWKUltra.Flow.Services
                 "BarcodeScannerClose" => new SimBarcodeScannerCloseNode(),
                 "BarcodeScannerTrigger" => new SimBarcodeScannerTriggerNode(),
                 "BarcodeScannerGetLast" => new SimBarcodeScannerGetLastNode(),
+
+                // Communication Simulation
+                "CommunicationOpen" => new SimCommunicationOpenNode(),
+                "CommunicationClose" => new SimCommunicationCloseNode(),
+                "CommunicationStartScan" => new SimCommunicationStartScanNode(),
+                "CommunicationLoad" => new SimCommunicationLoadNode(),
+                "CommunicationUnload" => new SimCommunicationUnloadNode(),
+                "CommunicationComplete" => new SimCommunicationCompleteNode(),
+                "CommunicationAbort" => new SimCommunicationAbortNode(),
+                "CommunicationLogin" => new SimCommunicationLoginNode(),
 
                 // Tray Iterator Simulation
                 "TrayIterator" => new SimTrayIteratorNode(),

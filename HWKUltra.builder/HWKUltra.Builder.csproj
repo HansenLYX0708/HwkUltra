@@ -15,6 +15,7 @@
     <ProjectReference Include="..\HWKUltra.Measurement\HWKUltra.Measurement.csproj" />
     <ProjectReference Include="..\HWKUltra.Tray\HWKUltra.Tray.csproj" />
     <ProjectReference Include="..\HWKUltra.BarcodeScanner\HWKUltra.BarcodeScanner.csproj" />
+    <ProjectReference Include="..\HWKUltra.Communication\HWKUltra.Communication.csproj" />
   </ItemGroup>
 
 </Project>

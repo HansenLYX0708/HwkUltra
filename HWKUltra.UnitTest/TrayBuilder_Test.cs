@@ -5,9 +5,9 @@ using HWKUltra.Core;
 using HWKUltra.Tray;
 using HWKUltra.Tray.Abstractions;
 using HWKUltra.Tray.Core;
-using HWKUltra.Tray.Implementations;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Tray.Real;
+using HWKUltra.Tray.Implementations.WDTray;
 
 namespace HWKUltra.UnitTest
 {
@@ -258,11 +258,126 @@ namespace HWKUltra.UnitTest
             Console.WriteLine("OK All Tray Flow node simulations passed");
         }
 
+        /// <summary>
+        /// Test 8: DefectCode and SlotState definitions loaded from JSON config
+        /// </summary>
+        public static void Test_DefectCode_Loading()
+        {
+            Console.WriteLine("----- DefectCode/SlotState Loading from TrayConfig -----");
+
+            var json = GetTestTrayJsonWithDefectCodes();
+            var config = JsonSerializer.Deserialize(json, TrayJsonContext.Default.TrayControllerConfig)!;
+
+            // Verify config has slot states and defect codes
+            if (config.SlotStates == null || config.SlotStates.Count != 4)
+                throw new Exception($"SlotStates count mismatch: expected 4, got {config.SlotStates?.Count}");
+            if (config.DefectCodes == null || config.DefectCodes.Count != 3)
+                throw new Exception($"DefectCodes count mismatch: expected 3, got {config.DefectCodes?.Count}");
+
+            // Build controller with defect codes
+            var controller = new TrayController(config);
+
+            // Verify slot state definitions loaded
+            if (!controller.IsValidSlotState("Empty"))
+                throw new Exception("SlotState 'Empty' not found");
+            if (!controller.IsValidSlotState("Pass"))
+                throw new Exception("SlotState 'Pass' not found");
+            if (controller.IsValidSlotState("NonExistent"))
+                throw new Exception("SlotState 'NonExistent' should not exist");
+
+            // Verify defect code definitions loaded
+            if (!controller.IsValidDefectCode("A2"))
+                throw new Exception("DefectCode 'A2' not found");
+            if (!controller.IsValidDefectCode("P0532"))
+                throw new Exception("DefectCode 'P0532' not found");
+            if (controller.IsValidDefectCode("INVALID"))
+                throw new Exception("DefectCode 'INVALID' should not exist");
+
+            // Case-insensitive check
+            if (!controller.IsValidDefectCode("a2"))
+                throw new Exception("DefectCode 'a2' (case insensitive) not found");
+
+            // Get definition details
+            var def = controller.GetDefectCodeDefinition("A2");
+            if (def == null) throw new Exception("GetDefectCodeDefinition('A2') returned null");
+            if (def.Description != "Rail defect") throw new Exception($"A2 description mismatch: {def.Description}");
+            if (def.Severity != "Major") throw new Exception($"A2 severity mismatch: {def.Severity}");
+
+            Console.WriteLine("OK DefectCode/SlotState loading validated");
+            Console.WriteLine($"  - SlotStates: {controller.AllSlotStates.Count}");
+            Console.WriteLine($"  - DefectCodes: {controller.AllDefectCodes.Count}");
+        }
+
+        /// <summary>
+        /// Test 9: Default slot states when no SlotStates are configured
+        /// </summary>
+        public static void Test_DefectCode_Defaults()
+        {
+            Console.WriteLine("----- DefectCode Defaults (no config) -----");
+
+            var json = GetTestTrayJson(); // Original JSON without SlotStates/DefectCodes
+            var config = JsonSerializer.Deserialize(json, TrayJsonContext.Default.TrayControllerConfig)!;
+            var controller = new TrayController(config);
+
+            // Defaults should include Empty, Present, Pass, Fail, Error, Unknown
+            if (!controller.IsValidSlotState("Empty"))
+                throw new Exception("Default SlotState 'Empty' not found");
+            if (!controller.IsValidSlotState("Pass"))
+                throw new Exception("Default SlotState 'Pass' not found");
+            if (!controller.IsValidSlotState("Fail"))
+                throw new Exception("Default SlotState 'Fail' not found");
+            if (!controller.IsValidSlotState("Error"))
+                throw new Exception("Default SlotState 'Error' not found");
+
+            // No defect codes by default
+            if (controller.AllDefectCodes.Count != 0)
+                throw new Exception($"Default DefectCodes should be 0, got {controller.AllDefectCodes.Count}");
+
+            Console.WriteLine("OK Default slot states validated (6 defaults, 0 defect codes)");
+        }
+
+        /// <summary>
+        /// Test 10: DetectionResult class
+        /// </summary>
+        public static void Test_DetectionResult()
+        {
+            Console.WriteLine("----- DetectionResult -----");
+
+            var result = new DetectionResult(8, 30);
+            if (result.Rows != 8) throw new Exception("Rows mismatch");
+            if (result.Cols != 30) throw new Exception("Cols mismatch");
+
+            result.SerialNum = "TRAY-001";
+            result.SlotDefectCodes[0, 0] = "Pass";
+            result.SlotDefectCodes[0, 1] = "Pass";
+            result.SlotDefectCodes[1, 0] = "A2";
+            result.SliderSN[0, 0] = "SN-001";
+            result.SliderSN[0, 1] = "SN-002";
+            result.SliderSN[1, 0] = "SN-003";
+            result.ContainerIds[0, 0] = "C1";
+
+            result.Defects.Add(new DefectDetail
+            {
+                Row = 2, Col = 1,
+                DefectCode = "A2",
+                Confidence = 0.95f,
+                Region = new BoundingBox(10, 20, 100, 200)
+            });
+
+            var summary = result.GetSummary();
+            if (summary.TotalSliders != 3) throw new Exception($"TotalSliders: expected 3, got {summary.TotalSliders}");
+            if (summary.DefectCount != 1) throw new Exception($"DefectCount: expected 1, got {summary.DefectCount}");
+
+            Console.WriteLine("OK DetectionResult validated");
+            Console.WriteLine($"  - Total: {summary.TotalSliders}, Defects: {summary.DefectCount}");
+        }
+
         public static void RunAllTests()
         {
             Console.WriteLine("=======================================");
             Console.WriteLine("  Tray Builder Tests");
             Console.WriteLine("=======================================");
+
             int pass = 0, fail = 0;
 
             var tests = new (string Name, Action Test)[]
@@ -273,7 +388,10 @@ namespace HWKUltra.UnitTest
                 ("Test 4: Dedicated Builder", Test_DedicatedTrayBuilder),
                 ("Test 5: Multi-Instance Ops", Test_MultiInstance_Operations),
                 ("Test 6: JSON File Loading", Test_JsonFile_Loading),
-                ("Test 7: Flow Node Simulation", Test_FlowNode_Simulation)
+                ("Test 7: Flow Node Simulation", Test_FlowNode_Simulation),
+                ("Test 8: DefectCode Loading", Test_DefectCode_Loading),
+                ("Test 9: DefectCode Defaults", Test_DefectCode_Defaults),
+                ("Test 10: DetectionResult", Test_DetectionResult)
             };
 
             foreach (var (testName, test) in tests)
@@ -315,6 +433,33 @@ namespace HWKUltra.UnitTest
                         "Cols": 10,
                         "PositionDataPath": ""
                     }
+                ]
+            }
+            """;
+        }
+
+        private static string GetTestTrayJsonWithDefectCodes()
+        {
+            return """
+            {
+                "Instances": [
+                    {
+                        "Name": "Tray1",
+                        "Rows": 8,
+                        "Cols": 30,
+                        "PositionDataPath": ""
+                    }
+                ],
+                "SlotStates": [
+                    { "Code": "Empty", "Category": "State", "Description": "Empty slot" },
+                    { "Code": "Present", "Category": "State", "Description": "Slider present" },
+                    { "Code": "Pass", "Category": "State", "Description": "Passed" },
+                    { "Code": "Fail", "Category": "State", "Description": "Failed" }
+                ],
+                "DefectCodes": [
+                    { "Code": "A2", "Category": "Defect", "Description": "Rail defect", "Severity": "Major" },
+                    { "Code": "P0532", "Category": "Defect", "Description": "Chip crack", "Severity": "Critical" },
+                    { "Code": "OFF", "Category": "Defect", "Description": "Slider off", "Severity": "" }
                 ]
             }
             """;

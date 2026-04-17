@@ -177,6 +177,38 @@ namespace HWKUltra.UI.Helpers
     }
 
     /// <summary>
+    /// Converts SourceX and TargetX into rotation angle for the arrow at the target end.
+    /// Bindings: SourceX, SourceY, TargetX, TargetY → angle in degrees
+    /// </summary>
+    public class ConnectionArrowAngleConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length >= 4 &&
+                values[0] is double sx && values[1] is double sy &&
+                values[2] is double tx && values[3] is double ty)
+            {
+                // Compute tangent angle at target point of the Bezier
+                // The last control point of our cubic Bezier is (tx - dx, ty), endpoint is (tx, ty)
+                var dx = Math.Abs(tx - sx) * 0.5;
+                if (dx < 30) dx = 30;
+                // Last control point
+                var cpx = tx - dx;
+                var cpy = ty;
+                // Tangent vector at endpoint = (tx - cpx, ty - cpy)
+                var tanX = tx - cpx;
+                var tanY = ty - cpy;
+                var angle = Math.Atan2(tanY, tanX) * 180.0 / Math.PI;
+                return angle;
+            }
+            return 0.0;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    /// <summary>
     /// Multibinding converter for Bezier path geometry
     /// </summary>
     public class ConnectionPathConverter : IMultiValueConverter
@@ -187,12 +219,29 @@ namespace HWKUltra.UI.Helpers
                 values[0] is double sx && values[1] is double sy &&
                 values[2] is double tx && values[3] is double ty)
             {
+                var inv = CultureInfo.InvariantCulture;
                 var dx = Math.Abs(tx - sx) * 0.5;
                 if (dx < 30) dx = 30;
-                return Geometry.Parse($"M {sx.ToString(CultureInfo.InvariantCulture)},{sy.ToString(CultureInfo.InvariantCulture)} " +
-                                     $"C {(sx + dx).ToString(CultureInfo.InvariantCulture)},{sy.ToString(CultureInfo.InvariantCulture)} " +
-                                     $"{(tx - dx).ToString(CultureInfo.InvariantCulture)},{ty.ToString(CultureInfo.InvariantCulture)} " +
-                                     $"{tx.ToString(CultureInfo.InvariantCulture)},{ty.ToString(CultureInfo.InvariantCulture)}");
+
+                double c1x, c1y, c2x, c2y;
+                if (sx <= tx)
+                {
+                    // Normal left-to-right flow
+                    c1x = sx + dx; c1y = sy;
+                    c2x = tx - dx; c2y = ty;
+                }
+                else
+                {
+                    // Right-to-left (flipped nodes or loopback): S-curve
+                    c1x = sx + dx; c1y = sy;
+                    c2x = tx - dx; c2y = ty;
+                }
+
+                return Geometry.Parse(
+                    $"M {sx.ToString(inv)},{sy.ToString(inv)} " +
+                    $"C {c1x.ToString(inv)},{c1y.ToString(inv)} " +
+                    $"{c2x.ToString(inv)},{c2y.ToString(inv)} " +
+                    $"{tx.ToString(inv)},{ty.ToString(inv)}");
             }
             return Geometry.Empty;
         }

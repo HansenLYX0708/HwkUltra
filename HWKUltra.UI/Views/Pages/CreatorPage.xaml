@@ -48,7 +48,13 @@
                 <Separator Margin="8,4" />
                 <ui:Button Icon="{ui:SymbolIcon Delete24}" Content="Delete" 
                            Command="{Binding ViewModel.DeleteSelectedCommand}" Margin="0,0,4,0"
-                           Appearance="Transparent" />
+                           Appearance="Transparent" ToolTip="Delete selected (Del)" />
+                <ui:Button Icon="{ui:SymbolIcon ArrowSwap24}" Content="Flip"
+                           Command="{Binding ViewModel.FlipSelectedCommand}" Margin="0,0,4,0"
+                           Appearance="Transparent" ToolTip="Flip selected nodes (F)" />
+                <ui:Button Icon="{ui:SymbolIcon SelectAllOn24}" Content="Select All"
+                           Command="{Binding ViewModel.SelectAllCommand}" Margin="0,0,4,0"
+                           Appearance="Transparent" ToolTip="Select all nodes (Ctrl+A)" />
                 <Separator Margin="8,4" />
                 <ui:Button Icon="{ui:SymbolIcon ZoomOut24}" Content="Zoom Out" 
                            Command="{Binding ViewModel.ZoomOutCommand}" Margin="0,0,4,0"
@@ -109,6 +115,8 @@
                 <TextBlock Text="{Binding ViewModel.StatusText}" 
                            VerticalAlignment="Center" Opacity="0.7" FontSize="12" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="Middle-drag: Pan | Ctrl+Click: Multi-select | Drag canvas: Rubber-band | F: Flip"
+                               Opacity="0.4" FontSize="10" Margin="0,0,20,0" VerticalAlignment="Center" />
                     <TextBlock Text="{Binding ViewModel.NodeCount, StringFormat='Nodes: {0}'}" 
                                Margin="0,0,16,0" Opacity="0.7" FontSize="12" />
                     <TextBlock Text="{Binding ViewModel.ConnectionCount, StringFormat='Connections: {0}'}" 

@@ -2,7 +2,7 @@ using System.Text.Json;
 using HWKUltra.Tray;
 using HWKUltra.Tray.Abstractions;
 using HWKUltra.Tray.Core;
-using HWKUltra.Tray.Implementations;
+using HWKUltra.Tray.Implementations.WDTray;
 
 namespace HWKUltra.Builder
 {

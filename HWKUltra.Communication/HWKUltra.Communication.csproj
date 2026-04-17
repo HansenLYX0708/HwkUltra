@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HWKUltra.Core\HWKUltra.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="CommunicationLib.cs" />
+    <Compile Remove="ToolController.cs" />
+    <Compile Remove="TrayDetectionResult.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="WDConnect">
+      <HintPath>..\Package_3rd\WDConnect\WDConnect.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

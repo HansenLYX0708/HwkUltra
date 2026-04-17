@@ -92,4 +92,12 @@
         {
         }
     }
+
+    public class CommunicationException : DeviceException
+    {
+        public CommunicationException(string message, Exception inner = null)
+            : base("Communication", message, inner)
+        {
+        }
+    }
 }

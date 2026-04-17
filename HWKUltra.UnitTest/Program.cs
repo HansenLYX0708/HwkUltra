@@ -44,6 +44,10 @@ namespace HWKUltra.UnitTest
             Console.WriteLine("\n[Phase 4.0] BarcodeScannerBuilder Tests");
             BarcodeScannerBuilderTest.RunAllTests();
 
+            // Phase 4.1: CommunicationBuilder Tests (JSON config)
+            Console.WriteLine("\n[Phase 4.1] CommunicationBuilder Tests");
+            await CommunicationBuilderTest.RunAllTests();
+
             //// Phase 4: Flow Engine Tests
             //Console.WriteLine("\n[Phase 4] Flow Engine Tests");
             //FlowTest.RunAllTests();

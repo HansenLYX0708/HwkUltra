@@ -9,7 +9,8 @@
              Background="{DynamicResource ApplicationBackgroundBrush}"
              ClipToBounds="True"
              Focusable="True"
-             KeyDown="Canvas_KeyDown"
+             PreviewKeyDown="Canvas_KeyDown"
+             PreviewKeyUp="Canvas_KeyUp"
              MouseDown="Canvas_MouseDown"
              PreviewMouseWheel="FlowCanvas_PreviewMouseWheel">
 
@@ -21,6 +22,13 @@
         <converters:ConnectionPathConverter x:Key="ConnectionPathConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
         <converters:NullToVisibilityConverter x:Key="NullToVisibility" />
+
+        <!-- Arrow marker style for connection endpoints -->
+        <Style x:Key="ArrowPolygonStyle" TargetType="Polygon">
+            <Setter Property="Points" Value="0,-5 10,0 0,5" />
+            <Setter Property="StrokeThickness" Value="0" />
+        </Style>
+        <converters:ConnectionArrowAngleConverter x:Key="ConnectionArrowAngle" />
     </UserControl.Resources>
 
     <Grid>
@@ -47,9 +55,6 @@
                                 <GeometryDrawing.Pen>
                                     <Pen Brush="#33888888" Thickness="0.5"/>
                                 </GeometryDrawing.Pen>
-                                <!--<GeometryDrawing.Brush>
-                                    <SolidColorBrush Color="#33888888" />
-                                </GeometryDrawing.Brush>-->
                             </GeometryDrawing>
                         </DrawingBrush.Drawing>
                     </DrawingBrush>
@@ -94,6 +99,24 @@
                                         </MultiBinding>
                                     </Path.Data>
                                 </Path>
+                                <!-- Arrow at target end with rotation -->
+                                <Polygon Fill="{Binding IsSelected, Converter={StaticResource BoolToHighlightBrush}}"
+                                         Style="{StaticResource ArrowPolygonStyle}"
+                                         Canvas.Left="{Binding TargetX}" Canvas.Top="{Binding TargetY}"
+                                         IsHitTestVisible="False">
+                                    <Polygon.RenderTransform>
+                                        <RotateTransform CenterX="0" CenterY="0">
+                                            <RotateTransform.Angle>
+                                                <MultiBinding Converter="{StaticResource ConnectionArrowAngle}">
+                                                    <Binding Path="SourceX" />
+                                                    <Binding Path="SourceY" />
+                                                    <Binding Path="TargetX" />
+                                                    <Binding Path="TargetY" />
+                                                </MultiBinding>
+                                            </RotateTransform.Angle>
+                                        </RotateTransform>
+                                    </Polygon.RenderTransform>
+                                </Polygon>
                                 <!-- Condition label at midpoint -->
                                 <TextBlock Text="{Binding Condition}"
                                            Visibility="{Binding Condition, Converter={StaticResource NullToVisibility}}"
@@ -115,6 +138,14 @@
                 <Canvas x:Name="TempConnectionLayer">
                     <Path x:Name="TempConnectionPath" Stroke="#8800AAFF" StrokeThickness="2"
                           StrokeDashArray="4 2" Visibility="Collapsed" />
+                </Canvas>
+
+                <!-- Rubber-band selection rectangle -->
+                <Canvas x:Name="SelectionLayer" IsHitTestVisible="False">
+                    <Rectangle x:Name="SelectionRect"
+                               Stroke="#6600AAFF" StrokeThickness="1"
+                               Fill="#2200AAFF" StrokeDashArray="4 2"
+                               Visibility="Collapsed" />
                 </Canvas>
 
                 <!-- Node Items Layer -->
@@ -165,6 +196,11 @@
                                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12"
                                                        Foreground="White" TextTrimming="CharacterEllipsis"
                                                        ToolTip="{Binding NodeType}" />
+                                            <!-- Flip indicator -->
+                                            <TextBlock Text="&#8646;" FontSize="11" Foreground="#88FFFFFF"
+                                                       HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                       Visibility="{Binding IsFlipped, Converter={StaticResource BoolToVisibility}}"
+                                                       ToolTip="Flipped (press F to toggle)" />
                                         </Grid>
                                     </Border>
 
@@ -177,20 +213,47 @@
                                                    MaxHeight="30" />
                                     </StackPanel>
 
-                                    <!-- Output Port (right side) -->
+                                    <!-- Output Port: right normally, left if flipped -->
                                     <Ellipse Grid.Row="1" Width="12" Height="12"
                                              Fill="#4CAF50" Stroke="White" StrokeThickness="1.5"
-                                             HorizontalAlignment="Right" VerticalAlignment="Center"
-                                             Margin="0,0,-6,0" Cursor="Cross"
+                                             VerticalAlignment="Center" Cursor="Cross"
                                              MouseDown="OutputPort_MouseDown"
-                                             Tag="{Binding}" />
+                                             Tag="{Binding}"
+                                             ToolTip="Output (drag to connect)">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="HorizontalAlignment" Value="Right" />
+                                                <Setter Property="Margin" Value="0,0,-6,0" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsFlipped}" Value="True">
+                                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                                        <Setter Property="Margin" Value="-6,0,0,0" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
 
-                                    <!-- Input Port (left side) -->
+                                    <!-- Input Port: left normally, right if flipped -->
                                     <Ellipse Grid.Row="1" Width="12" Height="12"
                                              Fill="#2196F3" Stroke="White" StrokeThickness="1.5"
-                                             HorizontalAlignment="Left" VerticalAlignment="Center"
-                                             Margin="-6,0,0,0" Cursor="Cross"
-                                             Tag="{Binding}" />
+                                             VerticalAlignment="Center" Cursor="Cross"
+                                             MouseDown="InputPort_MouseDown"
+                                             Tag="{Binding}"
+                                             ToolTip="Input (drag to connect)">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="HorizontalAlignment" Value="Left" />
+                                                <Setter Property="Margin" Value="-6,0,0,0" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsFlipped}" Value="True">
+                                                        <Setter Property="HorizontalAlignment" Value="Right" />
+                                                        <Setter Property="Margin" Value="0,0,-6,0" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
                                 </Grid>
                             </Border>
                         </DataTemplate>
