@@ -814,6 +814,7 @@ namespace HWKUltra.UI.ViewModels.Pages
                         {
                             OnPropertyChanged(nameof(SourceX));
                             OnPropertyChanged(nameof(SourceY));
+                            OnPropertyChanged(nameof(SourceDir));
                             OnPropertyChanged(nameof(MidX));
                             OnPropertyChanged(nameof(MidY));
                             OnPropertyChanged(nameof(PathData));
@@ -839,6 +840,7 @@ namespace HWKUltra.UI.ViewModels.Pages
                         {
                             OnPropertyChanged(nameof(TargetX));
                             OnPropertyChanged(nameof(TargetY));
+                            OnPropertyChanged(nameof(TargetDir));
                             OnPropertyChanged(nameof(MidX));
                             OnPropertyChanged(nameof(MidY));
                             OnPropertyChanged(nameof(PathData));
@@ -853,11 +855,17 @@ namespace HWKUltra.UI.ViewModels.Pages
             ? (SourceNode?.X ?? 0)
             : (SourceNode?.X ?? 0) + (SourceNode?.Width ?? 160);
         public double SourceY => (SourceNode?.Y ?? 0) + (SourceNode?.Height ?? 80) / 2;
+        // Direction the output port faces: +1 = right (normal), -1 = left (flipped)
+        public double SourceDir => (SourceNode?.IsFlipped == true) ? -1.0 : 1.0;
+
         // Input port: left side normally, right side if flipped
         public double TargetX => (TargetNode?.IsFlipped == true)
             ? (TargetNode?.X ?? 0) + (TargetNode?.Width ?? 160)
             : (TargetNode?.X ?? 0);
         public double TargetY => (TargetNode?.Y ?? 0) + (TargetNode?.Height ?? 80) / 2;
+        // Direction the input port faces: -1 = left (normal), +1 = right (flipped)
+        public double TargetDir => (TargetNode?.IsFlipped == true) ? 1.0 : -1.0;
+
         public double MidX => (SourceX + TargetX) / 2;
         public double MidY => (SourceY + TargetY) / 2;
 

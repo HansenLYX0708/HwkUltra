@@ -210,19 +210,39 @@ namespace HWKUltra.UI.Views.Controls
 
         private void UpdateTempConnection(Point mousePos)
         {
-            if (!_isDraggingConnection) return;
+            if (!_isDraggingConnection || _connectionSourceNode == null) return;
 
+            var inv = CultureInfo.InvariantCulture;
             var sx = _connectionStartPoint.X;
             var sy = _connectionStartPoint.Y;
             var tx = mousePos.X;
             var ty = mousePos.Y;
             var dx = Math.Abs(tx - sx) * 0.5;
-            if (dx < 30) dx = 30;
+            if (dx < 50) dx = 50;
 
-            var pathData = $"M {sx.ToString(CultureInfo.InvariantCulture)},{sy.ToString(CultureInfo.InvariantCulture)} " +
-                          $"C {(sx + dx).ToString(CultureInfo.InvariantCulture)},{sy.ToString(CultureInfo.InvariantCulture)} " +
-                          $"{(tx - dx).ToString(CultureInfo.InvariantCulture)},{ty.ToString(CultureInfo.InvariantCulture)} " +
-                          $"{tx.ToString(CultureInfo.InvariantCulture)},{ty.ToString(CultureInfo.InvariantCulture)}";
+            // Determine source port facing direction
+            double sDir;
+            if (_connectionFromInput)
+            {
+                // Dragging from input port: normal input faces left (-1), flipped input faces right (+1)
+                sDir = _connectionSourceNode.IsFlipped ? 1.0 : -1.0;
+            }
+            else
+            {
+                // Dragging from output port: normal output faces right (+1), flipped output faces left (-1)
+                sDir = _connectionSourceNode.IsFlipped ? -1.0 : 1.0;
+            }
+
+            // Mouse end: control point goes opposite direction of source
+            double tDir = -sDir;
+
+            var c1x = sx + dx * sDir;
+            var c2x = tx + dx * tDir;
+
+            var pathData = $"M {sx.ToString(inv)},{sy.ToString(inv)} " +
+                          $"C {c1x.ToString(inv)},{sy.ToString(inv)} " +
+                          $"{c2x.ToString(inv)},{ty.ToString(inv)} " +
+                          $"{tx.ToString(inv)},{ty.ToString(inv)}";
 
             TempConnectionPath.Data = Geometry.Parse(pathData);
         }

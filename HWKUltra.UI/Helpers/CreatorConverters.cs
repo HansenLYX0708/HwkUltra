@@ -177,27 +177,29 @@ namespace HWKUltra.UI.Helpers
     }
 
     /// <summary>
-    /// Converts SourceX and TargetX into rotation angle for the arrow at the target end.
-    /// Bindings: SourceX, SourceY, TargetX, TargetY → angle in degrees
+    /// Computes the rotation angle for the arrow at the target end of a connection.
+    /// Bindings: SourceX, SourceY, TargetX, TargetY, SourceDir, TargetDir
+    /// SourceDir: +1 = port faces right (normal output), -1 = port faces left (flipped output)
+    /// TargetDir: -1 = port faces left (normal input), +1 = port faces right (flipped input)
     /// </summary>
     public class ConnectionArrowAngleConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values.Length >= 4 &&
+            if (values.Length >= 6 &&
                 values[0] is double sx && values[1] is double sy &&
-                values[2] is double tx && values[3] is double ty)
+                values[2] is double tx && values[3] is double ty &&
+                values[4] is double sDir && values[5] is double tDir)
             {
-                // Compute tangent angle at target point of the Bezier
-                // The last control point of our cubic Bezier is (tx - dx, ty), endpoint is (tx, ty)
+                // The Bezier's last control point determines arrow direction
                 var dx = Math.Abs(tx - sx) * 0.5;
-                if (dx < 30) dx = 30;
-                // Last control point
-                var cpx = tx - dx;
-                var cpy = ty;
-                // Tangent vector at endpoint = (tx - cpx, ty - cpy)
-                var tanX = tx - cpx;
-                var tanY = ty - cpy;
+                if (dx < 50) dx = 50;
+                // Control point 2 extends in TargetDir direction from target
+                var c2x = tx + dx * tDir;
+                // Tangent at target = (tx - c2x, ty - ty) = (-dx * tDir, 0) if flat
+                // But for non-flat curves, also account for Y
+                var tanX = tx - c2x;
+                var tanY = 0.0; // Bezier endpoint tangent is horizontal in our control point scheme
                 var angle = Math.Atan2(tanY, tanX) * 180.0 / Math.PI;
                 return angle;
             }
@@ -209,33 +211,31 @@ namespace HWKUltra.UI.Helpers
     }
 
     /// <summary>
-    /// Multibinding converter for Bezier path geometry
+    /// Multibinding converter for Bezier path geometry.
+    /// Bindings: SourceX, SourceY, TargetX, TargetY, SourceDir, TargetDir
+    /// SourceDir: +1 = port faces right, -1 = port faces left
+    /// TargetDir: -1 = port faces left,  +1 = port faces right
+    /// Control points extend outward from each port in the direction the port faces.
     /// </summary>
     public class ConnectionPathConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values.Length >= 4 &&
+            if (values.Length >= 6 &&
                 values[0] is double sx && values[1] is double sy &&
-                values[2] is double tx && values[3] is double ty)
+                values[2] is double tx && values[3] is double ty &&
+                values[4] is double sDir && values[5] is double tDir)
             {
                 var inv = CultureInfo.InvariantCulture;
                 var dx = Math.Abs(tx - sx) * 0.5;
-                if (dx < 30) dx = 30;
+                if (dx < 50) dx = 50;
 
-                double c1x, c1y, c2x, c2y;
-                if (sx <= tx)
-                {
-                    // Normal left-to-right flow
-                    c1x = sx + dx; c1y = sy;
-                    c2x = tx - dx; c2y = ty;
-                }
-                else
-                {
-                    // Right-to-left (flipped nodes or loopback): S-curve
-                    c1x = sx + dx; c1y = sy;
-                    c2x = tx - dx; c2y = ty;
-                }
+                // Control point 1: extends from source in source port's facing direction
+                var c1x = sx + dx * sDir;
+                var c1y = sy;
+                // Control point 2: extends from target in target port's facing direction
+                var c2x = tx + dx * tDir;
+                var c2y = ty;
 
                 return Geometry.Parse(
                     $"M {sx.ToString(inv)},{sy.ToString(inv)} " +

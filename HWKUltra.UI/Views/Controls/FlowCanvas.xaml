@@ -82,6 +82,8 @@
                                             <Binding Path="SourceY" />
                                             <Binding Path="TargetX" />
                                             <Binding Path="TargetY" />
+                                            <Binding Path="SourceDir" />
+                                            <Binding Path="TargetDir" />
                                         </MultiBinding>
                                     </Path.Data>
                                 </Path>
@@ -96,6 +98,8 @@
                                             <Binding Path="SourceY" />
                                             <Binding Path="TargetX" />
                                             <Binding Path="TargetY" />
+                                            <Binding Path="SourceDir" />
+                                            <Binding Path="TargetDir" />
                                         </MultiBinding>
                                     </Path.Data>
                                 </Path>
@@ -112,6 +116,8 @@
                                                     <Binding Path="SourceY" />
                                                     <Binding Path="TargetX" />
                                                     <Binding Path="TargetY" />
+                                                    <Binding Path="SourceDir" />
+                                                    <Binding Path="TargetDir" />
                                                 </MultiBinding>
                                             </RotateTransform.Angle>
                                         </RotateTransform>
