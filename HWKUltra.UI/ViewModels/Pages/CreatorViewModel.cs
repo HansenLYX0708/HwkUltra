@@ -362,6 +362,7 @@ namespace HWKUltra.UI.ViewModels.Pages
                 var entry = _catalogService.FindEntry(nodeDef.Type);
                 var nodeVm = FlowNodeViewModel.FromDefinition(nodeDef, entry);
                 nodeVm.IsStartNode = nodeDef.Id == definition.StartNodeId;
+                nodeVm.OpenSubFlowCommand = OpenSubFlowCommand;
                 Nodes.Add(nodeVm);
             }
 
@@ -419,6 +420,7 @@ namespace HWKUltra.UI.ViewModels.Pages
             }
 
             var nodeVm = FlowNodeViewModel.FromDefinition(nodeDef, entry);
+            nodeVm.OpenSubFlowCommand = OpenSubFlowCommand;
             Nodes.Add(nodeVm);
 
             // If first node, set as start
@@ -471,6 +473,72 @@ namespace HWKUltra.UI.ViewModels.Pages
         /// Tracks all currently selected nodes (for multi-select)
         /// </summary>
         public HashSet<FlowNodeViewModel> SelectedNodes { get; } = new();
+
+        /// <summary>
+        /// Breadcrumb chain for pop-out window titles (e.g. "Main.json &gt; Stage1_Test.json &gt; TrayTest_S1_T1.json").
+        /// Empty for the primary editor; populated by FlowViewerWindow.
+        /// </summary>
+        public List<string> Breadcrumb { get; internal set; } = new();
+
+        /// <summary>
+        /// Open a sub-flow (by relative or absolute JSON path) in a new independent FlowViewerWindow.
+        /// </summary>
+        [RelayCommand]
+        public void OpenSubFlow(SubFlowReference? reference)
+        {
+            if (reference == null || string.IsNullOrWhiteSpace(reference.Path))
+                return;
+
+            try
+            {
+                var fullPath = ResolveSubFlowPath(reference.Path);
+                if (!File.Exists(fullPath))
+                {
+                    StatusText = $"Sub-flow not found: {reference.Path}";
+                    return;
+                }
+
+                var window = new HWKUltra.UI.Views.Windows.FlowViewerWindow(
+                    _documentService, _catalogService, _settingsService);
+                window.OpenFile(fullPath, Breadcrumb);
+                window.Show();
+
+                StatusText = $"Opened sub-flow: {Path.GetFileName(fullPath)}";
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Failed to open sub-flow: {ex.Message}";
+            }
+        }
+
+        private string ResolveSubFlowPath(string path)
+        {
+            if (Path.IsPathRooted(path) && File.Exists(path))
+                return path;
+
+            // Try relative to current working directory (typical: app output dir)
+            var cwdCandidate = Path.GetFullPath(path);
+            if (File.Exists(cwdCandidate))
+                return cwdCandidate;
+
+            // Try relative to the current document directory
+            var currentDir = !string.IsNullOrEmpty(_documentService.CurrentFilePath)
+                ? Path.GetDirectoryName(_documentService.CurrentFilePath)
+                : null;
+            if (!string.IsNullOrEmpty(currentDir))
+            {
+                var docCandidate = Path.GetFullPath(Path.Combine(currentDir, path));
+                if (File.Exists(docCandidate))
+                    return docCandidate;
+            }
+
+            // Try relative to app base directory
+            var baseCandidate = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path));
+            if (File.Exists(baseCandidate))
+                return baseCandidate;
+
+            return cwdCandidate;
+        }
 
         [RelayCommand]
         private void SetStartNode(FlowNodeViewModel node)
@@ -683,6 +751,57 @@ namespace HWKUltra.UI.ViewModels.Pages
         public ObservableCollection<FlowParameter> InputDefinitions { get; } = new();
         public ObservableCollection<FlowParameter> OutputDefinitions { get; } = new();
 
+        /// <summary>
+        /// Reference to the owning CreatorViewModel's OpenSubFlow command.
+        /// Wired by CreatorViewModel after the node is added so context menus can invoke it.
+        /// </summary>
+        [ObservableProperty]
+        private System.Windows.Input.ICommand? _openSubFlowCommand;
+
+        /// <summary>
+        /// Paths of sub-flows referenced by this node (SubFlow.FlowPath, Parallel.FlowPaths).
+        /// Empty if the node does not reference any sub-flow.
+        /// </summary>
+        public ObservableCollection<SubFlowReference> SubFlowTargets { get; } = new();
+
+        /// <summary>
+        /// True when this node contains at least one sub-flow reference (for the ↗ badge / menu).
+        /// </summary>
+        public bool HasSubFlows => SubFlowTargets.Count > 0;
+
+        /// <summary>
+        /// Refresh SubFlowTargets based on current NodeType + Properties.
+        /// Call after properties change.
+        /// </summary>
+        public void RefreshSubFlowTargets()
+        {
+            SubFlowTargets.Clear();
+            string GetProp(string key) => Properties.FirstOrDefault(p => p.Name == key)?.Value ?? string.Empty;
+
+            if (NodeType == "SubFlow")
+            {
+                var path = GetProp("FlowPath");
+                if (!string.IsNullOrWhiteSpace(path))
+                    SubFlowTargets.Add(new SubFlowReference(path.Trim(), System.IO.Path.GetFileNameWithoutExtension(path.Trim())));
+            }
+            else if (NodeType == "Parallel")
+            {
+                var paths = GetProp("FlowPaths");
+                if (!string.IsNullOrWhiteSpace(paths))
+                {
+                    int i = 1;
+                    foreach (var p in paths.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    {
+                        SubFlowTargets.Add(new SubFlowReference(p, $"[{i}] {System.IO.Path.GetFileNameWithoutExtension(p)}"));
+                        i++;
+                    }
+                }
+            }
+
+            OnPropertyChanged(nameof(HasSubFlows));
+            OnPropertyChanged(nameof(SubFlowTargets));
+        }
+
         public static FlowNodeViewModel FromDefinition(NodeDefinition def, NodeCatalogEntry? catalogEntry)
         {
             var vm = new FlowNodeViewModel
@@ -734,6 +853,17 @@ namespace HWKUltra.UI.ViewModels.Pages
                 }
             }
 
+            vm.RefreshSubFlowTargets();
+            // Keep SubFlowTargets in sync when properties change value
+            foreach (var prop in vm.Properties)
+            {
+                prop.PropertyChanged += (_, args) =>
+                {
+                    if (args.PropertyName == nameof(NodePropertyViewModel.Value))
+                        vm.RefreshSubFlowTargets();
+                };
+            }
+
             return vm;
         }
 
@@ -758,6 +888,12 @@ namespace HWKUltra.UI.ViewModels.Pages
             return def;
         }
     }
+
+    /// <summary>
+    /// Represents a reference from a node to a child flow JSON file.
+    /// Used by SubFlow (single) and Parallel (multiple).
+    /// </summary>
+    public record SubFlowReference(string Path, string DisplayName);
 
     public partial class NodePropertyViewModel : ObservableObject
     {

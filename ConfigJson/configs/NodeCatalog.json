@@ -8,9 +8,11 @@
     { "Name": "AutoFocus", "Color": "#00BCD4", "Order": 5 },
     { "Name": "Tray", "Color": "#795548", "Order": 6 },
     { "Name": "BarcodeScanner", "Color": "#3F51B5", "Order": 7 },
-    { "Name": "Logic", "Color": "#9E9E9E", "Order": 8 },
-    { "Name": "Synchronization", "Color": "#FF9800", "Order": 9 },
-    { "Name": "Advanced", "Color": "#E91E63", "Order": 10 }
+    { "Name": "TeachData", "Color": "#009688", "Order": 8 },
+    { "Name": "Communication", "Color": "#8BC34A", "Order": 9 },
+    { "Name": "Logic", "Color": "#9E9E9E", "Order": 10 },
+    { "Name": "Synchronization", "Color": "#FF9800", "Order": 11 },
+    { "Name": "Advanced", "Color": "#E91E63", "Order": 12 }
   ],
   "Nodes": [
     { "Type": "AxisHome", "DisplayName": "Axis Home", "Category": "Motion" },
@@ -68,6 +70,19 @@
     { "Type": "BarcodeScannerClose", "DisplayName": "BarcodeScanner Close", "Category": "BarcodeScanner" },
     { "Type": "BarcodeScannerTrigger", "DisplayName": "BarcodeScanner Trigger", "Category": "BarcodeScanner" },
     { "Type": "BarcodeScannerGetLast", "DisplayName": "BarcodeScanner Get Last", "Category": "BarcodeScanner" },
+
+    { "Type": "MoveToTeachPosition", "DisplayName": "Move To Teach Position", "Category": "TeachData" },
+    { "Type": "GetTeachPosition", "DisplayName": "Get Teach Position", "Category": "TeachData" },
+    { "Type": "SetTeachPosition", "DisplayName": "Set Teach Position", "Category": "TeachData" },
+
+    { "Type": "CommunicationOpen", "DisplayName": "Communication Open", "Category": "Communication" },
+    { "Type": "CommunicationClose", "DisplayName": "Communication Close", "Category": "Communication" },
+    { "Type": "CommunicationStartScan", "DisplayName": "Communication StartScan", "Category": "Communication" },
+    { "Type": "CommunicationLoad", "DisplayName": "Communication Load", "Category": "Communication" },
+    { "Type": "CommunicationUnload", "DisplayName": "Communication Unload", "Category": "Communication" },
+    { "Type": "CommunicationComplete", "DisplayName": "Communication Complete", "Category": "Communication" },
+    { "Type": "CommunicationAbort", "DisplayName": "Communication Abort", "Category": "Communication" },
+    { "Type": "CommunicationLogin", "DisplayName": "Communication Login", "Category": "Communication" },
 
     { "Type": "Delay", "DisplayName": "Delay", "Category": "Logic" },
     { "Type": "Branch", "DisplayName": "Branch", "Category": "Logic" },

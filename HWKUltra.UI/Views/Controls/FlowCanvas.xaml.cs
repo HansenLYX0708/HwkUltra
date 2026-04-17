@@ -44,6 +44,28 @@ namespace HWKUltra.UI.Views.Controls
             InitializeComponent();
         }
 
+        #region Sub-Flow Badge
+
+        /// <summary>
+        /// Click handler for the ↗ badge in the node header: opens the first sub-flow
+        /// referenced by the node in a new FlowViewerWindow. Users who want to choose
+        /// among multiple Parallel child flows can right-click to see the full list.
+        /// </summary>
+        private void SubFlowBadge_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.Tag is FlowNodeViewModel node
+                && node.SubFlowTargets.Count > 0 && node.OpenSubFlowCommand != null)
+            {
+                var target = node.SubFlowTargets[0];
+                if (node.OpenSubFlowCommand.CanExecute(target))
+                    node.OpenSubFlowCommand.Execute(target);
+            }
+            // Stop the event so the node itself doesn't receive the mouse-down/drag
+            e.Handled = true;
+        }
+
+        #endregion
+
         #region Drop from Toolbox
 
         private void Canvas_DragOver(object sender, DragEventArgs e)
