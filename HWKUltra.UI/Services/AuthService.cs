@@ -37,7 +37,7 @@ namespace HWKUltra.UI.Services
     {
         private static readonly Dictionary<string, (string Password, UserRole Role)> _offlineAccounts = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "HWK", ("ate", UserRole.Admin) },
+            { "HWK", ("123", UserRole.Admin) },
             { "User", ("123", UserRole.User) }
         };
 
