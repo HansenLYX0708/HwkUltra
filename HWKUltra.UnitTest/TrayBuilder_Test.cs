@@ -8,6 +8,7 @@ using HWKUltra.Tray.Core;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Tray.Real;
 using HWKUltra.Tray.Implementations.WDTray;
+using HWKUltra.TestRun.Reports;
 
 namespace HWKUltra.UnitTest
 {
@@ -337,17 +338,17 @@ namespace HWKUltra.UnitTest
         }
 
         /// <summary>
-        /// Test 10: DetectionResult class
+        /// Test 10: TrayAoiReport class (migrated from DetectionResult, now in HWKUltra.TestRun.Reports)
         /// </summary>
-        public static void Test_DetectionResult()
+        public static void Test_TrayAoiReport()
         {
-            Console.WriteLine("----- DetectionResult -----");
+            Console.WriteLine("----- TrayAoiReport -----");
 
-            var result = new DetectionResult(8, 30);
+            var result = new TrayAoiReport(8, 30);
             if (result.Rows != 8) throw new Exception("Rows mismatch");
             if (result.Cols != 30) throw new Exception("Cols mismatch");
 
-            result.SerialNum = "TRAY-001";
+            result.Session.SerialNumber = "TRAY-001";
             result.SlotDefectCodes[0, 0] = "Pass";
             result.SlotDefectCodes[0, 1] = "Pass";
             result.SlotDefectCodes[1, 0] = "A2";
@@ -368,7 +369,7 @@ namespace HWKUltra.UnitTest
             if (summary.TotalSliders != 3) throw new Exception($"TotalSliders: expected 3, got {summary.TotalSliders}");
             if (summary.DefectCount != 1) throw new Exception($"DefectCount: expected 1, got {summary.DefectCount}");
 
-            Console.WriteLine("OK DetectionResult validated");
+            Console.WriteLine("OK TrayAoiReport validated");
             Console.WriteLine($"  - Total: {summary.TotalSliders}, Defects: {summary.DefectCount}");
         }
 
@@ -391,7 +392,7 @@ namespace HWKUltra.UnitTest
                 ("Test 7: Flow Node Simulation", Test_FlowNode_Simulation),
                 ("Test 8: DefectCode Loading", Test_DefectCode_Loading),
                 ("Test 9: DefectCode Defaults", Test_DefectCode_Defaults),
-                ("Test 10: DetectionResult", Test_DetectionResult)
+                ("Test 10: TrayAoiReport", Test_TrayAoiReport)
             };
 
             foreach (var (testName, test) in tests)

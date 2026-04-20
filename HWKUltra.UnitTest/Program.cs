@@ -80,6 +80,14 @@ namespace HWKUltra.UnitTest
             Console.WriteLine("\n[Phase 10] LLM Service Tests");
             await LLMServiceTest.RunAllTests();
 
+            // Phase 11: TestRun Store Tests (runtime session layer)
+            Console.WriteLine("\n[Phase 11] TestRun Store Tests");
+            TestRunStoreTest.RunAllTests();
+
+            // Phase 12: Vision Algorithm Tests
+            Console.WriteLine("\n[Phase 12] Vision Algorithm Tests");
+            VisionAlgorithmTest.RunAllTests();
+
             Console.WriteLine("\n========== All Tests Complete ==========");
         }
     }

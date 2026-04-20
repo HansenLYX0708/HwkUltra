@@ -23,6 +23,8 @@
     <ProjectReference Include="..\HWKUltra.Measurement\HWKUltra.Measurement.csproj" />
     <ProjectReference Include="..\HWKUltra.Tray\HWKUltra.Tray.csproj" />
     <ProjectReference Include="..\HWKUltra.BarcodeScanner\HWKUltra.BarcodeScanner.csproj" />
+    <ProjectReference Include="..\HWKUltra.Vision\HWKUltra.Vision.csproj" />
+    <ProjectReference Include="..\HWKUltra.TestRun\HWKUltra.TestRun.csproj" />
   </ItemGroup>
 
 </Project>
