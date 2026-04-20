@@ -43,6 +43,9 @@ public class ElmoMotionController : IMotionController
         {
             _groupAxisOrder[g.Name] = g.Axes;
         }
+
+        axes = new Dictionary<string, IMMCSingleAxis>();
+        groups = new Dictionary<string, IMMCGroupAxis>();
     }
 
     public void Open()

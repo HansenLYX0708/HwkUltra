@@ -78,6 +78,8 @@
                 <ColumnDefinition Width="*" MinWidth="300" />
                 <ColumnDefinition Width="8" />
                 <ColumnDefinition Width="320" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <!-- Left: Node Toolbox -->
@@ -105,6 +107,20 @@
                         Background="{DynamicResource ControlFillColorDefaultBrush}">
                 <controls:PropertyPanel DataContext="{Binding ViewModel}" />
             </Border>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="5" Width="3" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                          Background="Transparent" />
+
+            <!-- Far-Right: AI Assistant Panel (collapsible) -->
+            <Expander Grid.Column="6" ExpandDirection="Left"
+                      Header="AI" IsExpanded="False"
+                      VerticalAlignment="Stretch">
+                <Border CornerRadius="8" Padding="12" Width="340"
+                        Background="{DynamicResource ControlFillColorDefaultBrush}">
+                    <controls:AIAssistantPanel x:Name="AIPanel" />
+                </Border>
+            </Expander>
         </Grid>
 
         <!-- Status Bar -->

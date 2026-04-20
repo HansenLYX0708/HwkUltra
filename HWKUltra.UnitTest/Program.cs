@@ -6,6 +6,10 @@ namespace HWKUltra.UnitTest
     {
         static async Task Main(string[] args)
         {
+            // Allow running only LLM tests with: dotnet run --project HWKUltra.UnitTest -- llm
+            if (await LLMTestRunner.RunIfRequested(args) > 0)
+                return;
+
             Console.WriteLine("========== HWKUltra Complete Test Suite ==========\n");
 
             //// Phase 1: MotionBuilder Tests (JSON config)
@@ -71,6 +75,10 @@ namespace HWKUltra.UnitTest
             // Phase 9: TeachData Tests (models, service, flow nodes)
             Console.WriteLine("\n[Phase 9] TeachData Tests");
             TeachDataTest.RunAllTests();
+
+            // Phase 10: LLM Service Tests (AI layer)
+            Console.WriteLine("\n[Phase 10] LLM Service Tests");
+            await LLMServiceTest.RunAllTests();
 
             Console.WriteLine("\n========== All Tests Complete ==========");
         }

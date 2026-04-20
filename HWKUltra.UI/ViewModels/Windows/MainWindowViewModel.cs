@@ -72,6 +72,13 @@ namespace HWKUltra.UI.ViewModels.Windows
                 TargetPageType = typeof(Views.Pages.CreatorPage)
             });
 
+            MenuItems.Add(new NavigationViewItem()
+            {
+                Content = "AI Assistant",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.Bot24 },
+                TargetPageType = typeof(Views.Pages.AIChatPage)
+            });
+
             // Admin-only items
             if (role == UserRole.Admin)
             {

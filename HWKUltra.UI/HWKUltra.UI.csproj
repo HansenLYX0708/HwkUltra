@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HWKUltra.Flow\HWKUltra.Flow.csproj" />
+    <ProjectReference Include="..\HWKUltra.AI\HWKUltra.AI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,6 +77,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\ConfigJson\TeachData\**\*.json" LinkBase="ConfigJson\TeachData">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\ConfigJson\LLM\**\*.json" LinkBase="ConfigJson\LLM">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

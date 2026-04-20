@@ -1,4 +1,7 @@
-﻿using HWKUltra.UI.Services;
+﻿using HWKUltra.AI.Config;
+using HWKUltra.AI.Services;
+using HWKUltra.UI.Services;
+using HWKUltra.UI.ViewModels.Controls;
 using HWKUltra.UI.ViewModels.Pages;
 using HWKUltra.UI.ViewModels.Windows;
 using HWKUltra.UI.Views.Pages;
@@ -63,6 +66,18 @@ namespace HWKUltra.UI
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
 
+                // AI Assistant
+                services.AddSingleton<LLMConfig>(sp =>
+                {
+                    var configPath = Path.Combine(
+                        AppContext.BaseDirectory,
+                        "ConfigJson", "LLM", "LLMConfig.json");
+                    return LLMConfigLoader.Load(configPath);
+                });
+                services.AddSingleton<LLMServiceFactory>();
+                services.AddSingleton<AIChatPage>();
+                services.AddSingleton<AIChatViewModel>();
+                services.AddTransient<AIAssistantViewModel>();
 
                 // Creator Services
                 services.AddSingleton<AppSettingsService>();

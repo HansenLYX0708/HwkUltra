@@ -53,3 +53,6 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 .vs/
+
+# LLM config (contains API keys) - keep example file instead
+ConfigJson/LLM/LLMConfig.json

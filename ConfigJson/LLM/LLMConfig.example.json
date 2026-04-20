@@ -1,0 +1,26 @@
+{
+  "defaultProvider": "LocalOllama",
+  "fallbackToOnline": false,
+  "localOllama": {
+    "baseUrl": "http://localhost:11434",
+    "defaultModel": "llama3:8b",
+    "enabled": true
+  },
+  "localLMStudio": {
+    "baseUrl": "http://localhost:1234",
+    "defaultModel": "local-model",
+    "enabled": false
+  },
+  "openAI": {
+    "apiKey": "",
+    "defaultModel": "gpt-4o-mini",
+    "enabled": false
+  },
+  "azureOpenAI": {
+    "endpoint": "",
+    "apiKey": "",
+    "deploymentName": "",
+    "apiVersion": "2024-02-15-preview",
+    "enabled": false
+  }
+}
