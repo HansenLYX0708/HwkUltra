@@ -10,6 +10,7 @@ namespace HWKUltra.Flow.Engine
     {
         private readonly Dictionary<string, IFlowNode> _nodes = new();
         private readonly FlowDefinition _definition;
+        private readonly ManualResetEventSlim _pauseGate = new(true); // initially unpaused
 
         /// <summary>
         /// Flow execution events
@@ -18,6 +19,31 @@ namespace HWKUltra.Flow.Engine
         public event EventHandler<FlowNodeEventArgs>? NodeExecuted;
         public event EventHandler<FlowErrorEventArgs>? FlowError;
         public event EventHandler? FlowCompleted;
+        public event EventHandler? FlowPaused;
+        public event EventHandler? FlowResumed;
+
+        /// <summary>
+        /// Whether the engine is currently paused.
+        /// </summary>
+        public bool IsPaused => !_pauseGate.IsSet;
+
+        /// <summary>
+        /// Pause execution. The engine will block before executing the next node.
+        /// </summary>
+        public void Pause()
+        {
+            _pauseGate.Reset();
+            FlowPaused?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Resume execution after a pause.
+        /// </summary>
+        public void Resume()
+        {
+            _pauseGate.Set();
+            FlowResumed?.Invoke(this, EventArgs.Empty);
+        }
 
         public FlowEngine(FlowDefinition definition)
         {
@@ -57,6 +83,9 @@ namespace HWKUltra.Flow.Engine
                 while (currentNodeId != null)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
+                    // Wait if paused (cancellation still honored)
+                    _pauseGate.Wait(cancellationToken);
 
                     if (!_nodes.TryGetValue(currentNodeId, out var node))
                     {

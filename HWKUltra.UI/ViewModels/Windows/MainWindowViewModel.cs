@@ -67,20 +67,6 @@ namespace HWKUltra.UI.ViewModels.Windows
 
             MenuItems.Add(new NavigationViewItem()
             {
-                Content = "Creator",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.Diagram24 },
-                TargetPageType = typeof(Views.Pages.CreatorPage)
-            });
-
-            MenuItems.Add(new NavigationViewItem()
-            {
-                Content = "Runs",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.History24 },
-                TargetPageType = typeof(Views.Pages.RunsPage)
-            });
-
-            MenuItems.Add(new NavigationViewItem()
-            {
                 Content = "AI Assistant",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Bot24 },
                 TargetPageType = typeof(Views.Pages.AIChatPage)
@@ -108,6 +94,27 @@ namespace HWKUltra.UI.ViewModels.Windows
                     Content = "Teach Data",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Location24 },
                     TargetPageType = typeof(Views.Pages.TeachDataPage)
+                });
+
+                MenuItems.Add(new NavigationViewItem()
+                {
+                    Content = "Creator",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Diagram24 },
+                    TargetPageType = typeof(Views.Pages.CreatorPage)
+                });
+
+                MenuItems.Add(new NavigationViewItem()
+                {
+                    Content = "Flow Runner",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.PlayCircle24 },
+                    TargetPageType = typeof(Views.Pages.FlowRunnerPage)
+                });
+
+                MenuItems.Add(new NavigationViewItem()
+                {
+                    Content = "Runs",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.History24 },
+                    TargetPageType = typeof(Views.Pages.RunsPage)
                 });
             }
 

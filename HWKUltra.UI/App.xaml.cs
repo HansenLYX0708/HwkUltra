@@ -67,6 +67,8 @@ namespace HWKUltra.UI
                 services.AddSingleton<TeachDataViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
+                services.AddSingleton<FlowRunnerPage>();
+                services.AddSingleton<FlowRunnerViewModel>();
 
                 // Test-run live view — ITestRunStore is the singleton sink other layers (Flow, Communication) also use.
                 services.AddSingleton<ITestRunStore, TestRunStore>();
