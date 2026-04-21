@@ -34,6 +34,7 @@
   <ItemGroup>
     <ProjectReference Include="..\HWKUltra.Flow\HWKUltra.Flow.csproj" />
     <ProjectReference Include="..\HWKUltra.AI\HWKUltra.AI.csproj" />
+    <ProjectReference Include="..\HWKUltra.TestRun\HWKUltra.TestRun.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -74,6 +74,13 @@ namespace HWKUltra.UI.ViewModels.Windows
 
             MenuItems.Add(new NavigationViewItem()
             {
+                Content = "Runs",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.History24 },
+                TargetPageType = typeof(Views.Pages.RunsPage)
+            });
+
+            MenuItems.Add(new NavigationViewItem()
+            {
                 Content = "AI Assistant",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Bot24 },
                 TargetPageType = typeof(Views.Pages.AIChatPage)

@@ -1,11 +1,13 @@
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
+using HWKUltra.Flow.Utils;
 using HWKUltra.Vision.Algorithms.Judge;
 
 namespace HWKUltra.Flow.Nodes.Vision
 {
     /// <summary>
     /// Decide whether a row-bar image contains no slider.
+    /// Accepts image as absolute path or context variable (Bitmap/Mat/byte[]/float[]/path).
     /// </summary>
     public class JudgeRowBarEmptyNode : LogicNodeBase
     {
@@ -14,9 +16,9 @@ namespace HWKUltra.Flow.Nodes.Vision
 
         public override List<FlowParameter> Inputs { get; } = new()
         {
-            new FlowParameter { Name = "ImageDataVar", DisplayName = "Image Data Var", Type = "string", Required = true },
-            new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = true },
-            new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = true },
+            new FlowParameter { Name = "Image", DisplayName = "Image", Type = "string", Required = true, Description = "Absolute path OR context variable" },
+            new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = false, Description = "Required when input is raw byte[]/float[]" },
+            new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false, Description = "Required when input is raw byte[]/float[]" },
             new FlowParameter { Name = "IsColor", DisplayName = "Is Color", Type = "bool", Required = false }
         };
 
@@ -30,14 +32,14 @@ namespace HWKUltra.Flow.Nodes.Vision
             await Task.CompletedTask;
             try
             {
-                var varName = context.GetNodeInput<string>(Id, "ImageDataVar") ?? "";
-                var h = context.GetNodeInput<int>(Id, "Height");
-                var w = context.GetNodeInput<int>(Id, "Width");
+                var image = context.GetNodeInput<string>(Id, "Image") ?? "";
+                if (string.IsNullOrEmpty(image)) return FlowResult.Fail("Image is required");
+                int w = context.GetNodeInput<int>(Id, "Width");
+                int h = context.GetNodeInput<int>(Id, "Height");
                 var isColor = context.GetNodeInput<bool>(Id, "IsColor");
-                var data = context.GetVariable<byte[]>(varName);
-                if (data is null) return FlowResult.Fail($"Variable '{varName}' not found or not a byte[]");
+                var (data, rw, rh) = ImageInputResolver.ResolveBytes(context, image, w, h, isColor);
                 var judge = new RowBarEmptyJudge();
-                var isEmpty = judge.Judge(data, h, w, isColor);
+                var isEmpty = judge.Judge(data, rh, rw, isColor);
                 context.SetNodeOutput(Id, "IsEmpty", isEmpty);
                 return FlowResult.Ok();
             }

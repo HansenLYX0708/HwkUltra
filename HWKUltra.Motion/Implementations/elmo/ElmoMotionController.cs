@@ -99,7 +99,53 @@ public class ElmoMotionController : IMotionController
         }
     }
 
-    public void Close() { }
+    public void Close() 
+    {
+        if (!isInit)
+        {
+            return;
+        }
+        try
+        {
+            isInit = false;
+            foreach (var item in groups)
+            {
+                if ((item.Value.GroupReadStatus() & (uint)MC_STATE_GROUP.NC_GROUP_DISABLED) == 0)
+                {
+                    item.Value.GroupStop(_config.Axes[0].MaxDec, _config.Axes[0].MaxJerk, MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE);
+                    item.Value.GroupDisable();
+                }
+            }
+
+            foreach (var item in axes)
+            {
+                item.Value.Stop(MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE);
+                item.Value.PowerOff(MC_BUFFERED_MODE_ENUM.MC_BUFFERED_MODE);
+            }
+
+
+            if (GetStateTimer != null)
+            {
+                GetStateTimer.Change(Timeout.Infinite, 100);
+                GetStateTimer.Dispose();
+                GetStateTimer = null;
+            }
+            if (ResetErrorTimer != null)
+            {
+                ResetErrorTimer.Change(Timeout.Infinite, 100);
+                ResetErrorTimer.Dispose();
+                ResetErrorTimer = null;
+            }
+            axes.Clear();
+            groups.Clear();
+            MMCConnection.CloseConnection(connectionHandle);
+        }
+        catch (Exception ex)
+        {
+            isInit = true;
+            throw ex;
+        }
+    }
 
     public void MoveAxis(string axisName, double pos, MotionProfile profile = null)
     {

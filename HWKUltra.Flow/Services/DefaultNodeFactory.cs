@@ -21,7 +21,11 @@ using HWKUltra.Flow.Nodes.TeachData.Real;
 using HWKUltra.Flow.Nodes.TeachData.Simulation;
 using HWKUltra.Flow.Nodes.Logic;
 using HWKUltra.Flow.Nodes.Advanced.Real;
+using HWKUltra.Flow.Nodes.Vision;
+using HWKUltra.Flow.Nodes.Session;
 using HWKUltra.Core;
+using HWKUltra.Vision.Abstractions;
+using HWKUltra.TestRun.Abstractions;
 using HWKUltra.Motion.Core;
 using HWKUltra.DeviceIO.Core;
 using HWKUltra.LightSource.Core;
@@ -50,6 +54,8 @@ namespace HWKUltra.Flow.Services
         private readonly BarcodeScannerRouter? _barcodeScannerRouter;
         private readonly CommunicationRouter? _communicationRouter;
         private readonly TeachDataService? _teachDataService;
+        private readonly IInferenceEngine? _inferenceEngine;
+        private readonly ITestRunStore? _testRunStore;
 
         public bool UseSimulation { get; set; } = false;
 
@@ -63,7 +69,9 @@ namespace HWKUltra.Flow.Services
             TrayRouter? trayRouter = null,
             BarcodeScannerRouter? barcodeScannerRouter = null,
             CommunicationRouter? communicationRouter = null,
-            TeachDataService? teachDataService = null)
+            TeachDataService? teachDataService = null,
+            IInferenceEngine? inferenceEngine = null,
+            ITestRunStore? testRunStore = null)
         {
             _motionRouter = motionRouter;
             _ioRouter = ioRouter;
@@ -75,6 +83,8 @@ namespace HWKUltra.Flow.Services
             _barcodeScannerRouter = barcodeScannerRouter;
             _communicationRouter = communicationRouter;
             _teachDataService = teachDataService;
+            _inferenceEngine = inferenceEngine;
+            _testRunStore = testRunStore;
         }
 
         public IFlowNode CreateNode(string type, Dictionary<string, string> properties)
@@ -204,6 +214,21 @@ namespace HWKUltra.Flow.Services
                 "SetSharedVariable" => new SetSharedVariableNode(),
                 "GetSharedVariable" => new GetSharedVariableNode(),
 
+                // Vision (no hardware router; LogicNodeBase nodes are pure functions)
+                "GetSharpnessLaplacian" => new GetSharpnessLaplacianNode(),
+                "GetSharpnessVar" => new GetSharpnessVarNode(),
+                "GetTenengrad" => new GetTenengradNode(),
+                "CalibrateCameraMpp" => new CalibrateCameraMppNode(),
+                "FindDatum" => new FindDatumNode(),
+                "FindLaserDatum" => new FindLaserDatumNode(),
+                "JudgeRowBarEmpty" => new JudgeRowBarEmptyNode(),
+                "DLInference" => new InferenceNode(_inferenceEngine),
+
+                // Session (test-run lifecycle, depends on ITestRunStore)
+                "StartTrayRun" => new StartTrayRunNode(_testRunStore),
+                "PopulateTrayReport" => new PopulateTrayReportNode(_testRunStore),
+                "FinalizeTrayRun" => new FinalizeTrayRunNode(_testRunStore),
+
                 // Advanced Features
                 "OnTheFlyCapture" => new OnTheFlyCaptureNode(_motionRouter, _cameraRouter),
 
@@ -317,6 +342,22 @@ namespace HWKUltra.Flow.Services
                 "ReleaseLock" => new ReleaseLockNode(),
                 "SetSharedVariable" => new SetSharedVariableNode(),
                 "GetSharedVariable" => new GetSharedVariableNode(),
+
+                // Vision Simulation (LogicNodeBase — pure image processing, no hardware to simulate;
+                // raw algorithms still execute. InferenceNode falls back to simulation via null engine.)
+                "GetSharpnessLaplacian" => new GetSharpnessLaplacianNode(),
+                "GetSharpnessVar" => new GetSharpnessVarNode(),
+                "GetTenengrad" => new GetTenengradNode(),
+                "CalibrateCameraMpp" => new CalibrateCameraMppNode(),
+                "FindDatum" => new FindDatumNode(),
+                "FindLaserDatum" => new FindLaserDatumNode(),
+                "JudgeRowBarEmpty" => new JudgeRowBarEmptyNode(),
+                "DLInference" => new InferenceNode(null),
+
+                // Session Simulation (null store → DeviceNodeBase runs ExecuteSimulatedAsync)
+                "StartTrayRun" => new StartTrayRunNode(null),
+                "PopulateTrayReport" => new PopulateTrayReportNode(null),
+                "FinalizeTrayRun" => new FinalizeTrayRunNode(null),
 
                 // Advanced Simulation
                 "OnTheFlyCapture" => new OnTheFlyCaptureNode(null, null, true),

@@ -1,12 +1,13 @@
-using System.Drawing;
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
+using HWKUltra.Flow.Utils;
 using HWKUltra.Vision.Abstractions;
 
 namespace HWKUltra.Flow.Nodes.Vision
 {
     /// <summary>
     /// Run DL inference via an <see cref="IInferenceEngine"/> service.
+    /// Accepts image as absolute path or context variable (Bitmap/Mat/byte[]/float[]/path).
     /// When the service is null the node runs in simulated mode (empty result).
     /// </summary>
     public class InferenceNode : DeviceNodeBase<IInferenceEngine>
@@ -16,7 +17,10 @@ namespace HWKUltra.Flow.Nodes.Vision
 
         public override List<FlowParameter> Inputs { get; } = new()
         {
-            new FlowParameter { Name = "BitmapVar", DisplayName = "Bitmap Variable", Type = "string", Required = true, Description = "Context variable holding the Bitmap to infer" }
+            new FlowParameter { Name = "Image", DisplayName = "Image", Type = "string", Required = true, Description = "Absolute path OR context variable" },
+            new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = false },
+            new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false },
+            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1 }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -33,11 +37,13 @@ namespace HWKUltra.Flow.Nodes.Vision
             await Task.CompletedTask;
             try
             {
-                var varName = context.GetNodeInput<string>(Id, "BitmapVar") ?? "";
-                if (string.IsNullOrEmpty(varName)) return FlowResult.Fail("BitmapVar is required");
-                var bmp = context.GetVariable<Bitmap>(varName);
-                if (bmp is null) return FlowResult.Fail($"Variable '{varName}' not found or not a Bitmap");
-                var result = Service!.Predict(bmp);
+                var image = context.GetNodeInput<string>(Id, "Image") ?? "";
+                if (string.IsNullOrEmpty(image)) return FlowResult.Fail("Image is required");
+                int w = context.GetNodeInput<int>(Id, "Width");
+                int h = context.GetNodeInput<int>(Id, "Height");
+                int ch = context.GetNodeInput<int>(Id, "Channels"); if (ch == 0) ch = 1;
+                using var resolved = ImageInputResolver.ResolveBitmap(context, image, w, h, ch);
+                var result = Service!.Predict(resolved.Bitmap);
                 context.SetNodeOutput(Id, "RawResult", result);
                 return FlowResult.Ok();
             }

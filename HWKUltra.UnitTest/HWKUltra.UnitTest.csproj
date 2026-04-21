@@ -23,6 +23,7 @@
     <ProjectReference Include="..\HWKUltra.AI\HWKUltra.AI.csproj" />
     <ProjectReference Include="..\HWKUltra.TestRun\HWKUltra.TestRun.csproj" />
     <ProjectReference Include="..\HWKUltra.Vision\HWKUltra.Vision.csproj" />
+    <ProjectReference Include="..\HWKUltra.Communication\HWKUltra.Communication.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,17 +2,19 @@
   "Categories": [
     { "Name": "Motion", "Color": "#FF5722", "Order": 0 },
     { "Name": "Camera", "Color": "#4CAF50", "Order": 1 },
-    { "Name": "Measurement", "Color": "#673AB7", "Order": 2 },
-    { "Name": "IO", "Color": "#607D8B", "Order": 3 },
-    { "Name": "LightSource", "Color": "#FFC107", "Order": 4 },
-    { "Name": "AutoFocus", "Color": "#00BCD4", "Order": 5 },
-    { "Name": "Tray", "Color": "#795548", "Order": 6 },
-    { "Name": "BarcodeScanner", "Color": "#3F51B5", "Order": 7 },
-    { "Name": "TeachData", "Color": "#009688", "Order": 8 },
-    { "Name": "Communication", "Color": "#8BC34A", "Order": 9 },
-    { "Name": "Logic", "Color": "#9E9E9E", "Order": 10 },
-    { "Name": "Synchronization", "Color": "#FF9800", "Order": 11 },
-    { "Name": "Advanced", "Color": "#E91E63", "Order": 12 }
+    { "Name": "Vision", "Color": "#9C27B0", "Order": 2 },
+    { "Name": "Measurement", "Color": "#673AB7", "Order": 3 },
+    { "Name": "IO", "Color": "#607D8B", "Order": 4 },
+    { "Name": "LightSource", "Color": "#FFC107", "Order": 5 },
+    { "Name": "AutoFocus", "Color": "#00BCD4", "Order": 6 },
+    { "Name": "Tray", "Color": "#795548", "Order": 7 },
+    { "Name": "BarcodeScanner", "Color": "#3F51B5", "Order": 8 },
+    { "Name": "TeachData", "Color": "#009688", "Order": 9 },
+    { "Name": "Session", "Color": "#FF4081", "Order": 10 },
+    { "Name": "Communication", "Color": "#8BC34A", "Order": 11 },
+    { "Name": "Logic", "Color": "#9E9E9E", "Order": 12 },
+    { "Name": "Synchronization", "Color": "#FF9800", "Order": 13 },
+    { "Name": "Advanced", "Color": "#E91E63", "Order": 14 }
   ],
   "Nodes": [
     { "Type": "AxisHome", "DisplayName": "Axis Home", "Category": "Motion" },
@@ -29,6 +31,15 @@
     { "Type": "CameraSetExposure", "DisplayName": "Camera Set Exposure", "Category": "Camera" },
     { "Type": "CameraSetGain", "DisplayName": "Camera Set Gain", "Category": "Camera" },
     { "Type": "CameraSetTriggerMode", "DisplayName": "Camera Set Trigger Mode", "Category": "Camera" },
+
+    { "Type": "GetSharpnessLaplacian", "DisplayName": "Get Sharpness (Laplacian)", "Category": "Vision" },
+    { "Type": "GetSharpnessVar", "DisplayName": "Get Sharpness (Variance)", "Category": "Vision" },
+    { "Type": "GetTenengrad", "DisplayName": "Get Tenengrad", "Category": "Vision" },
+    { "Type": "CalibrateCameraMpp", "DisplayName": "Calibrate Camera MPP", "Category": "Vision" },
+    { "Type": "FindDatum", "DisplayName": "Find Datum", "Category": "Vision" },
+    { "Type": "FindLaserDatum", "DisplayName": "Find Laser Datum", "Category": "Vision" },
+    { "Type": "JudgeRowBarEmpty", "DisplayName": "Judge Row-Bar Empty", "Category": "Vision" },
+    { "Type": "DLInference", "DisplayName": "DL Inference", "Category": "Vision" },
 
     { "Type": "MeasurementOpen", "DisplayName": "Measurement Open", "Category": "Measurement" },
     { "Type": "MeasurementClose", "DisplayName": "Measurement Close", "Category": "Measurement" },
@@ -74,6 +85,10 @@
     { "Type": "MoveToTeachPosition", "DisplayName": "Move To Teach Position", "Category": "TeachData" },
     { "Type": "GetTeachPosition", "DisplayName": "Get Teach Position", "Category": "TeachData" },
     { "Type": "SetTeachPosition", "DisplayName": "Set Teach Position", "Category": "TeachData" },
+
+    { "Type": "StartTrayRun", "DisplayName": "Start Tray Run", "Category": "Session" },
+    { "Type": "PopulateTrayReport", "DisplayName": "Populate Tray Report", "Category": "Session" },
+    { "Type": "FinalizeTrayRun", "DisplayName": "Finalize Tray Run", "Category": "Session" },
 
     { "Type": "CommunicationOpen", "DisplayName": "Communication Open", "Category": "Communication" },
     { "Type": "CommunicationClose", "DisplayName": "Communication Close", "Category": "Communication" },

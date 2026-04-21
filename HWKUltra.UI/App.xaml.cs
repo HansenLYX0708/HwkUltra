@@ -1,5 +1,7 @@
 ﻿using HWKUltra.AI.Config;
 using HWKUltra.AI.Services;
+using HWKUltra.TestRun.Abstractions;
+using HWKUltra.TestRun.Core;
 using HWKUltra.UI.Services;
 using HWKUltra.UI.ViewModels.Controls;
 using HWKUltra.UI.ViewModels.Pages;
@@ -65,6 +67,11 @@ namespace HWKUltra.UI
                 services.AddSingleton<TeachDataViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
+
+                // Test-run live view — ITestRunStore is the singleton sink other layers (Flow, Communication) also use.
+                services.AddSingleton<ITestRunStore, TestRunStore>();
+                services.AddSingleton<RunsPage>();
+                services.AddSingleton<RunsViewModel>();
 
                 // AI Assistant
                 services.AddSingleton<LLMConfig>(sp =>

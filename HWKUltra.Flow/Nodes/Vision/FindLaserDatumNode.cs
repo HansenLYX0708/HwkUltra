@@ -1,12 +1,14 @@
 using HWKUltra.Flow.Abstractions;
 using HWKUltra.Flow.Nodes.Abstractions;
+using HWKUltra.Flow.Utils;
 using HWKUltra.Vision.Algorithms.Detection;
 
 namespace HWKUltra.Flow.Nodes.Vision
 {
     /// <summary>
-    /// Locate laser datum center in a grayscale image buffer.
-    /// Expects three context variables: <c>ImageDataVar</c> (byte[]), image height, image width.
+    /// Locate laser datum center in a grayscale image.
+    /// Accepts image as absolute path or context variable (Bitmap/Mat/byte[]/float[]/path).
+    /// For raw byte[] or float[] input, Width and Height are required.
     /// </summary>
     public class FindLaserDatumNode : LogicNodeBase
     {
@@ -15,9 +17,9 @@ namespace HWKUltra.Flow.Nodes.Vision
 
         public override List<FlowParameter> Inputs { get; } = new()
         {
-            new FlowParameter { Name = "ImageDataVar", DisplayName = "Image Data Var", Type = "string", Required = true },
-            new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = true },
-            new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = true }
+            new FlowParameter { Name = "Image", DisplayName = "Image", Type = "string", Required = true, Description = "Absolute path OR context variable" },
+            new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = false, Description = "Required when input is raw byte[]/float[]" },
+            new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false, Description = "Required when input is raw byte[]/float[]" }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -31,12 +33,12 @@ namespace HWKUltra.Flow.Nodes.Vision
             await Task.CompletedTask;
             try
             {
-                var varName = context.GetNodeInput<string>(Id, "ImageDataVar") ?? "";
-                var h = context.GetNodeInput<int>(Id, "Height");
-                var w = context.GetNodeInput<int>(Id, "Width");
-                var data = context.GetVariable<byte[]>(varName);
-                if (data is null) return FlowResult.Fail($"Variable '{varName}' not found or not a byte[]");
-                var p = LaserDatumFinder.GetCenter(data, h, w, "");
+                var image = context.GetNodeInput<string>(Id, "Image") ?? "";
+                if (string.IsNullOrEmpty(image)) return FlowResult.Fail("Image is required");
+                int w = context.GetNodeInput<int>(Id, "Width");
+                int h = context.GetNodeInput<int>(Id, "Height");
+                var (data, rw, rh) = ImageInputResolver.ResolveBytes(context, image, w, h, isColor: false);
+                var p = LaserDatumFinder.GetCenter(data, rh, rw, "");
                 context.SetNodeOutput(Id, "X", p.X);
                 context.SetNodeOutput(Id, "Y", p.Y);
                 return FlowResult.Ok();

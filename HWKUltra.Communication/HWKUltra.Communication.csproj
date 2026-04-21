@@ -8,12 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HWKUltra.Core\HWKUltra.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="CommunicationLib.cs" />
-    <Compile Remove="ToolController.cs" />
-    <Compile Remove="TrayDetectionResult.cs" />
+    <ProjectReference Include="..\HWKUltra.TestRun\HWKUltra.TestRun.csproj" />
   </ItemGroup>
 
   <ItemGroup>
