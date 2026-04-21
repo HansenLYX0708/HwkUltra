@@ -32,6 +32,8 @@
     { "Type": "CameraSetGain", "DisplayName": "Camera Set Gain", "Category": "Camera" },
     { "Type": "CameraSetTriggerMode", "DisplayName": "Camera Set Trigger Mode", "Category": "Camera" },
 
+    { "Type": "LoadImage", "DisplayName": "Load Image", "Category": "Vision" },
+    { "Type": "LoadImageFolder", "DisplayName": "Load Image Folder", "Category": "Vision" },
     { "Type": "GetSharpnessLaplacian", "DisplayName": "Get Sharpness (Laplacian)", "Category": "Vision" },
     { "Type": "GetSharpnessVar", "DisplayName": "Get Sharpness (Variance)", "Category": "Vision" },
     { "Type": "GetTenengrad", "DisplayName": "Get Tenengrad", "Category": "Vision" },
@@ -111,6 +113,7 @@
     { "Type": "ReleaseLock", "DisplayName": "Release Lock", "Category": "Synchronization" },
     { "Type": "SetSharedVariable", "DisplayName": "Set Shared Variable", "Category": "Synchronization" },
     { "Type": "GetSharedVariable", "DisplayName": "Get Shared Variable", "Category": "Synchronization" },
+    { "Type": "IncrementSharedVariable", "DisplayName": "Increment Shared Variable", "Category": "Synchronization" },
 
     { "Type": "OnTheFlyCapture", "DisplayName": "On-The-Fly Capture", "Category": "Advanced" }
   ]

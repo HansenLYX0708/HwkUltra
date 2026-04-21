@@ -213,8 +213,11 @@ namespace HWKUltra.Flow.Services
                 "ReleaseLock" => new ReleaseLockNode(),
                 "SetSharedVariable" => new SetSharedVariableNode(),
                 "GetSharedVariable" => new GetSharedVariableNode(),
+                "IncrementSharedVariable" => new IncrementSharedVariableNode(),
 
                 // Vision (no hardware router; LogicNodeBase nodes are pure functions)
+                "LoadImage" => new LoadImageNode(),
+                "LoadImageFolder" => new LoadImageFolderNode(),
                 "GetSharpnessLaplacian" => new GetSharpnessLaplacianNode(),
                 "GetSharpnessVar" => new GetSharpnessVarNode(),
                 "GetTenengrad" => new GetTenengradNode(),
@@ -342,9 +345,12 @@ namespace HWKUltra.Flow.Services
                 "ReleaseLock" => new ReleaseLockNode(),
                 "SetSharedVariable" => new SetSharedVariableNode(),
                 "GetSharedVariable" => new GetSharedVariableNode(),
+                "IncrementSharedVariable" => new IncrementSharedVariableNode(),
 
                 // Vision Simulation (LogicNodeBase — pure image processing, no hardware to simulate;
                 // raw algorithms still execute. InferenceNode falls back to simulation via null engine.)
+                "LoadImage" => new LoadImageNode(),
+                "LoadImageFolder" => new LoadImageFolderNode(),
                 "GetSharpnessLaplacian" => new GetSharpnessLaplacianNode(),
                 "GetSharpnessVar" => new GetSharpnessVarNode(),
                 "GetTenengrad" => new GetTenengradNode(),

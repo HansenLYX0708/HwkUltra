@@ -1,0 +1,97 @@
+{
+  "id": "async-pipeline-worker",
+  "name": "Async Pipeline Worker",
+  "description": "One worker in the preprocess pool. Claims next image index atomically, loads it at 80ms cadence, preprocesses (~200ms), then serializes GPU CNN inference via named lock 'GPU'. Cycles until NextIndex reaches TotalCount.",
+  "version": "1.0.0",
+  "startNodeId": "node-claim",
+  "nodes": [
+    {
+      "id": "node-claim",
+      "type": "IncrementSharedVariable",
+      "name": "Claim Next Index",
+      "description": "Atomic fetch-and-add on shared 'NextIndex'; the previous value is MY task index",
+      "x": 50,
+      "y": 200,
+      "properties": {
+        "Key": "NextIndex",
+        "Delta": "1",
+        "InitialValue": "0",
+        "TargetVariable": "MyIndex"
+      }
+    },
+    {
+      "id": "node-check",
+      "type": "Branch",
+      "name": "MyIndex < 50 ?",
+      "description": "Stop condition: exit when no more work",
+      "x": 260,
+      "y": 200,
+      "properties": {
+        "Condition": "MyIndex",
+        "Operator": "LessThan",
+        "CompareValue": "50"
+      }
+    },
+    {
+      "id": "node-load",
+      "type": "LoadImageFolder",
+      "name": "Read Image @ 80ms",
+      "description": "Load images[MyIndex] after 80ms delay (simulates camera frame rate)",
+      "x": 470,
+      "y": 120,
+      "properties": {
+        "Folder": "D:\\TestImages",
+        "Pattern": "*.bmp;*.png;*.jpg",
+        "Index": "MyIndex",
+        "IntervalMs": "80",
+        "OutputVariable": "WorkImg"
+      }
+    },
+    {
+      "id": "node-preprocess",
+      "type": "Delay",
+      "name": "Preprocess ~200ms",
+      "description": "Simulates 200ms CPU preprocessing (replace with real vision nodes in production)",
+      "x": 690,
+      "y": 120,
+      "properties": { "Duration": "200", "CanCancel": "true" }
+    },
+    {
+      "id": "node-gpu-lock",
+      "type": "AcquireLock",
+      "name": "Acquire GPU",
+      "description": "Serialize access to the GPU: only one worker performs inference at a time",
+      "x": 910,
+      "y": 120,
+      "properties": { "LockName": "GPU", "TimeoutMs": "60000" }
+    },
+    {
+      "id": "node-infer",
+      "type": "DLInference",
+      "name": "CNN Inference (GPU)",
+      "description": "Runs under GPU lock. Uses simulated engine if no IInferenceEngine is registered.",
+      "x": 1130,
+      "y": 120,
+      "properties": { "Image": "WorkImg" }
+    },
+    {
+      "id": "node-gpu-unlock",
+      "type": "ReleaseLock",
+      "name": "Release GPU",
+      "description": "Must always release after inference so next worker can proceed",
+      "x": 1350,
+      "y": 120,
+      "properties": { "LockName": "GPU" }
+    }
+  ],
+  "connections": [
+    { "id": "w1", "sourceNodeId": "node-claim",      "targetNodeId": "node-check" },
+    { "id": "w2", "sourceNodeId": "node-check",      "targetNodeId": "node-load",        "condition": "True" },
+    { "id": "w3", "sourceNodeId": "node-load",       "targetNodeId": "node-preprocess" },
+    { "id": "w4", "sourceNodeId": "node-preprocess", "targetNodeId": "node-gpu-lock" },
+    { "id": "w5", "sourceNodeId": "node-gpu-lock",   "targetNodeId": "node-infer",       "condition": "Acquired" },
+    { "id": "w6", "sourceNodeId": "node-infer",      "targetNodeId": "node-gpu-unlock" },
+    { "id": "w7", "sourceNodeId": "node-gpu-unlock", "targetNodeId": "node-claim" }
+  ],
+  "globalVariables": []
+}
