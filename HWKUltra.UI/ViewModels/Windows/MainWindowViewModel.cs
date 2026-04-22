@@ -77,9 +77,9 @@ namespace HWKUltra.UI.ViewModels.Windows
             {
                 MenuItems.Add(new NavigationViewItem()
                 {
-                    Content = "Node Test",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.Play24 },
-                    TargetPageType = typeof(Views.Pages.NodeTestPage)
+                    Content = "Creator",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Diagram24 },
+                    TargetPageType = typeof(Views.Pages.CreatorPage)
                 });
 
                 MenuItems.Add(new NavigationViewItem()
@@ -98,9 +98,9 @@ namespace HWKUltra.UI.ViewModels.Windows
 
                 MenuItems.Add(new NavigationViewItem()
                 {
-                    Content = "Creator",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.Diagram24 },
-                    TargetPageType = typeof(Views.Pages.CreatorPage)
+                    Content = "Node Test",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Play24 },
+                    TargetPageType = typeof(Views.Pages.NodeTestPage)
                 });
 
                 MenuItems.Add(new NavigationViewItem()

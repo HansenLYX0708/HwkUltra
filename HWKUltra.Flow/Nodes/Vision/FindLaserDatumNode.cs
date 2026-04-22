@@ -19,7 +19,8 @@ namespace HWKUltra.Flow.Nodes.Vision
         {
             new FlowParameter { Name = "Image", DisplayName = "Image", Type = "string", Required = true, Description = "Absolute path OR context variable" },
             new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = false, Description = "Required when input is raw byte[]/float[]" },
-            new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false, Description = "Required when input is raw byte[]/float[]" }
+            new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false, Description = "Required when input is raw byte[]/float[]" },
+            new FlowParameter { Name = "OutputVariable", DisplayName = "Output Variable", Type = "string", Required = false, Description = "Shared-context name; stores Point at name, plus {name}_X / {name}_Y" }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -41,6 +42,7 @@ namespace HWKUltra.Flow.Nodes.Vision
                 var p = LaserDatumFinder.GetCenter(data, rh, rw, "");
                 context.SetNodeOutput(Id, "X", p.X);
                 context.SetNodeOutput(Id, "Y", p.Y);
+                VisionOutput.PublishCompound(context, Id, "OutputVariable", p, ("X", p.X), ("Y", p.Y));
                 return FlowResult.Ok();
             }
             catch (Exception ex) { return FlowResult.Fail($"FindLaserDatum failed: {ex.Message}"); }

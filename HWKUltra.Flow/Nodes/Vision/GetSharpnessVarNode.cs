@@ -19,7 +19,8 @@ namespace HWKUltra.Flow.Nodes.Vision
             new FlowParameter { Name = "Image", DisplayName = "Image", Type = "string", Required = true, Description = "Absolute path OR context variable holding Bitmap/Mat/byte[]/float[]/path" },
             new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = false },
             new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false },
-            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1 }
+            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1 },
+            new FlowParameter { Name = "OutputVariable", DisplayName = "Output Variable", Type = "string", Required = false, Description = "Shared-context name for the Score" }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -40,6 +41,7 @@ namespace HWKUltra.Flow.Nodes.Vision
                 using var resolved = ImageInputResolver.ResolveBitmap(context, image, w, h, ch);
                 var score = SharpnessVar.Get(resolved.Bitmap);
                 context.SetNodeOutput(Id, "Score", score);
+                VisionOutput.Publish(context, Id, "OutputVariable", score);
                 return FlowResult.Ok();
             }
             catch (Exception ex) { return FlowResult.Fail($"Variance sharpness failed: {ex.Message}"); }

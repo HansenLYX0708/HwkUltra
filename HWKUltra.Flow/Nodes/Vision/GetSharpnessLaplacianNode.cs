@@ -19,7 +19,8 @@ namespace HWKUltra.Flow.Nodes.Vision
             new FlowParameter { Name = "Image", DisplayName = "Image", Type = "string", Required = true, Description = "Absolute file path OR context variable name holding Bitmap/Mat/byte[]/float[]/path" },
             new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = false, Description = "Required only for raw byte[]/float[] input" },
             new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false, Description = "Required only for raw byte[]/float[] input" },
-            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1, Description = "1/3/4 — only for raw byte[] input" }
+            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1, Description = "1/3/4 — only for raw byte[] input" },
+            new FlowParameter { Name = "OutputVariable", DisplayName = "Output Variable", Type = "string", Required = false, Description = "Shared-context name for the Score (downstream-friendly)" }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -40,6 +41,7 @@ namespace HWKUltra.Flow.Nodes.Vision
                 using var resolved = ImageInputResolver.ResolveBitmap(context, image, w, h, ch);
                 var score = SharpnessLaplacian.Get(resolved.Bitmap);
                 context.SetNodeOutput(Id, "Score", score);
+                VisionOutput.Publish(context, Id, "OutputVariable", score);
                 return FlowResult.Ok();
             }
             catch (Exception ex) { return FlowResult.Fail($"Laplacian sharpness failed: {ex.Message}"); }

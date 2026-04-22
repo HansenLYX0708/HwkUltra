@@ -1,0 +1,27 @@
+{
+  "id": "image-consumer-001",
+  "name": "Image Consumer",
+  "description": "Parallel streaming consumer — drains ImagePool with N workers, each running SharpnessWorker.json per frame. Exits when the pool is CompleteAdding + empty.",
+  "createdAt": "2026-04-22T00:00:00",
+  "modifiedAt": "2026-04-22T00:00:00",
+  "version": "1.0.0",
+  "startNodeId": "node-parallel",
+  "nodes": [
+    {
+      "id": "node-parallel",
+      "type": "Parallel",
+      "name": "Consume Pool",
+      "x": 200,
+      "y": 200,
+      "properties": {
+        "FlowPaths": "SharpnessWorker.json",
+        "ItemsSource": "ImagePool",
+        "WorkerCount": "4",
+        "ItemVariable": "CurrentItem",
+        "IndexVariable": "CurrentIndex"
+      }
+    }
+  ],
+  "connections": [],
+  "globalVariables": []
+}

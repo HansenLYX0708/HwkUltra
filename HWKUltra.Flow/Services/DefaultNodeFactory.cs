@@ -136,6 +136,7 @@ namespace HWKUltra.Flow.Services
                 "CameraSetExposure" => new CameraSetExposureNode(_cameraRouter),
                 "CameraSetGain" => new CameraSetGainNode(_cameraRouter),
                 "CameraSetTriggerMode" => new CameraSetTriggerModeNode(_cameraRouter),
+                "CameraStartCapture" => new CameraStartCaptureNode(_cameraRouter),
 
                 // Measurement (null → auto simulation)
                 "MeasurementOpen" => new MeasurementOpenNode(_measurementRouter),
@@ -214,6 +215,11 @@ namespace HWKUltra.Flow.Services
                 "SetSharedVariable" => new SetSharedVariableNode(),
                 "GetSharedVariable" => new GetSharedVariableNode(),
                 "IncrementSharedVariable" => new IncrementSharedVariableNode(),
+                "AppendToList" => new AppendToListNode(),
+                "SaveResultsToCsv" => new SaveResultsToCsvNode(),
+                "ImagePoolCreate" => new ImagePoolCreateNode(),
+                "ImagePoolComplete" => new ImagePoolCompleteNode(),
+                "ImagePoolClose" => new ImagePoolCloseNode(),
 
                 // Vision (no hardware router; LogicNodeBase nodes are pure functions)
                 "LoadImage" => new LoadImageNode(),
@@ -221,6 +227,8 @@ namespace HWKUltra.Flow.Services
                 "GetSharpnessLaplacian" => new GetSharpnessLaplacianNode(),
                 "GetSharpnessVar" => new GetSharpnessVarNode(),
                 "GetTenengrad" => new GetTenengradNode(),
+                "EnumerateFolder" => new EnumerateFolderNode(),
+                "DisposeImage" => new DisposeImageNode(),
                 "CalibrateCameraMpp" => new CalibrateCameraMppNode(),
                 "FindDatum" => new FindDatumNode(),
                 "FindLaserDatum" => new FindLaserDatumNode(),
@@ -268,6 +276,7 @@ namespace HWKUltra.Flow.Services
                 "CameraSetExposure" => new SimCameraSetExposureNode(),
                 "CameraSetGain" => new SimCameraSetGainNode(),
                 "CameraSetTriggerMode" => new SimCameraSetTriggerModeNode(),
+                "CameraStartCapture" => new CameraStartCaptureNode(null),
 
                 // Measurement Simulation
                 "MeasurementOpen" => new SimMeasurementOpenNode(),
@@ -346,6 +355,11 @@ namespace HWKUltra.Flow.Services
                 "SetSharedVariable" => new SetSharedVariableNode(),
                 "GetSharedVariable" => new GetSharedVariableNode(),
                 "IncrementSharedVariable" => new IncrementSharedVariableNode(),
+                "AppendToList" => new AppendToListNode(),
+                "SaveResultsToCsv" => new SaveResultsToCsvNode(),
+                "ImagePoolCreate" => new ImagePoolCreateNode(),
+                "ImagePoolComplete" => new ImagePoolCompleteNode(),
+                "ImagePoolClose" => new ImagePoolCloseNode(),
 
                 // Vision Simulation (LogicNodeBase — pure image processing, no hardware to simulate;
                 // raw algorithms still execute. InferenceNode falls back to simulation via null engine.)
@@ -354,6 +368,8 @@ namespace HWKUltra.Flow.Services
                 "GetSharpnessLaplacian" => new GetSharpnessLaplacianNode(),
                 "GetSharpnessVar" => new GetSharpnessVarNode(),
                 "GetTenengrad" => new GetTenengradNode(),
+                "EnumerateFolder" => new EnumerateFolderNode(),
+                "DisposeImage" => new DisposeImageNode(),
                 "CalibrateCameraMpp" => new CalibrateCameraMppNode(),
                 "FindDatum" => new FindDatumNode(),
                 "FindLaserDatum" => new FindLaserDatumNode(),

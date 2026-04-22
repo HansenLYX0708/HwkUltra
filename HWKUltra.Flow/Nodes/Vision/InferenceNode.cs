@@ -20,7 +20,8 @@ namespace HWKUltra.Flow.Nodes.Vision
             new FlowParameter { Name = "Image", DisplayName = "Image", Type = "string", Required = true, Description = "Absolute path OR context variable" },
             new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = false },
             new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false },
-            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1 }
+            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1 },
+            new FlowParameter { Name = "OutputVariable", DisplayName = "Output Variable", Type = "string", Required = false, Description = "Shared-context name for the RawResult int[]" }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -45,6 +46,7 @@ namespace HWKUltra.Flow.Nodes.Vision
                 using var resolved = ImageInputResolver.ResolveBitmap(context, image, w, h, ch);
                 var result = Service!.Predict(resolved.Bitmap);
                 context.SetNodeOutput(Id, "RawResult", result);
+                VisionOutput.Publish(context, Id, "OutputVariable", result);
                 return FlowResult.Ok();
             }
             catch (Exception ex) { return FlowResult.Fail($"Inference failed: {ex.Message}"); }
@@ -57,6 +59,7 @@ namespace HWKUltra.Flow.Nodes.Vision
             int[] sim = new int[256];
             for (int i = 0; i < 6; i++) sim[i] = -1;
             context.SetNodeOutput(Id, "RawResult", sim);
+            VisionOutput.Publish(context, Id, "OutputVariable", sim);
             return FlowResult.Ok();
         }
     }

@@ -39,7 +39,13 @@ namespace HWKUltra.Flow.Nodes.Vision
                 var folder  = context.GetNodeInput<string>(Id, "Folder") ?? "";
                 var pattern = context.GetNodeInput<string>(Id, "Pattern");
                 if (string.IsNullOrWhiteSpace(pattern)) pattern = "*.bmp;*.png;*.jpg";
-                var index   = context.GetNodeInput<int>(Id, "Index");
+                // Index supports literal int OR a variable name (e.g. "CurrentIndex")
+                var indexRaw = context.GetNodeInput<string>(Id, "Index") ?? "0";
+                int index;
+                if (!int.TryParse(indexRaw, out index))
+                {
+                    index = context.FindVariable<int>(indexRaw);
+                }
                 var delay   = context.GetNodeInput<int>(Id, "IntervalMs");
                 var outVar  = context.GetNodeInput<string>(Id, "OutputVariable");
                 if (string.IsNullOrWhiteSpace(outVar)) outVar = "LoadedBitmap";

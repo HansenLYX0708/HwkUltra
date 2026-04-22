@@ -1,0 +1,75 @@
+{
+  "id": "camera-streaming-sharpness-001",
+  "name": "Camera Streaming Sharpness",
+  "description": "Pipeline: Camera producer + parallel sharpness consumer, sharing an ImagePool. Runs fine in simulation (synthetic frames) or with a real Basler camera.",
+  "createdAt": "2026-04-22T00:00:00",
+  "modifiedAt": "2026-04-22T00:00:00",
+  "version": "1.0.0",
+  "startNodeId": "node-pool-create",
+  "nodes": [
+    {
+      "id": "node-pool-create",
+      "type": "ImagePoolCreate",
+      "name": "Create Pool",
+      "x": 100,
+      "y": 200,
+      "properties": {
+        "Name": "ImagePool",
+        "Capacity": "50"
+      }
+    },
+    {
+      "id": "node-pipeline",
+      "type": "Parallel",
+      "name": "Camera + Consumer Pipeline",
+      "description": "Runs CameraProducer.json (fills pool) and ImageConsumer.json (drains pool) concurrently",
+      "x": 320,
+      "y": 200,
+      "properties": {
+        "FlowPaths": "CameraProducer.json, ImageConsumer.json",
+        "WaitMode": "All",
+        "TimeoutMs": "60000"
+      }
+    },
+    {
+      "id": "node-save",
+      "type": "SaveResultsToCsv",
+      "name": "Save CSV",
+      "x": 580,
+      "y": 200,
+      "properties": {
+        "Key": "FlowResults",
+        "Path": "camera_sharpness_{yyyyMMdd_HHmmss}.csv",
+        "Encoding": "UTF8BOM"
+      }
+    },
+    {
+      "id": "node-pool-close",
+      "type": "ImagePoolClose",
+      "name": "Close Pool",
+      "x": 820,
+      "y": 200,
+      "properties": {
+        "Name": "ImagePool"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "sourceNodeId": "node-pool-create",
+      "targetNodeId": "node-pipeline"
+    },
+    {
+      "id": "c2",
+      "sourceNodeId": "node-pipeline",
+      "targetNodeId": "node-save"
+    },
+    {
+      "id": "c3",
+      "sourceNodeId": "node-save",
+      "targetNodeId": "node-pool-close"
+    }
+  ],
+  "globalVariables": []
+}

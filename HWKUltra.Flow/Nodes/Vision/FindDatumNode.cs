@@ -20,7 +20,8 @@ namespace HWKUltra.Flow.Nodes.Vision
             new FlowParameter { Name = "TemplatePath", DisplayName = "Template Path", Type = "string", Required = false, Description = "Optional override for DatumTemplate.bmp path" },
             new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = false },
             new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false },
-            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1 }
+            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1 },
+            new FlowParameter { Name = "OutputVariable", DisplayName = "Output Variable", Type = "string", Required = false, Description = "Shared-context name; stores Point at name, plus {name}_X / {name}_Y" }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -45,6 +46,7 @@ namespace HWKUltra.Flow.Nodes.Vision
                 var p = DatumFinder.Find(resolved.Bitmap);
                 context.SetNodeOutput(Id, "X", p.X);
                 context.SetNodeOutput(Id, "Y", p.Y);
+                VisionOutput.PublishCompound(context, Id, "OutputVariable", p, ("X", p.X), ("Y", p.Y));
                 return FlowResult.Ok();
             }
             catch (Exception ex) { return FlowResult.Fail($"FindDatum failed: {ex.Message}"); }

@@ -19,7 +19,8 @@ namespace HWKUltra.Flow.Nodes.Vision
             new FlowParameter { Name = "Image", DisplayName = "Image", Type = "string", Required = true, Description = "Absolute path OR context variable" },
             new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = false },
             new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false },
-            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1 }
+            new FlowParameter { Name = "Channels", DisplayName = "Channels", Type = "int", Required = false, DefaultValue = 1 },
+            new FlowParameter { Name = "OutputVariable", DisplayName = "Output Variable", Type = "string", Required = false, Description = "Shared-context name for the MPP value" }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -40,6 +41,7 @@ namespace HWKUltra.Flow.Nodes.Vision
                 using var resolved = ImageInputResolver.ResolveBitmap(context, image, w, h, ch);
                 var mpp = CameraMppCalibrator.GetMPP(resolved.Bitmap);
                 context.SetNodeOutput(Id, "Mpp", mpp);
+                VisionOutput.Publish(context, Id, "OutputVariable", mpp);
                 return FlowResult.Ok();
             }
             catch (Exception ex) { return FlowResult.Fail($"MPP calibration failed: {ex.Message}"); }

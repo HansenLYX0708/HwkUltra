@@ -23,6 +23,7 @@ namespace HWKUltra.UI.ViewModels.Pages
         private FlowDefinition? _definition;
         private CancellationTokenSource? _cts;
         private Stopwatch? _stopwatch;
+        private SharedFlowContext? _sharedContext;
 
         public FlowRunnerViewModel(NodeCatalogService catalogService)
         {
@@ -75,6 +76,26 @@ namespace HWKUltra.UI.ViewModels.Pages
 
         public ObservableCollection<FlowLogEntry> LogEntries { get; } = new();
 
+        // Lightweight post-run summary (count + CSV path, if any). No per-row grid during
+        // execution so UI polling never impacts flow timing.
+        [ObservableProperty]
+        private int _flowResultsCount;
+
+        [ObservableProperty]
+        private string _flowResultsCsvPath = "";
+
+        [ObservableProperty]
+        private bool _hasCsvPath;
+
+        [ObservableProperty]
+        private bool _hasFlowResults;
+
+        [ObservableProperty]
+        private string _poolSummary = "";
+
+        [ObservableProperty]
+        private bool _hasPoolSummary;
+
         #endregion
 
         #region Commands
@@ -125,6 +146,11 @@ namespace HWKUltra.UI.ViewModels.Pages
             ExecutedNodes = 0;
             CurrentNodeName = "";
             LogEntries.Clear();
+            FlowResultsCount = 0;
+            FlowResultsCsvPath = "";
+            HasFlowResults = false;
+            PoolSummary = "";
+            HasPoolSummary = false;
 
             AddLog("INFO", $"Starting flow: {_definition.Name} ({TotalNodes} nodes)");
 
@@ -160,18 +186,19 @@ namespace HWKUltra.UI.ViewModels.Pages
             _engine.FlowResumed += (_, _) => Dispatch(() => AddLog("INFO", "Flow resumed"));
 
             // Build context
-            var context = new FlowContext { NodeFactory = _nodeFactory, SharedContext = new SharedFlowContext() };
+            _sharedContext = new SharedFlowContext();
+            var context = new FlowContext { NodeFactory = _nodeFactory, SharedContext = _sharedContext };
             foreach (var nodeDef in executionDef.Nodes)
                 foreach (var prop in nodeDef.Properties)
                     context.Variables[$"{nodeDef.Id}:{prop.Key}"] = prop.Value;
 
-            // Start timer update
+            // Timer update only (no result grid polling — avoids interfering with flow timing).
             _ = Task.Run(async () =>
             {
                 while (RunState is FlowRunState.Running or FlowRunState.Paused)
                 {
                     Dispatch(() => ElapsedTime = _stopwatch?.Elapsed.ToString(@"mm\:ss\.fff") ?? "");
-                    await Task.Delay(100);
+                    await Task.Delay(250);
                 }
             });
 
@@ -207,6 +234,9 @@ namespace HWKUltra.UI.ViewModels.Pages
             }
             finally
             {
+                // Final refresh so any last-minute rows are displayed.
+                RefreshFlowResults();
+                RefreshActivePools();
                 RunState = FlowRunState.Idle;
                 _engine = null;
                 _cts?.Dispose();
@@ -288,6 +318,60 @@ namespace HWKUltra.UI.ViewModels.Pages
                 var branch = !string.IsNullOrEmpty(e.Result?.BranchLabel) ? $" → {e.Result!.BranchLabel}" : "";
                 AddLog("NODE", $"✓ Completed: {e.Node.Name}{branch} [{status}]");
             });
+        }
+
+        /// <summary>
+        /// Post-run summary: how many result rows were collected, and where the CSV
+        /// (if any) was saved. Called once after flow completion — never during the run.
+        /// </summary>
+        private void RefreshFlowResults()
+        {
+            if (_sharedContext == null) return;
+            var list = _sharedContext.GetVariable<List<Dictionary<string, object>>>("FlowResults");
+            if (list == null) { HasFlowResults = false; return; }
+
+            int count;
+            lock (list) count = list.Count;
+
+            FlowResultsCount = count;
+            FlowResultsCsvPath = _sharedContext.GetVariable<string>("FlowResults_CsvPath") ?? "";
+            HasCsvPath = !string.IsNullOrEmpty(FlowResultsCsvPath);
+            HasFlowResults = count > 0;
+        }
+
+        /// <summary>
+        /// Post-run pool summary: totals for the main ImagePool (if any existed).
+        /// </summary>
+        private void RefreshActivePools()
+        {
+            if (_sharedContext == null) return;
+            var probed = new[] { "ImagePool", "FrameQueue", "CameraPool", "Pool" };
+            foreach (var name in probed)
+            {
+                var pool = _sharedContext.GetVariable<ImagePool>(name);
+                if (pool == null) continue;
+                PoolSummary = $"{pool.Name}: produced={pool.TotalEnqueued}, processed={pool.TotalDequeued}"
+                    + (pool.TotalDropped > 0 ? $", dropped={pool.TotalDropped}" : "");
+                HasPoolSummary = true;
+                return;
+            }
+            HasPoolSummary = false;
+        }
+
+        [RelayCommand]
+        private void OpenCsvFolder()
+        {
+            if (string.IsNullOrEmpty(FlowResultsCsvPath) || !File.Exists(FlowResultsCsvPath)) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{FlowResultsCsvPath}\"",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex) { AddLog("WARN", $"Open folder failed: {ex.Message}"); }
         }
 
         private void OnFlowError(object? sender, FlowErrorEventArgs e)
@@ -393,4 +477,5 @@ namespace HWKUltra.UI.ViewModels.Pages
         public string Level { get; set; } = "";
         public string Message { get; set; } = "";
     }
+
 }

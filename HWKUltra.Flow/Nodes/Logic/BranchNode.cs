@@ -31,10 +31,23 @@ namespace HWKUltra.Flow.Nodes.Logic
             {
                 var condition = context.GetNodeInput<string>(Id, "Condition") ?? "";
                 var op = context.GetNodeInput<string>(Id, "Operator") ?? "Equals";
-                var compareValue = context.GetNodeInput<string>(Id, "CompareValue") ?? "";
+                var compareValueRaw = context.GetNodeInput<string>(Id, "CompareValue") ?? "";
 
                 // Get the value to evaluate from context (condition is a variable name, search all scopes)
                 var valueToEvaluate = context.FindVariable<object>(condition);
+
+                // CompareValue: support literal OR variable name.
+                // Heuristic: if the literal cannot be parsed to double/bool AND a variable with that name exists, use the variable value.
+                string compareValue = compareValueRaw;
+                bool needsNumeric = op is "GreaterThan" or "LessThan";
+                bool needsBool = op is "True" or "False";
+                bool literalLooksNumeric = double.TryParse(compareValueRaw, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out _);
+                bool literalLooksBool = bool.TryParse(compareValueRaw, out _);
+                if ((needsNumeric && !literalLooksNumeric) || (needsBool && !literalLooksBool))
+                {
+                    var resolved = context.FindVariable<object>(compareValueRaw);
+                    if (resolved != null) compareValue = resolved.ToString() ?? "";
+                }
                 bool result = false;
 
                 if (valueToEvaluate != null)

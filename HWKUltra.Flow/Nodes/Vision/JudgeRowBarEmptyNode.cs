@@ -19,7 +19,8 @@ namespace HWKUltra.Flow.Nodes.Vision
             new FlowParameter { Name = "Image", DisplayName = "Image", Type = "string", Required = true, Description = "Absolute path OR context variable" },
             new FlowParameter { Name = "Width", DisplayName = "Width", Type = "int", Required = false, Description = "Required when input is raw byte[]/float[]" },
             new FlowParameter { Name = "Height", DisplayName = "Height", Type = "int", Required = false, Description = "Required when input is raw byte[]/float[]" },
-            new FlowParameter { Name = "IsColor", DisplayName = "Is Color", Type = "bool", Required = false }
+            new FlowParameter { Name = "IsColor", DisplayName = "Is Color", Type = "bool", Required = false },
+            new FlowParameter { Name = "OutputVariable", DisplayName = "Output Variable", Type = "string", Required = false, Description = "Shared-context name for the IsEmpty bool" }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -41,6 +42,7 @@ namespace HWKUltra.Flow.Nodes.Vision
                 var judge = new RowBarEmptyJudge();
                 var isEmpty = judge.Judge(data, rh, rw, isColor);
                 context.SetNodeOutput(Id, "IsEmpty", isEmpty);
+                VisionOutput.Publish(context, Id, "OutputVariable", isEmpty);
                 return FlowResult.Ok();
             }
             catch (Exception ex) { return FlowResult.Fail($"JudgeRowBarEmpty failed: {ex.Message}"); }
