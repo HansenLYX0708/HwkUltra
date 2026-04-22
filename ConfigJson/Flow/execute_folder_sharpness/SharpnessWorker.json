@@ -1,0 +1,55 @@
+{
+  "id": "sharpness-worker-001",
+  "name": "Sharpness Worker",
+  "description": "Per-item worker: compute sharpness of CurrentItem (path OR Bitmap) and append to FlowResults.",
+  "createdAt": "2026-04-22T00:00:00",
+  "modifiedAt": "2026-04-22T00:00:00",
+  "version": "1.0.0",
+  "startNodeId": "node-sharpness",
+  "nodes": [
+    {
+      "id": "node-sharpness",
+      "type": "GetSharpnessLaplacian",
+      "name": "Compute Sharpness",
+      "x": 100,
+      "y": 200,
+      "properties": {
+        "Image": "CurrentItem"
+      }
+    },
+    {
+      "id": "node-append",
+      "type": "AppendToList",
+      "name": "Record Result",
+      "x": 320,
+      "y": 200,
+      "properties": {
+        "Key": "FlowResults",
+        "Columns": "Index=CurrentIndex;Item=CurrentItem;Score=Score"
+      }
+    },
+    {
+      "id": "node-dispose",
+      "type": "DisposeImage",
+      "name": "Release Bitmap",
+      "x": 540,
+      "y": 200,
+      "properties": {
+        "Variable": "CurrentItem"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "sourceNodeId": "node-sharpness",
+      "targetNodeId": "node-append"
+    },
+    {
+      "id": "c2",
+      "sourceNodeId": "node-append",
+      "targetNodeId": "node-dispose"
+    }
+  ],
+  "globalVariables": []
+}

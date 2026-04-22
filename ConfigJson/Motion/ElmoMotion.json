@@ -1,8 +1,8 @@
 {
-  "LocalIP": "192.168.1.10",
-  "LocalPort": 8000,
-  "TargetIP": "192.168.1.100",
-  "TargetPort": 7000,
+  "LocalIP": "192.168.1.100",
+  "LocalPort": 5000,
+  "TargetIP": "192.168.1.3",
+  "TargetPort": 4000,
   "Mask": 4294967295,
   "CAMPointsCount": 500,
   "SDODelay": 50,
@@ -12,7 +12,7 @@
     {
       "Name": "X",
       "DriverName": "LX",
-      "PulsePerUnit": 10000.0,
+      "PulsePerUnit": 10000,
       "MaxAcc": 1000,
       "MaxDec": 1000,
       "MaxJerk": 10000,
@@ -26,14 +26,17 @@
     {
       "Name": "Y",
       "DriverName": "LY",
-      "PulsePerUnit": 10000.0
+      "PulsePerUnit": 10000
     }
   ],
   "Groups": [
     {
       "Name": "XY",
       "DriverName": "LXY",
-      "Axes": ["X", "Y"]
+      "Axes": [
+        "X",
+        "Y"
+      ]
     }
   ]
 }

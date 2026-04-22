@@ -1,24 +1,24 @@
 {
-  "DeviceType": "Auto",
+  "DeviceType": "All",
   "MaxBufferCount": 10,
   "Cameras": [
     {
-      "Name": "DetectCam",
-      "SerialNumber": "40478880",
-      "Width": 2048,
-      "Height": 2048,
-      "DefaultExposure": 50,
+      "Name": "LeftAlignCam",
+      "SerialNumber": "25367631",
+      "Width": 1440,
+      "Height": 1080,
+      "DefaultExposure": 200,
       "DefaultGain": 0,
       "OffsetMode": 0
     },
     {
-      "Name": "AlignCam",
-      "SerialNumber": "40478881",
-      "Width": 1024,
-      "Height": 1024,
-      "DefaultExposure": 100,
-      "DefaultGain": 5,
-      "OffsetMode": 1
+      "Name": "LeftDetectCam",
+      "SerialNumber": "40476761",
+      "Width": 5328,
+      "Height": 4608,
+      "DefaultExposure": 300,
+      "DefaultGain": 0,
+      "OffsetMode": 0
     }
   ]
 }

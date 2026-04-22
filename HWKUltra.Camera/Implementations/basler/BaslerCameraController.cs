@@ -313,6 +313,9 @@ namespace HWKUltra.Camera.Implementations.basler
                 case "CXP":
                     devices = CameraFinder.Enumerate(DeviceType.BaslerGenTlCxpDeviceClass);
                     break;
+                case "ALL":
+                    devices = CameraFinder.Enumerate();
+                    break;
                 default: // "Auto"
                     devices = CameraFinder.Enumerate(DeviceType.Usb);
                     if (devices.Count == 0)

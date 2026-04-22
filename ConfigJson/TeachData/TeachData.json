@@ -2,95 +2,196 @@
   "groups": [
     {
       "name": "BarcodeScanner",
-      "description": "扫码枪相关位置",
-      "requiredAxes": ["X", "Y", "Z"]
+      "description": "\u626B\u7801\u67AA\u76F8\u5173\u4F4D\u7F6E",
+      "requiredAxes": [
+        "X",
+        "Y",
+        "Z"
+      ]
     },
     {
       "name": "Calibration",
-      "description": "校准块相关位置",
-      "requiredAxes": ["X", "Y", "Z"]
+      "description": "\u6821\u51C6\u5757\u76F8\u5173\u4F4D\u7F6E",
+      "requiredAxes": [
+        "X",
+        "Y",
+        "Z"
+      ]
     },
     {
       "name": "Tray",
-      "description": "料盘默认位置",
-      "requiredAxes": ["X", "Y"]
+      "description": "\u6599\u76D8\u9ED8\u8BA4\u4F4D\u7F6E",
+      "requiredAxes": [
+        "X",
+        "Y"
+      ]
     },
     {
       "name": "LoadUnload",
-      "description": "上下料位置",
-      "requiredAxes": ["X", "Y", "Z"]
+      "description": "\u4E0A\u4E0B\u6599\u4F4D\u7F6E",
+      "requiredAxes": [
+        "X",
+        "Y",
+        "Z"
+      ]
     },
     {
       "name": "Wait",
-      "description": "安全等待位置",
-      "requiredAxes": ["X", "Y", "Z"]
+      "description": "\u5B89\u5168\u7B49\u5F85\u4F4D\u7F6E",
+      "requiredAxes": [
+        "X",
+        "Y",
+        "Z"
+      ]
     },
     {
       "name": "Inspection",
-      "description": "检测相关位置",
-      "requiredAxes": ["X", "Y", "Z"]
+      "description": "\u68C0\u6D4B\u76F8\u5173\u4F4D\u7F6E",
+      "requiredAxes": [
+        "X",
+        "Y",
+        "Z"
+      ]
+    },
+    {
+      "name": "NewGroup7",
+      "requiredAxes": [
+        "X",
+        "Y",
+        "Z"
+      ]
     }
   ],
   "positions": [
     {
       "name": "BarcodeScannerPos",
       "group": "BarcodeScanner",
-      "description": "扫码枪工作位置",
-      "axes": { "X": 100.0, "Y": 200.0, "Z": 50.0 }
+      "description": "\u626B\u7801\u67AA\u5DE5\u4F5C\u4F4D\u7F6E",
+      "axes": {
+        "X": 100,
+        "Y": 200,
+        "Z": 50
+      }
     },
     {
       "name": "CalibrationBlock",
       "group": "Calibration",
-      "description": "校准块中心位置",
-      "axes": { "X": 300.0, "Y": 150.0, "Z": 30.0 }
+      "description": "\u6821\u51C6\u5757\u4E2D\u5FC3\u4F4D\u7F6E",
+      "axes": {
+        "X": 300,
+        "Y": 150,
+        "Z": 30
+      }
     },
     {
       "name": "CalibrationFocus",
       "group": "Calibration",
-      "description": "校准对焦高度",
-      "axes": { "Z": 25.0 }
+      "description": "\u6821\u51C6\u5BF9\u7126\u9AD8\u5EA6",
+      "axes": {
+        "Z": 25
+      }
     },
     {
       "name": "TrayInputDefault",
       "group": "Tray",
-      "description": "进料盘默认起始位置",
-      "axes": { "X": 0.0, "Y": 0.0 }
+      "description": "\u8FDB\u6599\u76D8\u9ED8\u8BA4\u8D77\u59CB\u4F4D\u7F6E",
+      "axes": {
+        "X": 0,
+        "Y": 0
+      }
     },
     {
       "name": "TrayOutputDefault",
       "group": "Tray",
-      "description": "出料盘默认起始位置",
-      "axes": { "X": 400.0, "Y": 0.0 }
+      "description": "\u51FA\u6599\u76D8\u9ED8\u8BA4\u8D77\u59CB\u4F4D\u7F6E",
+      "axes": {
+        "X": 400,
+        "Y": 0
+      }
     },
     {
       "name": "LoadPos",
       "group": "LoadUnload",
-      "description": "上料位置",
-      "axes": { "X": 500.0, "Y": 0.0, "Z": 0.0 }
+      "description": "\u4E0A\u6599\u4F4D\u7F6E",
+      "axes": {
+        "X": 500,
+        "Y": 0,
+        "Z": 0
+      }
     },
     {
       "name": "UnloadPos",
       "group": "LoadUnload",
-      "description": "下料位置",
-      "axes": { "X": 500.0, "Y": 400.0, "Z": 0.0 }
+      "description": "\u4E0B\u6599\u4F4D\u7F6E",
+      "axes": {
+        "X": 500,
+        "Y": 400,
+        "Z": 0
+      }
     },
     {
       "name": "WaitPos",
       "group": "Wait",
-      "description": "安全等待位置（全轴）",
-      "axes": { "X": 0.0, "Y": 0.0, "Z": 100.0 }
+      "description": "\u5B89\u5168\u7B49\u5F85\u4F4D\u7F6E\uFF08\u5168\u8F74\uFF09",
+      "axes": {
+        "X": 0,
+        "Y": 0,
+        "Z": 100
+      }
     },
     {
       "name": "WaitPosZ",
       "group": "Wait",
-      "description": "Z轴安全高度",
-      "axes": { "Z": 100.0 }
+      "description": "Z\u8F74\u5B89\u5168\u9AD8\u5EA6",
+      "axes": {
+        "Z": 100
+      }
     },
     {
       "name": "InspectionStart",
       "group": "Inspection",
-      "description": "检测起始位置",
-      "axes": { "X": 50.0, "Y": 50.0, "Z": 40.0 }
+      "description": "\u68C0\u6D4B\u8D77\u59CB\u4F4D\u7F6E",
+      "axes": {
+        "X": 50,
+        "Y": 50,
+        "Z": 40
+      }
+    },
+    {
+      "name": "NewPosition1",
+      "group": "NewGroup7",
+      "axes": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      }
+    },
+    {
+      "name": "NewPosition2",
+      "group": "NewGroup7",
+      "axes": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      }
+    },
+    {
+      "name": "NewPosition3",
+      "group": "NewGroup7",
+      "axes": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      }
+    },
+    {
+      "name": "NewPosition4",
+      "group": "NewGroup7",
+      "axes": {
+        "X": 0,
+        "Y": 0,
+        "Z": 0
+      }
     }
   ]
 }
