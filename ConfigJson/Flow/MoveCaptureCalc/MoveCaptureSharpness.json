@@ -1,0 +1,181 @@
+{
+  "id": "move-capture-sharpness-001",
+  "name": "Move Capture Sharpness",
+  "description": "Move to teach position, capture image, calculate sharpness, return to safe position with CSV export.",
+  "createdAt": "2026-04-23T00:00:00",
+  "modifiedAt": "2026-04-23T00:00:00",
+  "version": "1.0.0",
+  "startNodeId": "node-pool-create",
+  "nodes": [
+    {
+      "id": "node-pool-create",
+      "type": "ImagePoolCreate",
+      "name": "Create Pool",
+      "x": 100,
+      "y": 200,
+      "properties": {
+        "Name": "ImagePool",
+        "Capacity": "10"
+      }
+    },
+    {
+      "id": "node-light-on",
+      "type": "LightTurnOnOff",
+      "name": "Light On",
+      "x": 320,
+      "y": 200,
+      "properties": {
+        "ChannelName": "TopLight",
+        "Value": "true"
+      }
+    },
+    {
+      "id": "node-move-capture",
+      "type": "MoveToTeachPosition",
+      "name": "Move to Capture Pos",
+      "x": 540,
+      "y": 200,
+      "properties": {
+        "PositionName": "Tray1LeftTop",
+        "GroupName": "XYZ",
+        "Velocity": "30000",
+        "Acceleration": "500000",
+        "WaitForComplete": "true"
+      }
+    },
+    {
+      "id": "node-set-pos-var",
+      "type": "SetSharedVariable",
+      "name": "Set Position Var",
+      "x": 760,
+      "y": 200,
+      "properties": {
+        "Key": "CapturePosition",
+        "Value": "Tray1LeftTop"
+      }
+    },
+    {
+      "id": "node-capture",
+      "type": "CameraStartCapture",
+      "name": "Capture Image",
+      "x": 980,
+      "y": 200,
+      "properties": {
+        "CameraName": "MainCamera",
+        "PoolName": "ImagePool",
+        "MaxFrames": "1",
+        "TimeoutMs": "5000"
+      }
+    },
+    {
+      "id": "node-pool-complete",
+      "type": "ImagePoolComplete",
+      "name": "Complete Pool",
+      "x": 1200,
+      "y": 200,
+      "properties": {
+        "Name": "ImagePool"
+      }
+    },
+    {
+      "id": "node-process",
+      "type": "Parallel",
+      "name": "Process Image",
+      "x": 1420,
+      "y": 200,
+      "properties": {
+        "FlowPaths": "SharpnessWorker.json",
+        "ItemsSource": "ImagePool",
+        "WorkerCount": "1",
+        "ItemVariable": "CurrentItem",
+        "IndexVariable": "CurrentIndex",
+        "TotalVariable": "TotalCount"
+      }
+    },
+    {
+      "id": "node-move-safe",
+      "type": "MoveToTeachPosition",
+      "name": "Move to Safe Pos",
+      "x": 1640,
+      "y": 200,
+      "properties": {
+        "PositionName": "SafePos",
+        "GroupName": "XYZ",
+        "Velocity": "30000",
+        "Acceleration": "500000",
+        "WaitForComplete": "true"
+      }
+    },
+    {
+      "id": "node-light-off",
+      "type": "LightTurnOnOff",
+      "name": "Light Off",
+      "x": 1860,
+      "y": 200,
+      "properties": {
+        "ChannelName": "TopLight",
+        "Value": "false"
+      }
+    },
+    {
+      "id": "node-save-csv",
+      "type": "SaveResultsToCsv",
+      "name": "Save CSV",
+      "x": 2080,
+      "y": 200,
+      "properties": {
+        "Key": "FlowResults",
+        "Path": "sharpness_{yyyyMMdd_HHmmss}.csv",
+        "Encoding": "UTF8BOM"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "sourceNodeId": "node-pool-create",
+      "targetNodeId": "node-light-on"
+    },
+    {
+      "id": "c2",
+      "sourceNodeId": "node-light-on",
+      "targetNodeId": "node-move-capture"
+    },
+    {
+      "id": "c3",
+      "sourceNodeId": "node-move-capture",
+      "targetNodeId": "node-set-pos-var"
+    },
+    {
+      "id": "c4",
+      "sourceNodeId": "node-set-pos-var",
+      "targetNodeId": "node-capture"
+    },
+    {
+      "id": "c5",
+      "sourceNodeId": "node-capture",
+      "targetNodeId": "node-pool-complete"
+    },
+    {
+      "id": "c6",
+      "sourceNodeId": "node-pool-complete",
+      "targetNodeId": "node-process"
+    },
+    {
+      "id": "c7",
+      "sourceNodeId": "node-process",
+      "targetNodeId": "node-move-safe"
+    },
+    {
+      "id": "c8",
+      "sourceNodeId": "node-move-safe",
+      "targetNodeId": "node-light-off"
+    },
+    {
+      "id": "c9",
+      "sourceNodeId": "node-light-off",
+      "targetNodeId": "node-save-csv"
+    }
+  ],
+  "globalVariables": []
+}

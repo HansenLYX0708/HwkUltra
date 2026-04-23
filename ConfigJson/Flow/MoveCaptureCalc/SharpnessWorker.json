@@ -1,0 +1,41 @@
+{
+  "id": "sharpness-worker-001",
+  "name": "Sharpness Worker",
+  "description": "Worker flow that computes sharpness from an image and appends result to FlowResults list.",
+  "createdAt": "2026-04-23T00:00:00",
+  "modifiedAt": "2026-04-23T00:00:00",
+  "version": "1.0.0",
+  "startNodeId": "node-sharpness",
+  "nodes": [
+    {
+      "id": "node-sharpness",
+      "type": "GetSharpnessLaplacian",
+      "name": "Compute Sharpness",
+      "x": 100,
+      "y": 200,
+      "properties": {
+        "Image": "CurrentItem",
+        "OutputVariable": "SharpnessScore"
+      }
+    },
+    {
+      "id": "node-append",
+      "type": "AppendToList",
+      "name": "Append Result",
+      "x": 320,
+      "y": 200,
+      "properties": {
+        "Key": "FlowResults",
+        "Columns": "Position=CapturePosition;Score=SharpnessScore;Timestamp=Timestamp"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "sourceNodeId": "node-sharpness",
+      "targetNodeId": "node-append"
+    }
+  ],
+  "globalVariables": []
+}
