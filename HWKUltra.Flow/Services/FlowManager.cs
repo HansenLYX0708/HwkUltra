@@ -91,7 +91,8 @@ namespace HWKUltra.Flow.Services
                 StartNodeId = definition.StartNodeId,
                 Nodes = definition.Nodes.ToList(),
                 Connections = definition.Connections.ToList(),
-                GlobalVariables = definition.GlobalVariables.ToList()
+                GlobalVariables = definition.GlobalVariables.ToList(),
+                SourceFilePath = definition.SourceFilePath
             };
 
             // Create flow engine with defensive copy
@@ -111,6 +112,10 @@ namespace HWKUltra.Flow.Services
             context ??= new FlowContext();
             // Provide node factory to context for SubFlowNode/ParallelNode usage
             context.NodeFactory ??= _nodeFactory;
+            // Auto-set CurrentFlowDirectory from the definition's source file path
+            // so SubFlowNode/ParallelNode can resolve relative sibling flow paths.
+            if (context.CurrentFlowDirectory == null && !string.IsNullOrEmpty(executionDef.SourceFilePath))
+                context.CurrentFlowDirectory = Path.GetDirectoryName(executionDef.SourceFilePath);
             foreach (var nodeDef in executionDef.Nodes)
             {
                 foreach (var prop in nodeDef.Properties)
@@ -151,6 +156,20 @@ namespace HWKUltra.Flow.Services
                 instance.EndTime = DateTime.UtcNow;
                 _runningInstances.TryRemove(instance.Id, out _);
             }
+        }
+
+        /// <summary>
+        /// Load a flow definition from a JSON file, register it, and execute it.
+        /// Automatically sets CurrentFlowDirectory so relative sub-flow paths resolve correctly.
+        /// </summary>
+        public async Task<FlowResult> ExecuteFromFileAsync(string filePath, FlowContext? context = null, CancellationToken cancellationToken = default)
+        {
+            var definition = Utils.FlowSerializer.LoadFromFile(filePath);
+            if (definition == null)
+                throw new ArgumentException($"Failed to load flow definition from: {filePath}");
+
+            _definitions[definition.Id] = definition;
+            return await ExecuteAsync(definition.Id, context, cancellationToken);
         }
 
         /// <summary>

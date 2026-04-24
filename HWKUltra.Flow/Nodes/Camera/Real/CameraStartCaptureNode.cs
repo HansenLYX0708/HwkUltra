@@ -61,6 +61,12 @@ namespace HWKUltra.Flow.Nodes.Camera.Real
             if (pool == null)
                 return FlowResult.Fail($"ImagePool '{poolName}' not found. Use ImagePoolCreate first.");
 
+            // Reset pool if a previous capture already called CompleteAdding().
+            // This supports the sequential capture-then-process pattern (e.g. Calibrate
+            // flows that capture + FindDatum multiple times into the same named pool).
+            if (pool.IsAddingCompleted)
+                pool.Reset();
+
             int framesCaptured = 0;
             string stoppedBy = "";
             var capturedEvt = new ManualResetEventSlim(false);
@@ -138,6 +144,10 @@ namespace HWKUltra.Flow.Nodes.Camera.Real
             var pool = context.SharedContext.GetPool(poolName);
             if (pool == null)
                 return FlowResult.Fail($"ImagePool '{poolName}' not found");
+
+            // Reset pool if a previous capture already called CompleteAdding().
+            if (pool.IsAddingCompleted)
+                pool.Reset();
 
             Console.WriteLine($"[SIMULATION] CameraStartCapture: camera={cameraName} pool={poolName} maxFrames={maxFrames}");
 

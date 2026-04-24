@@ -35,7 +35,8 @@ namespace HWKUltra.Flow.Abstractions
     /// </summary>
     public sealed class ImagePool : IDisposable
     {
-        private readonly BlockingCollection<PoolItem> _queue;
+        private BlockingCollection<PoolItem> _queue;
+        private readonly object _resetLock = new();
         private long _totalEnqueued;
         private long _totalDequeued;
         private long _totalDropped;
@@ -105,6 +106,28 @@ namespace HWKUltra.Flow.Abstractions
         {
             if (!_queue.IsAddingCompleted)
                 _queue.CompleteAdding();
+        }
+
+        /// <summary>
+        /// Reset the pool so it can accept new frames after <see cref="CompleteAdding"/>
+        /// was called. Drains and disposes any remaining items, then replaces the internal
+        /// queue. Statistics (<see cref="TotalEnqueued"/> etc.) are preserved across resets.
+        /// Safe for the sequential capture-then-process pattern (e.g. Calibrate flows that
+        /// capture + FindDatum multiple times into the same named pool).
+        /// </summary>
+        public void Reset()
+        {
+            lock (_resetLock)
+            {
+                // Drain remaining items
+                while (_queue.TryTake(out var leftover))
+                    leftover.Dispose();
+                if (_queue.IsAddingCompleted)
+                {
+                    _queue.Dispose();
+                    _queue = new BlockingCollection<PoolItem>(Capacity);
+                }
+            }
         }
 
         /// <summary>

@@ -48,12 +48,14 @@ namespace HWKUltra.Flow.Utils
             {
                 Bitmap b => new ResolvedBitmap(b, false),
                 Mat m => new ResolvedBitmap(BitmapConverter.ToBitmap(m), true),
+                PoolItem pi => new ResolvedBitmap(pi.Bitmap, false),
+                ImagePool pool => DequeueFromPool(pool, input),
                 string s when File.Exists(s) => new ResolvedBitmap(new Bitmap(s), true),
                 byte[] bytes => new ResolvedBitmap(BytesToBitmap(bytes, width, height, channels), true),
                 float[] floats => new ResolvedBitmap(FloatsToBitmap(floats, width, height), true),
                 _ => throw new InvalidOperationException(
                     $"Image input '{input}' resolved to unsupported type '{obj?.GetType().FullName ?? "null"}'. " +
-                    "Expected: absolute file path, Bitmap, Mat, byte[], float[], or string path.")
+                    "Expected: absolute file path, Bitmap, Mat, byte[], float[], ImagePool, PoolItem, or string path.")
             };
         }
 
@@ -71,6 +73,8 @@ namespace HWKUltra.Flow.Utils
             {
                 Mat m => new ResolvedMat(m, false),
                 Bitmap b => new ResolvedMat(BitmapConverter.ToMat(b), true),
+                PoolItem pi => new ResolvedMat(BitmapConverter.ToMat(pi.Bitmap), true),
+                ImagePool pool => ResolvedMatFromPool(pool, input),
                 string s when File.Exists(s) => new ResolvedMat(Cv2.ImRead(s, ImreadModes.Unchanged), true),
                 byte[] bytes => new ResolvedMat(BytesToMat(bytes, width, height, channels), true),
                 float[] floats => new ResolvedMat(FloatsToMat(floats, width, height), true),
@@ -109,6 +113,11 @@ namespace HWKUltra.Flow.Utils
                             mat = m; ownMat = false; break;
                         case Bitmap b:
                             mat = BitmapConverter.ToMat(b); break;
+                        case PoolItem pi:
+                            mat = BitmapConverter.ToMat(pi.Bitmap); break;
+                        case ImagePool pool:
+                            var resolved = DequeueFromPool(pool, input);
+                            mat = BitmapConverter.ToMat(resolved.Bitmap); break;
                         case string s when File.Exists(s):
                             mat = Cv2.ImRead(s, isColor ? ImreadModes.Color : ImreadModes.Grayscale); break;
                         case float[] floats:
@@ -160,12 +169,41 @@ namespace HWKUltra.Flow.Utils
             if (Path.IsPathRooted(input) && File.Exists(input))
                 return (null, input);
 
-            // 2. Context variable
+            // 2. Local context variable (exact match)
             if (ctx.Variables.TryGetValue(input, out var v) && v != null)
                 return (v, null);
 
+            // 3. FindVariable (searches scoped keys + SharedContext)
+            var found = ctx.FindVariable<object>(input);
+            if (found != null)
+                return (found, null);
+
             throw new InvalidOperationException(
-                $"Image input '{input}' is neither an existing absolute file path nor a defined context variable.");
+                $"Image input '{input}' is neither an existing absolute file path nor a defined context variable. " +
+                $"(checked Variables, scoped keys, and SharedContext)");
+        }
+
+        /// <summary>
+        /// Dequeue one frame from an <see cref="ImagePool"/> and return it as a Bitmap.
+        /// The bitmap is NOT owned — the caller should NOT dispose it (the PoolItem owns it).
+        /// Useful for single-capture patterns (MaxFrames=1 + FindDatum).
+        /// </summary>
+        private static ResolvedBitmap DequeueFromPool(ImagePool pool, string inputName)
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            foreach (var item in pool.GetConsumingEnumerable(cts.Token))
+                return new ResolvedBitmap(item.Bitmap, false);
+            throw new InvalidOperationException(
+                $"ImagePool '{inputName}' is empty or completed — no frames available for vision node.");
+        }
+
+        private static ResolvedMat ResolvedMatFromPool(ImagePool pool, string inputName)
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            foreach (var item in pool.GetConsumingEnumerable(cts.Token))
+                return new ResolvedMat(BitmapConverter.ToMat(item.Bitmap), true);
+            throw new InvalidOperationException(
+                $"ImagePool '{inputName}' is empty or completed — no frames available for vision node.");
         }
 
         private static Bitmap BytesToBitmap(byte[] bytes, int width, int height, int channels)

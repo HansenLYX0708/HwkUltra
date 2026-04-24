@@ -48,6 +48,11 @@ namespace HWKUltra.Vision.Algorithms.Detection
             Mat pro = new Mat();
 
             Mat matchResult = new Mat();
+            if (source.Channels() == 3)
+            {
+                Cv2.CvtColor(source, source, ColorConversionCodes.BGR2GRAY);
+            }
+
 
             Cv2.GaussianBlur(source, pro, new OpenCvSharp.Size(3, 3), 1.5);
             Cv2.Threshold(pro, pro, 0, 255, ThresholdTypes.Otsu);

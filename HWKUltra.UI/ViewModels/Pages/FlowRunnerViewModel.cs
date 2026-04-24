@@ -188,6 +188,9 @@ namespace HWKUltra.UI.ViewModels.Pages
             // Build context
             _sharedContext = new SharedFlowContext();
             var context = new FlowContext { NodeFactory = _nodeFactory, SharedContext = _sharedContext };
+            // Set CurrentFlowDirectory so SubFlowNode/ParallelNode can resolve relative paths
+            if (!string.IsNullOrEmpty(executionDef.SourceFilePath))
+                context.CurrentFlowDirectory = Path.GetDirectoryName(executionDef.SourceFilePath);
             foreach (var nodeDef in executionDef.Nodes)
                 foreach (var prop in nodeDef.Properties)
                     context.Variables[$"{nodeDef.Id}:{prop.Key}"] = prop.Value;
@@ -438,7 +441,8 @@ namespace HWKUltra.UI.ViewModels.Pages
                 StartNodeId = src.StartNodeId,
                 Nodes = src.Nodes.ToList(),
                 Connections = src.Connections.ToList(),
-                GlobalVariables = src.GlobalVariables.ToList()
+                GlobalVariables = src.GlobalVariables.ToList(),
+                SourceFilePath = src.SourceFilePath
             };
         }
 

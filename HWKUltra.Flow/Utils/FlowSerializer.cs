@@ -30,7 +30,10 @@ namespace HWKUltra.Flow.Utils
         public static FlowDefinition? LoadFromFile(string filePath)
         {
             var json = File.ReadAllText(filePath);
-            return Deserialize(json);
+            var def = Deserialize(json);
+            if (def != null)
+                def.SourceFilePath = Path.GetFullPath(filePath);
+            return def;
         }
 
         /// <summary>
