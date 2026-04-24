@@ -161,7 +161,7 @@ namespace HWKUltra.Flow.Nodes.Camera.Real
                 for (int i = 0; i < maxFrames; i++)
                 {
                     if (context.CancellationToken.IsCancellationRequested) break;
-                    var bmp = MakeSyntheticFrame(640, 480, i);
+                    var bmp = MakeSyntheticFrame(1280, 1280, i);
                     if (pool.TryAdd(bmp, 500, source: cameraName, ct: context.CancellationToken))
                         produced++;
                     await Task.Delay(intervalMs, context.CancellationToken);

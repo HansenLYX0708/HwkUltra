@@ -109,16 +109,16 @@
     {
       "id": "c4",
       "sourceNodeId": "move-pocket",
-      "targetNodeId": "capture"
-    },
-    {
-      "id": "c5",
-      "sourceNodeId": "capture",
       "targetNodeId": "append-job"
     },
     {
-      "id": "c6",
+      "id": "c5",
       "sourceNodeId": "append-job",
+      "targetNodeId": "capture"
+    },
+    {
+      "id": "c6",
+      "sourceNodeId": "capture",
       "targetNodeId": "iter"
     },
     {
