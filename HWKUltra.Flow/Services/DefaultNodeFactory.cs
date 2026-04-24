@@ -193,6 +193,11 @@ namespace HWKUltra.Flow.Services
                 "CommunicationComplete" => new CommunicationCompleteNode(_communicationRouter),
                 "CommunicationAbort" => new CommunicationAbortNode(_communicationRouter),
                 "CommunicationLogin" => new CommunicationLoginNode(_communicationRouter),
+                "PlcSendCommand" => new PlcSendCommandNode(_communicationRouter),
+                "PlcReadBit" => new PlcReadBitNode(_communicationRouter),
+                "PlcWriteBit" => new PlcWriteBitNode(_communicationRouter),
+                "PlcReadRegister" => new PlcReadRegisterNode(_communicationRouter),
+                "PlcWriteRegister" => new PlcWriteRegisterNode(_communicationRouter),
 
                 // Tray Iterator
                 "TrayIterator" => new TrayIteratorNode(_trayRouter),
@@ -333,6 +338,11 @@ namespace HWKUltra.Flow.Services
                 "CommunicationComplete" => new SimCommunicationCompleteNode(),
                 "CommunicationAbort" => new SimCommunicationAbortNode(),
                 "CommunicationLogin" => new SimCommunicationLoginNode(),
+                "PlcSendCommand" => new SimPlcSendCommandNode(),
+                "PlcReadBit" => new SimPlcReadBitNode(),
+                "PlcWriteBit" => new SimPlcWriteBitNode(),
+                "PlcReadRegister" => new SimPlcReadRegisterNode(),
+                "PlcWriteRegister" => new SimPlcWriteRegisterNode(),
 
                 // Tray Iterator Simulation
                 "TrayIterator" => new SimTrayIteratorNode(),
@@ -356,6 +366,7 @@ namespace HWKUltra.Flow.Services
                 "GetSharedVariable" => new GetSharedVariableNode(),
                 "IncrementSharedVariable" => new IncrementSharedVariableNode(),
                 "AppendToList" => new AppendToListNode(),
+                "ListLookupByIndex" => new ListLookupByIndexNode(),
                 "SaveResultsToCsv" => new SaveResultsToCsvNode(),
                 "ImagePoolCreate" => new ImagePoolCreateNode(),
                 "ImagePoolComplete" => new ImagePoolCompleteNode(),
@@ -370,6 +381,7 @@ namespace HWKUltra.Flow.Services
                 "GetTenengrad" => new GetTenengradNode(),
                 "EnumerateFolder" => new EnumerateFolderNode(),
                 "DisposeImage" => new DisposeImageNode(),
+                "SaveBitmap" => new SaveBitmapNode(),
                 "CalibrateCameraMpp" => new CalibrateCameraMppNode(),
                 "FindDatum" => new FindDatumNode(),
                 "FindLaserDatum" => new FindLaserDatumNode(),

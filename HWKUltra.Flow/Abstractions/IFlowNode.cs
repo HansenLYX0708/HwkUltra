@@ -40,6 +40,15 @@ namespace HWKUltra.Flow.Abstractions
         public IFlowNodeFactory? NodeFactory { get; set; }
 
         /// <summary>
+        /// Directory of the flow JSON file currently being executed.
+        /// Used by SubFlowNode/ParallelNode to resolve relative sibling flow paths
+        /// (e.g. a parent flow and its sub-flows sitting in the same folder can
+        /// reference each other by file name only).
+        /// Propagated automatically into child contexts when a sub-flow is loaded.
+        /// </summary>
+        public string? CurrentFlowDirectory { get; set; }
+
+        /// <summary>
         /// Get variable value
         /// </summary>
         public T? GetVariable<T>(string key)
@@ -98,12 +107,15 @@ namespace HWKUltra.Flow.Abstractions
 
         /// <summary>
         /// Find a variable by short key across all scopes.
-        /// Searches: exact key first, then any "{nodeId}:{key}" match.
-        /// Useful for cross-node references (e.g. BranchNode.Condition).
+        /// Search order:
+        ///   1. Local Variables — exact key
+        ///   2. Local Variables — scoped "{nodeId}:{key}" suffix match
+        ///   3. SharedContext   — exact key (set via SetSharedVariable)
+        /// Useful for cross-node references (e.g. BranchNode.Condition, LoopNode.ConditionVariable).
         /// </summary>
         public T? FindVariable<T>(string key)
         {
-            // 1. Exact global match
+            // 1. Exact local match
             if (Variables.TryGetValue(key, out var val))
             {
                 if (val is T t) return t;
@@ -124,6 +136,12 @@ namespace HWKUltra.Flow.Abstractions
                         try { var c = Convert.ChangeType(s2, typeof(T)); if (c is T ct2) return ct2; } catch { }
                     }
                 }
+            }
+            // 3. SharedContext (variables set via SetSharedVariable)
+            if (SharedContext != null)
+            {
+                var shared = SharedContext.GetVariable<T>(key);
+                if (shared != null) return shared;
             }
             return default;
         }

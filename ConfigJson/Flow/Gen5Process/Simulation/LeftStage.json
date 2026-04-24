@@ -1,0 +1,71 @@
+{
+  "id": "gen5-left-stage-sim-001",
+  "name": "Gen5 Left Stage (Simulation)",
+  "description": "Left-stage full process: LoadPos -> tray check/pick -> tray place -> 4-corner calibration -> scan -> return LoadPos -> final pick. Short-circuits when EnableLeftStage is false or FlowAbort is true.",
+  "createdAt": "2026-04-23T00:00:00",
+  "modifiedAt": "2026-04-23T00:00:00",
+  "version": "1.0.0",
+  "startNodeId": "gate-enable",
+  "nodes": [
+    { "id": "gate-enable", "type": "Branch", "name": "Enable?", "x": 100, "y": 200, "properties": { "Condition": "EnableLeftStage", "Operator": "Equals", "CompareValue": "true" } },
+    { "id": "skip-end",    "type": "SetSharedVariable", "name": "Skipped", "x": 100, "y": 60, "properties": { "Key": "LeftStageSkipped", "Value": "true" } },
+
+    { "id": "move-load-1", "type": "MoveToTeachPosition", "name": "Move LoadPos (Start)", "x": 340, "y": 200, "properties": { "PositionName": "LeftLoadPos", "GroupName": "LXYZ", "WaitForComplete": "true" } },
+
+    { "id": "read-tray-state-1", "type": "PlcReadBit", "name": "Read LeftTrayState", "x": 560, "y": 200, "properties": { "BitName": "LeftTrayState" } },
+    { "id": "br-has-tray",      "type": "Branch",     "name": "Has Tray?",        "x": 780, "y": 200, "properties": { "Condition": "Value", "Operator": "Equals", "CompareValue": "True" } },
+
+    { "id": "plc-pick-initial",  "type": "PlcSendCommand", "name": "Pick Initial Tray",  "x": 1000, "y": 120, "properties": { "CommandName": "LeftRobotPickTray", "TimeoutMs": "15000" } },
+    { "id": "verify-empty",      "type": "PlcReadBit",     "name": "Verify Empty",       "x": 1220, "y": 120, "properties": { "BitName": "LeftTrayState" } },
+    { "id": "br-verify-empty",   "type": "Branch",         "name": "Empty?",             "x": 1440, "y": 120, "properties": { "Condition": "Value", "Operator": "Equals", "CompareValue": "False" } },
+
+    { "id": "plc-place",         "type": "PlcSendCommand", "name": "Place Tray",         "x": 1660, "y": 200, "properties": { "CommandName": "LeftRobotPlaceTray", "TimeoutMs": "15000" } },
+    { "id": "verify-placed",     "type": "PlcReadBit",     "name": "Verify Placed",      "x": 1880, "y": 200, "properties": { "BitName": "LeftTrayState" } },
+    { "id": "br-verify-placed",  "type": "Branch",         "name": "Placed?",            "x": 2100, "y": 200, "properties": { "Condition": "Value", "Operator": "Equals", "CompareValue": "True" } },
+
+    { "id": "light-on",  "type": "LightTurnOnOff", "name": "Light On",  "x": 2320, "y": 200, "properties": { "ChannelName": "LeftTopLight", "Value": "true" } },
+
+    { "id": "tray-init", "type": "TrayInit", "name": "Init Tray", "x": 2540, "y": 200, "properties": { "InstanceName": "LeftTray" } },
+
+    { "id": "calib-sub", "type": "SubFlow", "name": "Calibrate 4 Corners", "x": 2760, "y": 200, "properties": {
+      "FlowPath": "Gen5Process/Simulation/LeftCalibrate.json"
+    } },
+
+    { "id": "scan-pipeline", "type": "Parallel", "name": "Scan Pipeline (Producer+Workers)", "x": 2980, "y": 200, "properties": {
+      "FlowPaths": "Gen5Process/Simulation/LeftScanProducer.json, Gen5Process/Simulation/LeftScanConsumer.json",
+      "WaitMode": "All",
+      "TimeoutMs": "300000"
+    } },
+
+    { "id": "light-off", "type": "LightTurnOnOff", "name": "Light Off", "x": 3200, "y": 200, "properties": { "ChannelName": "LeftTopLight", "Value": "false" } },
+
+    { "id": "move-load-2", "type": "MoveToTeachPosition", "name": "Move LoadPos (End)", "x": 3420, "y": 200, "properties": { "PositionName": "LeftLoadPos", "GroupName": "LXYZ", "WaitForComplete": "true" } },
+
+    { "id": "plc-pick-final",    "type": "PlcSendCommand", "name": "Pick Final Tray", "x": 3640, "y": 200, "properties": { "CommandName": "LeftRobotPickTray", "TimeoutMs": "15000" } },
+
+    { "id": "abort-set", "type": "SetSharedVariable", "name": "Set Abort", "x": 1660, "y": 20, "properties": { "Key": "FlowAbort", "Value": "true" } }
+  ],
+  "connections": [
+    { "id": "c-skip",  "sourceNodeId": "gate-enable",        "targetNodeId": "skip-end",         "condition": "False" },
+    { "id": "c-go",    "sourceNodeId": "gate-enable",        "targetNodeId": "move-load-1",      "condition": "True" },
+    { "id": "c1",      "sourceNodeId": "move-load-1",        "targetNodeId": "read-tray-state-1" },
+    { "id": "c2",      "sourceNodeId": "read-tray-state-1",  "targetNodeId": "br-has-tray" },
+    { "id": "c3-t",    "sourceNodeId": "br-has-tray",        "targetNodeId": "plc-pick-initial", "condition": "True" },
+    { "id": "c3-f",    "sourceNodeId": "br-has-tray",        "targetNodeId": "plc-place",        "condition": "False" },
+    { "id": "c4",      "sourceNodeId": "plc-pick-initial",   "targetNodeId": "verify-empty" },
+    { "id": "c5",      "sourceNodeId": "verify-empty",       "targetNodeId": "br-verify-empty" },
+    { "id": "c6-t",    "sourceNodeId": "br-verify-empty",    "targetNodeId": "plc-place",        "condition": "True" },
+    { "id": "c6-f",    "sourceNodeId": "br-verify-empty",    "targetNodeId": "abort-set",        "condition": "False" },
+    { "id": "c7",      "sourceNodeId": "plc-place",          "targetNodeId": "verify-placed" },
+    { "id": "c8",      "sourceNodeId": "verify-placed",      "targetNodeId": "br-verify-placed" },
+    { "id": "c9-t",    "sourceNodeId": "br-verify-placed",   "targetNodeId": "light-on",         "condition": "True" },
+    { "id": "c9-f",    "sourceNodeId": "br-verify-placed",   "targetNodeId": "abort-set",        "condition": "False" },
+    { "id": "c10",     "sourceNodeId": "light-on",           "targetNodeId": "tray-init" },
+    { "id": "c11",     "sourceNodeId": "tray-init",          "targetNodeId": "calib-sub" },
+    { "id": "c12",     "sourceNodeId": "calib-sub",          "targetNodeId": "scan-pipeline" },
+    { "id": "c13",     "sourceNodeId": "scan-pipeline",      "targetNodeId": "light-off" },
+    { "id": "c14",     "sourceNodeId": "light-off",          "targetNodeId": "move-load-2" },
+    { "id": "c15",     "sourceNodeId": "move-load-2",        "targetNodeId": "plc-pick-final" }
+  ],
+  "globalVariables": []
+}

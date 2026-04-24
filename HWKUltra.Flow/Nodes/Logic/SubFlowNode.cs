@@ -44,11 +44,14 @@ namespace HWKUltra.Flow.Nodes.Logic
                 if (context.NodeFactory == null)
                     return FlowResult.Fail("NodeFactory is not set in FlowContext. Required for SubFlowNode.");
 
-                // Load child flow definition
-                if (!File.Exists(flowPath))
-                    return FlowResult.Fail($"Flow definition file not found: {flowPath}");
+                // Load child flow definition (with relative path resolution).
+                // Preferred base: the directory of the flow currently being executed
+                // (so sibling files next to the parent flow resolve by file name alone).
+                var resolvedPath = ResolveFlowPath(flowPath, context.CurrentFlowDirectory);
+                if (!File.Exists(resolvedPath))
+                    return FlowResult.Fail($"Flow definition file not found: {flowPath} (CurrentFlowDirectory='{context.CurrentFlowDirectory}')");
 
-                var definition = FlowSerializer.LoadFromFile(flowPath);
+                var definition = FlowSerializer.LoadFromFile(resolvedPath);
                 if (definition == null)
                     return FlowResult.Fail($"Failed to deserialize flow definition: {flowPath}");
 
@@ -65,11 +68,14 @@ namespace HWKUltra.Flow.Nodes.Logic
                     engine.RegisterNode(node);
                 }
 
-                // Create child context
+                // Create child context. Propagate the resolved flow's directory so that
+                // nested SubFlow/Parallel nodes inside the child can resolve sibling files
+                // using just a file name.
                 var childContext = new FlowContext
                 {
                     SharedContext = context.SharedContext,
-                    NodeFactory = context.NodeFactory
+                    NodeFactory = context.NodeFactory,
+                    CurrentFlowDirectory = Path.GetDirectoryName(Path.GetFullPath(resolvedPath))
                 };
 
                 // Inject node properties from definition
@@ -128,6 +134,34 @@ namespace HWKUltra.Flow.Nodes.Logic
             {
                 return FlowResult.Fail($"SubFlow execution failed: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Resolve child flow path. Search order:
+        ///   1. Absolute / working-directory (as-is)
+        ///   2. Relative to the parent flow's directory (<paramref name="currentFlowDir"/>)
+        ///      — same folder, and Path.GetFileName fallback for when only a name is given
+        ///   3. AppContext.BaseDirectory (direct + ConfigJson/Flow)
+        /// This mirrors the resolution used by ParallelNode.
+        /// </summary>
+        internal static string ResolveFlowPath(string path, string? currentFlowDir)
+        {
+            if (File.Exists(path)) return path;
+
+            var candidates = new List<string>();
+            if (!string.IsNullOrEmpty(currentFlowDir))
+            {
+                candidates.Add(Path.Combine(currentFlowDir, path));
+                candidates.Add(Path.Combine(currentFlowDir, Path.GetFileName(path)));
+            }
+            var baseDir = AppContext.BaseDirectory;
+            candidates.Add(Path.Combine(baseDir, path));
+            candidates.Add(Path.Combine(baseDir, "ConfigJson", "Flow", path));
+            candidates.Add(Path.Combine(baseDir, "ConfigJson", "Flow", Path.GetFileName(path)));
+
+            foreach (var c in candidates)
+                if (File.Exists(c)) return c;
+            return path;
         }
     }
 }

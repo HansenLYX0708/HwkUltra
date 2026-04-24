@@ -56,6 +56,15 @@ namespace HWKUltra.Flow.Models
         /// Global variable definitions
         /// </summary>
         public List<FlowParameter> GlobalVariables { get; set; } = new();
+
+        /// <summary>
+        /// Absolute path of the JSON file this definition was loaded from.
+        /// Set automatically by <see cref="Utils.FlowSerializer.LoadFromFile"/>.
+        /// Used to resolve relative sub-flow paths at runtime.
+        /// Not serialized — runtime-only metadata.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? SourceFilePath { get; set; }
     }
 
     /// <summary>

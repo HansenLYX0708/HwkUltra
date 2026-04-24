@@ -1,0 +1,54 @@
+{
+  "Protocol": "Mock",
+  "IpAddress": "127.0.0.1",
+  "Port": 502,
+  "DefaultCommandTimeoutMs": 15000,
+  "PollIntervalMs": 50,
+  "AutoConnect": false,
+  "CommandMap": {
+    "LeftRobotPickTray": {
+      "TriggerAddress": "M100.0",
+      "TriggerValue": "true",
+      "SuccessAddress": "M101.0",
+      "SuccessValue": true,
+      "FailureAddress": "M102.0",
+      "FailureValue": true,
+      "ResetAddress": "M100.0",
+      "TimeoutMs": 15000
+    },
+    "LeftRobotPlaceTray": {
+      "TriggerAddress": "M103.0",
+      "TriggerValue": "true",
+      "SuccessAddress": "M104.0",
+      "FailureAddress": "M105.0",
+      "ResetAddress": "M103.0",
+      "TimeoutMs": 15000
+    },
+    "RightRobotPickTray": {
+      "TriggerAddress": "M110.0",
+      "TriggerValue": "true",
+      "SuccessAddress": "M111.0",
+      "FailureAddress": "M112.0",
+      "ResetAddress": "M110.0",
+      "TimeoutMs": 15000
+    },
+    "RightRobotPlaceTray": {
+      "TriggerAddress": "M113.0",
+      "TriggerValue": "true",
+      "SuccessAddress": "M114.0",
+      "FailureAddress": "M115.0",
+      "ResetAddress": "M113.0",
+      "TimeoutMs": 15000
+    }
+  },
+  "BitMap": {
+    "LeftTrayState": "M200.0",
+    "RightTrayState": "M200.1",
+    "SystemReady": "M200.2",
+    "EmergencyStop": "M200.3"
+  },
+  "RegisterMap": {
+    "CycleCount": "D100",
+    "ErrorCode": "D101"
+  }
+}

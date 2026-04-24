@@ -516,11 +516,6 @@ namespace HWKUltra.UI.ViewModels.Pages
             if (Path.IsPathRooted(path) && File.Exists(path))
                 return path;
 
-            // Try relative to current working directory (typical: app output dir)
-            var cwdCandidate = Path.GetFullPath(path);
-            if (File.Exists(cwdCandidate))
-                return cwdCandidate;
-
             // Try relative to the current document directory
             var currentDir = !string.IsNullOrEmpty(_documentService.CurrentFilePath)
                 ? Path.GetDirectoryName(_documentService.CurrentFilePath)
@@ -536,6 +531,11 @@ namespace HWKUltra.UI.ViewModels.Pages
             var baseCandidate = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path));
             if (File.Exists(baseCandidate))
                 return baseCandidate;
+
+            // Try relative to current working directory (typical: app output dir)
+            var cwdCandidate = Path.GetFullPath(path);
+            if (File.Exists(cwdCandidate))
+                return cwdCandidate;
 
             return cwdCandidate;
         }

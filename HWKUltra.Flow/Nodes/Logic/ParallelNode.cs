@@ -91,7 +91,7 @@ namespace HWKUltra.Flow.Nodes.Logic
             var tasks = new List<Task<SubFlowResult>>();
             for (int i = 0; i < flowPaths.Length; i++)
             {
-                var path = ResolveFlowPath(flowPaths[i]);
+                var path = ResolveFlowPath(flowPaths[i], context.CurrentFlowDirectory);
                 var index = i;
                 tasks.Add(Task.Run(() => ExecuteSubFlowAsync(path, index, context, linkedCts.Token, item: null, itemIndex: -1, totalCount: -1, varNames: default), linkedCts.Token));
             }
@@ -146,9 +146,9 @@ namespace HWKUltra.Flow.Nodes.Logic
             using var timeoutCts = timeoutMs > 0 ? new CancellationTokenSource(timeoutMs) : new CancellationTokenSource();
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken, timeoutCts.Token);
 
-            var resolvedPath = ResolveFlowPath(workerFlowPath);
+            var resolvedPath = ResolveFlowPath(workerFlowPath, context.CurrentFlowDirectory);
             if (!File.Exists(resolvedPath))
-                return FlowResult.Fail($"Worker flow not found: {workerFlowPath}");
+                return FlowResult.Fail($"Worker flow not found: {workerFlowPath} (CurrentFlowDirectory='{context.CurrentFlowDirectory}')");
 
             Console.WriteLine($"[Parallel] ItemSource mode: source={itemsSource} ({sourceObj.GetType().Name}), workers={workerCount}, totalHint={src.TotalCount}");
 
@@ -218,7 +218,8 @@ namespace HWKUltra.Flow.Nodes.Logic
                 var childContext = new FlowContext
                 {
                     SharedContext = parentContext.SharedContext,
-                    NodeFactory = parentContext.NodeFactory
+                    NodeFactory = parentContext.NodeFactory,
+                    CurrentFlowDirectory = Path.GetDirectoryName(Path.GetFullPath(flowPath))
                 };
 
                 // Inject node properties
@@ -287,23 +288,11 @@ namespace HWKUltra.Flow.Nodes.Logic
         }
 
         /// <summary>
-        /// Resolve a worker flow path. Tries as-is first; then relative to AppContext.BaseDirectory;
-        /// then under ConfigJson/Flow subdirectory.
+        /// Resolve a worker flow path. Shares logic with <see cref="SubFlowNode.ResolveFlowPath"/>:
+        ///   1. As-is, 2. relative to the parent flow's directory, 3. AppContext.BaseDirectory / ConfigJson/Flow.
         /// </summary>
-        private static string ResolveFlowPath(string path)
-        {
-            if (File.Exists(path)) return path;
-            var baseDir = AppContext.BaseDirectory;
-            var candidates = new[]
-            {
-                Path.Combine(baseDir, path),
-                Path.Combine(baseDir, "ConfigJson", "Flow", path),
-                Path.Combine(baseDir, "ConfigJson", "Flow", Path.GetFileName(path))
-            };
-            foreach (var c in candidates)
-                if (File.Exists(c)) return c;
-            return path; // return original so error message is informative
-        }
+        private static string ResolveFlowPath(string path, string? currentFlowDir)
+            => SubFlowNode.ResolveFlowPath(path, currentFlowDir);
 
         private class SubFlowResult
         {

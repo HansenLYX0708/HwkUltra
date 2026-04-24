@@ -1,0 +1,37 @@
+{
+  "id": "gen5-Right-scan-producer-sim-001",
+  "name": "Gen5 Right Scan Producer (Simulation)",
+  "description": "Producer: create RightScanPool then iterate tray slots. For each slot: move to pocket, grab one frame into pool, and append {Index,Row,Col} to RightPocketJobs list for the consumer to correlate with.",
+  "createdAt": "2026-04-23T00:00:00",
+  "modifiedAt": "2026-04-23T00:00:00",
+  "version": "1.0.0",
+  "startNodeId": "pool-create",
+  "nodes": [
+    { "id": "pool-create", "type": "ImagePoolCreate", "name": "Create Scan Pool", "x": 100,  "y": 200, "properties": { "Name": "RightScanPool", "Capacity": "8" } },
+
+    { "id": "iter-reset",  "type": "SetSharedVariable", "name": "Reset Iter",    "x": 300,  "y": 200, "properties": { "Key": "RightIterReset", "Value": "true" } },
+
+    { "id": "iter",        "type": "TrayIterator", "name": "Next Pocket", "x": 520, "y": 200, "properties": { "InstanceName": "RightTray", "FilterState": "-1", "Reset": "true" } },
+
+    { "id": "move-pocket", "type": "MoveToTeachPosition", "name": "Move to Pocket",    "x": 740, "y": 200, "properties": { "PositionName": "RightDefaultTrayRightTop", "GroupName": "RXYZ", "WaitForComplete": "true" } },
+
+    { "id": "capture",     "type": "CameraStartCapture", "name": "Grab 1 Frame",       "x": 960, "y": 200, "properties": { "CameraName": "RightScanCam", "PoolName": "RightScanPool", "MaxFrames": "1", "TimeoutMs": "5000" } },
+
+    { "id": "append-job",  "type": "AppendToList", "name": "Record Pocket Job",       "x": 1180, "y": 200, "properties": {
+      "Key": "RightPocketJobs",
+      "Columns": "Index=CurrentIndex;Row=Row;Col=Col"
+    } },
+
+    { "id": "pool-complete", "type": "ImagePoolComplete", "name": "Complete Pool (no more frames)", "x": 1400, "y": 320, "properties": { "Name": "RightScanPool" } }
+  ],
+  "connections": [
+    { "id": "c1", "sourceNodeId": "pool-create",    "targetNodeId": "iter-reset" },
+    { "id": "c2", "sourceNodeId": "iter-reset",     "targetNodeId": "iter" },
+    { "id": "c3", "sourceNodeId": "iter",           "targetNodeId": "move-pocket",   "condition": "Next" },
+    { "id": "c4", "sourceNodeId": "move-pocket",    "targetNodeId": "capture" },
+    { "id": "c5", "sourceNodeId": "capture",        "targetNodeId": "append-job" },
+    { "id": "c6", "sourceNodeId": "append-job",     "targetNodeId": "iter" },
+    { "id": "c7", "sourceNodeId": "iter",           "targetNodeId": "pool-complete", "condition": "Done" }
+  ],
+  "globalVariables": []
+}

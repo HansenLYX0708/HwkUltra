@@ -1,0 +1,71 @@
+{
+  "id": "gen5-Right-calibrate-sim-001",
+  "name": "Gen5 Right Calibrate (Real)",
+  "description": "Move to 4 default tray-corner teach positions, capture + find datum at each, then TrayTeach with corrected positions. One node per atomic step.",
+  "createdAt": "2026-04-23T00:00:00",
+  "modifiedAt": "2026-04-23T00:00:00",
+  "version": "1.0.0",
+  "startNodeId": "pool-create",
+  "nodes": [
+    { "id": "pool-create", "type": "ImagePoolCreate", "name": "Create Calib Pool", "x": 100, "y": 200, "properties": { "Name": "RightCalibPool", "Capacity": "4" } },
+
+    { "id": "move-lt",    "type": "MoveToTeachPosition", "name": "Move LT",         "x": 300,  "y": 200, "properties": { "PositionName": "RightDefaultTrayRightTop",    "GroupName": "RXYZ", "WaitForComplete": "true" } },
+    { "id": "cap-lt",     "type": "CameraStartCapture",   "name": "Capture LT",     "x": 500,  "y": 200, "properties": { "CameraName": "RightScanCam", "PoolName": "RightCalibPool", "MaxFrames": "1", "TimeoutMs": "5000" } },
+    { "id": "find-lt",    "type": "FindDatum",            "name": "Find Datum LT",  "x": 700,  "y": 200, "properties": { "Image": "RightCalibPool" } },
+    { "id": "save-lt-x",  "type": "SetSharedVariable",    "name": "Save LT_X",      "x": 900,  "y": 160, "properties": { "Key": "RightCorner_LT_X", "SourceVariable": "DatumX" } },
+    { "id": "save-lt-y",  "type": "SetSharedVariable",    "name": "Save LT_Y",      "x": 900,  "y": 220, "properties": { "Key": "RightCorner_LT_Y", "SourceVariable": "DatumY" } },
+
+    { "id": "move-rt",    "type": "MoveToTeachPosition", "name": "Move RT",         "x": 1100, "y": 200, "properties": { "PositionName": "RightDefaultTrayRightTop",   "GroupName": "RXYZ", "WaitForComplete": "true" } },
+    { "id": "cap-rt",     "type": "CameraStartCapture",   "name": "Capture RT",     "x": 1300, "y": 200, "properties": { "CameraName": "RightScanCam", "PoolName": "RightCalibPool", "MaxFrames": "1", "TimeoutMs": "5000" } },
+    { "id": "find-rt",    "type": "FindDatum",            "name": "Find Datum RT",  "x": 1500, "y": 200, "properties": { "Image": "RightCalibPool" } },
+    { "id": "save-rt-x",  "type": "SetSharedVariable",    "name": "Save RT_X",      "x": 1700, "y": 160, "properties": { "Key": "RightCorner_RT_X", "SourceVariable": "DatumX" } },
+    { "id": "save-rt-y",  "type": "SetSharedVariable",    "name": "Save RT_Y",      "x": 1700, "y": 220, "properties": { "Key": "RightCorner_RT_Y", "SourceVariable": "DatumY" } },
+
+    { "id": "move-lb",    "type": "MoveToTeachPosition", "name": "Move LB",         "x": 1900, "y": 200, "properties": { "PositionName": "RightDefaultTrayRightBottom", "GroupName": "RXYZ", "WaitForComplete": "true" } },
+    { "id": "cap-lb",     "type": "CameraStartCapture",   "name": "Capture LB",     "x": 2100, "y": 200, "properties": { "CameraName": "RightScanCam", "PoolName": "RightCalibPool", "MaxFrames": "1", "TimeoutMs": "5000" } },
+    { "id": "find-lb",    "type": "FindDatum",            "name": "Find Datum LB",  "x": 2300, "y": 200, "properties": { "Image": "RightCalibPool" } },
+    { "id": "save-lb-x",  "type": "SetSharedVariable",    "name": "Save LB_X",      "x": 2500, "y": 160, "properties": { "Key": "RightCorner_LB_X", "SourceVariable": "DatumX" } },
+    { "id": "save-lb-y",  "type": "SetSharedVariable",    "name": "Save LB_Y",      "x": 2500, "y": 220, "properties": { "Key": "RightCorner_LB_Y", "SourceVariable": "DatumY" } },
+
+    { "id": "move-rb",    "type": "MoveToTeachPosition", "name": "Move RB",         "x": 2700, "y": 200, "properties": { "PositionName": "RightDefaultTrayRightBottom","GroupName": "RXYZ", "WaitForComplete": "true" } },
+    { "id": "cap-rb",     "type": "CameraStartCapture",   "name": "Capture RB",     "x": 2900, "y": 200, "properties": { "CameraName": "RightScanCam", "PoolName": "RightCalibPool", "MaxFrames": "1", "TimeoutMs": "5000" } },
+    { "id": "find-rb",    "type": "FindDatum",            "name": "Find Datum RB",  "x": 3100, "y": 200, "properties": { "Image": "RightCalibPool" } },
+    { "id": "save-rb-x",  "type": "SetSharedVariable",    "name": "Save RB_X",      "x": 3300, "y": 160, "properties": { "Key": "RightCorner_RB_X", "SourceVariable": "DatumX" } },
+    { "id": "save-rb-y",  "type": "SetSharedVariable",    "name": "Save RB_Y",      "x": 3300, "y": 220, "properties": { "Key": "RightCorner_RB_Y", "SourceVariable": "DatumY" } },
+
+    { "id": "tray-teach", "type": "TrayTeach", "name": "Apply 4-Corner Teach", "x": 3500, "y": 200, "properties": {
+      "InstanceName": "RightTray",
+      "LT_X": "RightCorner_LT_X", "LT_Y": "RightCorner_LT_Y", "LT_Z": "0",
+      "RT_X": "RightCorner_RT_X", "RT_Y": "RightCorner_RT_Y", "RT_Z": "0",
+      "LB_X": "RightCorner_LB_X", "LB_Y": "RightCorner_LB_Y", "LB_Z": "0",
+      "RB_X": "RightCorner_RB_X", "RB_Y": "RightCorner_RB_Y", "RB_Z": "0"
+    } },
+
+    { "id": "pool-close", "type": "ImagePoolClose", "name": "Close Calib Pool", "x": 3700, "y": 200, "properties": { "Name": "RightCalibPool" } }
+  ],
+  "connections": [
+    { "id": "c1", "sourceNodeId": "pool-create", "targetNodeId": "move-lt" },
+    { "id": "c2", "sourceNodeId": "move-lt", "targetNodeId": "cap-lt" },
+    { "id": "c3", "sourceNodeId": "cap-lt", "targetNodeId": "find-lt" },
+    { "id": "c4", "sourceNodeId": "find-lt", "targetNodeId": "save-lt-x" },
+    { "id": "c5", "sourceNodeId": "save-lt-x", "targetNodeId": "save-lt-y" },
+    { "id": "c6", "sourceNodeId": "save-lt-y", "targetNodeId": "move-rt" },
+    { "id": "c7", "sourceNodeId": "move-rt", "targetNodeId": "cap-rt" },
+    { "id": "c8", "sourceNodeId": "cap-rt", "targetNodeId": "find-rt" },
+    { "id": "c9", "sourceNodeId": "find-rt", "targetNodeId": "save-rt-x" },
+    { "id": "c10", "sourceNodeId": "save-rt-x", "targetNodeId": "save-rt-y" },
+    { "id": "c11", "sourceNodeId": "save-rt-y", "targetNodeId": "move-lb" },
+    { "id": "c12", "sourceNodeId": "move-lb", "targetNodeId": "cap-lb" },
+    { "id": "c13", "sourceNodeId": "cap-lb", "targetNodeId": "find-lb" },
+    { "id": "c14", "sourceNodeId": "find-lb", "targetNodeId": "save-lb-x" },
+    { "id": "c15", "sourceNodeId": "save-lb-x", "targetNodeId": "save-lb-y" },
+    { "id": "c16", "sourceNodeId": "save-lb-y", "targetNodeId": "move-rb" },
+    { "id": "c17", "sourceNodeId": "move-rb", "targetNodeId": "cap-rb" },
+    { "id": "c18", "sourceNodeId": "cap-rb", "targetNodeId": "find-rb" },
+    { "id": "c19", "sourceNodeId": "find-rb", "targetNodeId": "save-rb-x" },
+    { "id": "c20", "sourceNodeId": "save-rb-x", "targetNodeId": "save-rb-y" },
+    { "id": "c21", "sourceNodeId": "save-rb-y", "targetNodeId": "tray-teach" },
+    { "id": "c22", "sourceNodeId": "tray-teach", "targetNodeId": "pool-close" }
+  ],
+  "globalVariables": []
+}

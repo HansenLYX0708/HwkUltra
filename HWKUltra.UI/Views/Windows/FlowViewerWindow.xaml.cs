@@ -16,6 +16,10 @@ namespace HWKUltra.UI.Views.Windows
     {
         public CreatorViewModel ViewModel { get; }
 
+        // Owned by this window and shared with the ViewModel so that
+        // CurrentFilePath is visible to sub-flow pop-out logic inside the ViewModel.
+        private readonly FlowDocumentService _localDocService;
+
         private string? _openFilePath;
         private string _breadcrumbText = string.Empty;
 
@@ -34,9 +38,11 @@ namespace HWKUltra.UI.Views.Windows
             AppSettingsService settingsService)
         {
             // Each window gets its own FlowDocumentService so CurrentFilePath does
-            // not clash with the main editor or other viewer windows.
-            var localDocService = new FlowDocumentService();
-            ViewModel = new CreatorViewModel(localDocService, catalogService, settingsService);
+            // not clash with the main editor or other viewer windows. The same
+            // instance is handed to the ViewModel so loading via OpenFile() below
+            // updates a path the ViewModel can read (for relative sub-flow resolution).
+            _localDocService = new FlowDocumentService();
+            ViewModel = new CreatorViewModel(_localDocService, catalogService, settingsService);
 
             InitializeComponent();
 
@@ -61,9 +67,9 @@ namespace HWKUltra.UI.Views.Windows
             };
             BreadcrumbText = string.Join("  >  ", ViewModel.Breadcrumb);
 
-            // Load directly via a local service to avoid mutating global CurrentFilePath.
-            var localSvc = new FlowDocumentService();
-            var def = localSvc.LoadFromFile(fullPath);
+            // Load via the ViewModel's own document service so CurrentFilePath is
+            // populated — nested sub-flow pop-outs rely on it to resolve relative paths.
+            var def = _localDocService.LoadFromFile(fullPath);
             if (def != null)
             {
                 ViewModel.LoadFromDefinition(def);

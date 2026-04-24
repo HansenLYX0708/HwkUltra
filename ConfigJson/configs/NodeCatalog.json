@@ -37,6 +37,7 @@
     { "Type": "LoadImageFolder", "DisplayName": "Load Image Folder", "Category": "Vision" },
     { "Type": "EnumerateFolder", "DisplayName": "Enumerate Folder", "Category": "Vision" },
     { "Type": "DisposeImage", "DisplayName": "Dispose Image", "Category": "Vision" },
+    { "Type": "SaveBitmap", "DisplayName": "Save Bitmap", "Category": "Vision" },
     { "Type": "GetSharpnessLaplacian", "DisplayName": "Get Sharpness (Laplacian)", "Category": "Vision" },
     { "Type": "GetSharpnessVar", "DisplayName": "Get Sharpness (Variance)", "Category": "Vision" },
     { "Type": "GetTenengrad", "DisplayName": "Get Tenengrad", "Category": "Vision" },

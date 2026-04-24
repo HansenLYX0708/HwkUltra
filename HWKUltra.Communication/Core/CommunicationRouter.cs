@@ -21,6 +21,11 @@ namespace HWKUltra.Communication.Core
             _controller.MessageReceived += (s, e) => MessageReceived?.Invoke(this, e);
         }
 
+        /// <summary>
+        /// Access the underlying controller as a generic PLC controller, or null if unsupported.
+        /// </summary>
+        public IGenericPlcController? Plc => _controller as IGenericPlcController;
+
         public void Open()
         {
             _controller.Open();

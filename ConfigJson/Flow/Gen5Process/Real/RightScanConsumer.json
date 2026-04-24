@@ -1,0 +1,22 @@
+{
+  "id": "gen5-Right-scan-consumer-sim-001",
+  "name": "Gen5 Right Scan Consumer (Real)",
+  "description": "Consumer: attaches a Parallel work-pool to RightScanPool, dispatching each image to RightScanWorker.json. Total frames is streaming (unknown); Parallel exits when the pool is CompleteAdding and drained.",
+  "createdAt": "2026-04-23T00:00:00",
+  "modifiedAt": "2026-04-23T00:00:00",
+  "version": "1.0.0",
+  "startNodeId": "workers",
+  "nodes": [
+    { "id": "workers", "type": "Parallel", "name": "Pool Workers", "x": 100, "y": 200, "properties": {
+      "FlowPaths": "Gen5Process/Real/RightScanWorker.json",
+      "ItemsSource": "RightScanPool",
+      "WorkerCount": "2",
+      "ItemVariable": "CurrentItem",
+      "IndexVariable": "CurrentIndex",
+      "TotalVariable": "TotalCount",
+      "TimeoutMs": "300000"
+    } }
+  ],
+  "connections": [],
+  "globalVariables": []
+}

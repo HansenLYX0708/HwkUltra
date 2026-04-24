@@ -2,6 +2,7 @@ using System.Text.Json;
 using HWKUltra.Communication;
 using HWKUltra.Communication.Abstractions;
 using HWKUltra.Communication.Core;
+using HWKUltra.Communication.Implementations.GenericPlc;
 using HWKUltra.Communication.Implementations.WDConnect;
 
 namespace HWKUltra.Builder
@@ -83,6 +84,49 @@ namespace HWKUltra.Builder
             if (_config == null)
                 throw new InvalidOperationException("Configuration not loaded. Call FromJson first.");
             var controller = new WDConnectCommunicationController(_config);
+            return new CommunicationRouter(controller);
+        }
+    }
+
+    /// <summary>
+    /// Dedicated builder for the generic PLC communication controller.
+    /// </summary>
+    public class GenericPlcCommunicationBuilder
+    {
+        private GenericPlcConfig? _config;
+        private IPlcTransport? _transport;
+
+        public GenericPlcCommunicationBuilder FromJson(string json)
+        {
+            _config = JsonSerializer.Deserialize(json, CommunicationJsonContext.Default.GenericPlcConfig);
+            if (_config == null)
+                throw new InvalidOperationException("Failed to deserialize GenericPlcConfig");
+            return this;
+        }
+
+        public GenericPlcCommunicationBuilder FromJsonFile(string path)
+        {
+            var json = File.ReadAllText(path);
+            return FromJson(json);
+        }
+
+        /// <summary>Inject a custom transport (e.g. MockPlcTransport for tests).</summary>
+        public GenericPlcCommunicationBuilder WithTransport(IPlcTransport transport)
+        {
+            _transport = transport;
+            return this;
+        }
+
+        public GenericPlcController BuildController()
+        {
+            if (_config == null)
+                throw new InvalidOperationException("Configuration not loaded. Call FromJson first.");
+            return new GenericPlcController(_config, _transport);
+        }
+
+        public CommunicationRouter BuildRouter()
+        {
+            var controller = BuildController();
             return new CommunicationRouter(controller);
         }
     }
