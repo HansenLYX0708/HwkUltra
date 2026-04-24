@@ -32,8 +32,25 @@ namespace HWKUltra.Flow.Nodes.Logic
             try
             {
                 var key = context.GetNodeInput<string>(Id, "Key") ?? "";
-                var index = context.GetNodeInput<int>(Id, "Index");
+                var indexRaw = context.GetNodeInput<string>(Id, "Index") ?? "0";
                 var colsRaw = context.GetNodeInput<string>(Id, "Columns") ?? "";
+
+                // Index can be a literal number OR a variable name (e.g. "CurrentIndex").
+                int index;
+                if (!int.TryParse(indexRaw, out index))
+                {
+                    // Treat as variable reference
+                    var resolved = context.FindVariable<object>(indexRaw);
+                    if (resolved != null)
+                    {
+                        try { index = Convert.ToInt32(resolved); }
+                        catch { return Task.FromResult(FlowResult.Fail($"Index variable '{indexRaw}' resolved to '{resolved}' which is not an integer")); }
+                    }
+                    else
+                    {
+                        return Task.FromResult(FlowResult.Fail($"Index '{indexRaw}' is neither a number nor a defined variable"));
+                    }
+                }
 
                 if (string.IsNullOrEmpty(key))
                     return Task.FromResult(FlowResult.Fail("Key is required"));

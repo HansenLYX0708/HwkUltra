@@ -27,7 +27,8 @@ namespace HWKUltra.Flow.Nodes.Camera.Real
             new FlowParameter { Name = "MaxFrames",       DisplayName = "Max Frames",      Type = "int",    Required = false, DefaultValue = 0, Description = "Stop + CompleteAdding after N frames (0 = unlimited, rely on StopSignal / timeout)" },
             new FlowParameter { Name = "StopSignal",      DisplayName = "Stop Signal",     Type = "string", Required = false, Description = "SharedContext signal name that stops capture when set" },
             new FlowParameter { Name = "TimeoutMs",       DisplayName = "Timeout (ms)",    Type = "int",    Required = false, DefaultValue = 0, Description = "Overall timeout (0 = no timeout)" },
-            new FlowParameter { Name = "AddTimeoutMs",    DisplayName = "Add Timeout (ms)",Type = "int",    Required = false, DefaultValue = 100, Description = "Per-frame back-pressure timeout; dropped on exceed" }
+            new FlowParameter { Name = "AddTimeoutMs",    DisplayName = "Add Timeout (ms)",Type = "int",    Required = false, DefaultValue = 100, Description = "Per-frame back-pressure timeout; dropped on exceed" },
+            new FlowParameter { Name = "AutoComplete",     DisplayName = "Auto Complete",   Type = "bool",   Required = false, DefaultValue = true, Description = "Call CompleteAdding when done. Set false if a separate ImagePoolComplete node handles it (producer-consumer pattern)." }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -121,7 +122,10 @@ namespace HWKUltra.Flow.Nodes.Camera.Real
             {
                 try { Service.StopGrabbing(cameraName); } catch { /* best effort */ }
                 Service.ImageGrabbed -= handler;
-                pool.CompleteAdding();
+                var autoComplete = context.GetNodeInput<string>(Id, "AutoComplete");
+                if (!string.Equals(autoComplete, "false", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(autoComplete, "False", StringComparison.OrdinalIgnoreCase))
+                    pool.CompleteAdding();
             }
 
             context.SetNodeOutput(Id, "TotalEnqueued", (int)pool.TotalEnqueued);
@@ -165,7 +169,10 @@ namespace HWKUltra.Flow.Nodes.Camera.Real
             }
             finally
             {
-                pool.CompleteAdding();
+                var autoComplete = context.GetNodeInput<string>(Id, "AutoComplete");
+                if (!string.Equals(autoComplete, "false", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(autoComplete, "False", StringComparison.OrdinalIgnoreCase))
+                    pool.CompleteAdding();
             }
 
             context.SetNodeOutput(Id, "TotalEnqueued", produced);

@@ -72,7 +72,8 @@
         "MaxFrames": "1",
         "TimeoutMs": "5000",
         "StopSignal": "",
-        "AddTimeoutMs": "100"
+        "AddTimeoutMs": "100",
+        "AutoComplete": "false"
       }
     },
     {

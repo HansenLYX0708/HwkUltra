@@ -63,7 +63,8 @@
         "CameraName": "LeftScanCam",
         "PoolName": "LeftScanPool",
         "MaxFrames": "1",
-        "TimeoutMs": "5000"
+        "TimeoutMs": "5000",
+        "AutoComplete": "false"
       }
     },
     {

@@ -1,7 +1,7 @@
 {
   "id": "gen5-Right-calibrate-sim-001",
   "name": "Gen5 Right Calibrate (Simulation)",
-  "description": "Move to 4 default tray-corner teach positions, capture \u002B find datum at each, then TrayTeach with corrected positions. One node per atomic step.",
+  "description": "Move to 4 default tray-corner teach positions, capture + find datum at each, then TrayTeach with corrected positions. One node per atomic step.",
   "createdAt": "2026-04-23T00:00:00",
   "modifiedAt": "2026-04-24T16:26:59.5951513+08:00",
   "version": "1.0.0",
