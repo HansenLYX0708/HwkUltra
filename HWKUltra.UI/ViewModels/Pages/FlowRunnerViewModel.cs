@@ -191,6 +191,17 @@ namespace HWKUltra.UI.ViewModels.Pages
             // Set CurrentFlowDirectory so SubFlowNode/ParallelNode can resolve relative paths
             if (!string.IsNullOrEmpty(executionDef.SourceFilePath))
                 context.CurrentFlowDirectory = Path.GetDirectoryName(executionDef.SourceFilePath);
+            // Propagate sub-flow/parallel node execution logs to the UI log panel
+            context.OnNodeLog = (flowName, nodeName, nodeType, isStart, result) =>
+            {
+                if (isStart)
+                    Dispatch(() => AddLog("SUB", $"  [{flowName}] ▶ {nodeName} ({nodeType})"));
+                else
+                {
+                    var status = result?.Success == true ? "OK" : $"FAIL: {result?.ErrorMessage}";
+                    Dispatch(() => AddLog("SUB", $"  [{flowName}] ✓ {nodeName} [{status}]"));
+                }
+            };
             foreach (var nodeDef in executionDef.Nodes)
                 foreach (var prop in nodeDef.Properties)
                     context.Variables[$"{nodeDef.Id}:{prop.Key}"] = prop.Value;

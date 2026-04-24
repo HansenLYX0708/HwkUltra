@@ -7,37 +7,157 @@
   "version": "1.0.0",
   "startNodeId": "set-enable-left",
   "nodes": [
-    { "id": "set-enable-left",  "type": "SetSharedVariable", "name": "Enable Left",  "x": 100, "y": 100, "properties": { "Key": "EnableLeftStage",  "Value": "true" } },
-    { "id": "set-enable-right", "type": "SetSharedVariable", "name": "Enable Right", "x": 100, "y": 180, "properties": { "Key": "EnableRightStage", "Value": "true" } },
-    { "id": "set-save-images",  "type": "SetSharedVariable", "name": "Save Images",  "x": 100, "y": 260, "properties": { "Key": "SaveImages",        "Value": "false" } },
-    { "id": "set-save-path",    "type": "SetSharedVariable", "name": "Save Path",    "x": 100, "y": 340, "properties": { "Key": "ImageSavePath",     "Value": "./output/gen5_real" } },
-    { "id": "set-cycle-count",  "type": "SetSharedVariable", "name": "Cycle Count",  "x": 100, "y": 420, "properties": { "Key": "CycleCount",        "Value": "1" } },
-    { "id": "set-abort",        "type": "SetSharedVariable", "name": "Clear Abort",  "x": 100, "y": 500, "properties": { "Key": "FlowAbort",         "Value": "false" } },
-
-    { "id": "loop-cycles", "type": "Loop", "name": "Cycle Loop", "x": 380, "y": 300, "properties": { "Iterations": "1", "ConditionVariable": "FlowAbort", "ContinueValue": "false" } },
-
-    { "id": "run-stages", "type": "Parallel", "name": "Run Left + Right", "x": 620, "y": 300, "properties": {
-      "FlowPaths": "Gen5Process/Real/LeftStage.json, Gen5Process/Real/RightStage.json",
-      "WaitMode": "All",
-      "TimeoutMs": "600000"
-    } },
-
-    { "id": "save-csv", "type": "SaveResultsToCsv", "name": "Save Combined CSV", "x": 900, "y": 300, "properties": {
-      "Key": "FlowResults",
-      "Path": "gen5_sharpness_{yyyyMMdd_HHmmss}.csv",
-      "Encoding": "UTF8BOM"
-    } }
+    {
+      "id": "set-enable-left",
+      "type": "SetSharedVariable",
+      "name": "Enable Left",
+      "x": 100,
+      "y": 100,
+      "properties": {
+        "Key": "EnableLeftStage",
+        "Value": "true"
+      }
+    },
+    {
+      "id": "set-enable-right",
+      "type": "SetSharedVariable",
+      "name": "Enable Right",
+      "x": 100,
+      "y": 180,
+      "properties": {
+        "Key": "EnableRightStage",
+        "Value": "true"
+      }
+    },
+    {
+      "id": "set-save-images",
+      "type": "SetSharedVariable",
+      "name": "Save Images",
+      "x": 100,
+      "y": 260,
+      "properties": {
+        "Key": "SaveImages",
+        "Value": "false"
+      }
+    },
+    {
+      "id": "set-save-path",
+      "type": "SetSharedVariable",
+      "name": "Save Path",
+      "x": 100,
+      "y": 340,
+      "properties": {
+        "Key": "ImageSavePath",
+        "Value": "./output/gen5_real"
+      }
+    },
+    {
+      "id": "set-cycle-count",
+      "type": "SetSharedVariable",
+      "name": "Cycle Count",
+      "x": 100,
+      "y": 420,
+      "properties": {
+        "Key": "CycleCount",
+        "Value": "1"
+      }
+    },
+    {
+      "id": "set-abort",
+      "type": "SetSharedVariable",
+      "name": "Clear Abort",
+      "x": 100,
+      "y": 500,
+      "properties": {
+        "Key": "FlowAbort",
+        "Value": "false"
+      }
+    },
+    {
+      "id": "loop-cycles",
+      "type": "Loop",
+      "name": "Cycle Loop",
+      "x": 380,
+      "y": 300,
+      "properties": {
+        "Iterations": "1",
+        "ConditionVariable": "FlowAbort",
+        "ContinueValue": "false"
+      }
+    },
+    {
+      "id": "run-stages",
+      "type": "Parallel",
+      "name": "Run Left + Right",
+      "x": 620,
+      "y": 300,
+      "properties": {
+        "FlowPaths": "LeftStage.json, RightStage.json",
+        "WaitMode": "All",
+        "TimeoutMs": "600000"
+      }
+    },
+    {
+      "id": "save-csv",
+      "type": "SaveResultsToCsv",
+      "name": "Save Combined CSV",
+      "x": 900,
+      "y": 300,
+      "properties": {
+        "Key": "FlowResults",
+        "Path": "gen5_sharpness_{yyyyMMdd_HHmmss}.csv",
+        "Encoding": "UTF8BOM"
+      }
+    }
   ],
   "connections": [
-    { "id": "c1", "sourceNodeId": "set-enable-left",  "targetNodeId": "set-enable-right" },
-    { "id": "c2", "sourceNodeId": "set-enable-right", "targetNodeId": "set-save-images" },
-    { "id": "c3", "sourceNodeId": "set-save-images",  "targetNodeId": "set-save-path" },
-    { "id": "c4", "sourceNodeId": "set-save-path",    "targetNodeId": "set-cycle-count" },
-    { "id": "c5", "sourceNodeId": "set-cycle-count",  "targetNodeId": "set-abort" },
-    { "id": "c6", "sourceNodeId": "set-abort",        "targetNodeId": "loop-cycles" },
-    { "id": "c7", "sourceNodeId": "loop-cycles",      "targetNodeId": "run-stages", "condition": "Continue" },
-    { "id": "c8", "sourceNodeId": "run-stages",       "targetNodeId": "loop-cycles" },
-    { "id": "c9", "sourceNodeId": "loop-cycles",      "targetNodeId": "save-csv",   "condition": "Exit" }
+    {
+      "id": "c1",
+      "sourceNodeId": "set-enable-left",
+      "targetNodeId": "set-enable-right"
+    },
+    {
+      "id": "c2",
+      "sourceNodeId": "set-enable-right",
+      "targetNodeId": "set-save-images"
+    },
+    {
+      "id": "c3",
+      "sourceNodeId": "set-save-images",
+      "targetNodeId": "set-save-path"
+    },
+    {
+      "id": "c4",
+      "sourceNodeId": "set-save-path",
+      "targetNodeId": "set-cycle-count"
+    },
+    {
+      "id": "c5",
+      "sourceNodeId": "set-cycle-count",
+      "targetNodeId": "set-abort"
+    },
+    {
+      "id": "c6",
+      "sourceNodeId": "set-abort",
+      "targetNodeId": "loop-cycles"
+    },
+    {
+      "id": "c7",
+      "sourceNodeId": "loop-cycles",
+      "targetNodeId": "run-stages",
+      "condition": "Continue"
+    },
+    {
+      "id": "c8",
+      "sourceNodeId": "run-stages",
+      "targetNodeId": "loop-cycles"
+    },
+    {
+      "id": "c9",
+      "sourceNodeId": "loop-cycles",
+      "targetNodeId": "save-csv",
+      "condition": "Exit"
+    }
   ],
   "globalVariables": []
 }

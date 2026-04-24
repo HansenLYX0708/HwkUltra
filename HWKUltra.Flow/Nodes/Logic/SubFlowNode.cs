@@ -75,7 +75,8 @@ namespace HWKUltra.Flow.Nodes.Logic
                 {
                     SharedContext = context.SharedContext,
                     NodeFactory = context.NodeFactory,
-                    CurrentFlowDirectory = Path.GetDirectoryName(Path.GetFullPath(resolvedPath))
+                    CurrentFlowDirectory = Path.GetDirectoryName(Path.GetFullPath(resolvedPath)),
+                    OnNodeLog = context.OnNodeLog
                 };
 
                 // Inject node properties from definition
@@ -98,6 +99,16 @@ namespace HWKUltra.Flow.Nodes.Logic
                         else if (context.SharedContext != null && context.SharedContext.TryGetVariable<object>(varName, out var sharedVal) && sharedVal != null)
                             childContext.Variables[varName] = sharedVal;
                     }
+                }
+
+                // Wire child engine events to OnNodeLog callback
+                var flowName = definition.Name ?? flowPath;
+                if (context.OnNodeLog != null)
+                {
+                    engine.NodeExecuting += (_, e) =>
+                        context.OnNodeLog(flowName, e.Node.Name, e.Node.NodeType, true, null);
+                    engine.NodeExecuted += (_, e) =>
+                        context.OnNodeLog(flowName, e.Node.Name, e.Node.NodeType, false, e.Result);
                 }
 
                 // Execute child flow

@@ -7,36 +7,85 @@
   "version": "1.0.0",
   "startNodeId": "lookup",
   "nodes": [
-    { "id": "lookup",     "type": "ListLookupByIndex", "name": "Lookup Row/Col", "x": 100, "y": 200, "properties": {
-      "Key": "LeftPocketJobs",
-      "Index": "CurrentIndex",
-      "Columns": "Row=Row;Col=Col"
-    } },
-
-    { "id": "sharpness",  "type": "GetSharpnessLaplacian", "name": "Compute Sharpness", "x": 320, "y": 200, "properties": {
-      "Image": "CurrentItem",
-      "OutputVariable": "SharpnessScore"
-    } },
-
-    { "id": "save-img",   "type": "SaveBitmap", "name": "Save Image (if enabled)", "x": 540, "y": 200, "properties": {
-      "Variable": "CurrentItem",
-      "PathTemplate": "{ImageSavePath}/LeftStage/{Row}_{Col}.bmp",
-      "Format": "Bmp",
-      "Enabled": "SaveImages"
-    } },
-
-    { "id": "append",     "type": "AppendToList", "name": "Append Result", "x": 760, "y": 200, "properties": {
-      "Key": "FlowResults",
-      "Columns": "Stage=Left;Row=Row;Col=Col;Score=SharpnessScore;File=SavedPath"
-    } },
-
-    { "id": "dispose",    "type": "DisposeImage", "name": "Dispose", "x": 980, "y": 200, "properties": { "Variable": "CurrentItem" } }
+    {
+      "id": "lookup",
+      "type": "ListLookupByIndex",
+      "name": "Lookup Row/Col",
+      "x": 100,
+      "y": 200,
+      "properties": {
+        "Key": "LeftPocketJobs",
+        "Index": "CurrentIndex",
+        "Columns": "Row=Row;Col=Col"
+      }
+    },
+    {
+      "id": "sharpness",
+      "type": "GetSharpnessLaplacian",
+      "name": "Compute Sharpness",
+      "x": 320,
+      "y": 200,
+      "properties": {
+        "Image": "CurrentItem",
+        "OutputVariable": "SharpnessScore"
+      }
+    },
+    {
+      "id": "save-img",
+      "type": "SaveBitmap",
+      "name": "Save Image (if enabled)",
+      "x": 540,
+      "y": 200,
+      "properties": {
+        "Variable": "CurrentItem",
+        "PathTemplate": "{ImageSavePath}/LeftStage/{Row}_{Col}.bmp",
+        "Format": "Bmp",
+        "Enabled": "SaveImages"
+      }
+    },
+    {
+      "id": "append",
+      "type": "AppendToList",
+      "name": "Append Result",
+      "x": 760,
+      "y": 200,
+      "properties": {
+        "Key": "FlowResults",
+        "Columns": "Stage=Left;Row=Row;Col=Col;Score=SharpnessScore;File=SavedPath"
+      }
+    },
+    {
+      "id": "dispose",
+      "type": "DisposeImage",
+      "name": "Dispose",
+      "x": 980,
+      "y": 200,
+      "properties": {
+        "Variable": "CurrentItem"
+      }
+    }
   ],
   "connections": [
-    { "id": "c1", "sourceNodeId": "lookup",    "targetNodeId": "sharpness" },
-    { "id": "c2", "sourceNodeId": "sharpness", "targetNodeId": "save-img" },
-    { "id": "c3", "sourceNodeId": "save-img",  "targetNodeId": "append" },
-    { "id": "c4", "sourceNodeId": "append",    "targetNodeId": "dispose" }
+    {
+      "id": "c1",
+      "sourceNodeId": "lookup",
+      "targetNodeId": "sharpness"
+    },
+    {
+      "id": "c2",
+      "sourceNodeId": "sharpness",
+      "targetNodeId": "save-img"
+    },
+    {
+      "id": "c3",
+      "sourceNodeId": "save-img",
+      "targetNodeId": "append"
+    },
+    {
+      "id": "c4",
+      "sourceNodeId": "append",
+      "targetNodeId": "dispose"
+    }
   ],
   "globalVariables": []
 }

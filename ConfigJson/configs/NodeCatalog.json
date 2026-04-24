@@ -104,6 +104,11 @@
     { "Type": "CommunicationComplete", "DisplayName": "Communication Complete", "Category": "Communication" },
     { "Type": "CommunicationAbort", "DisplayName": "Communication Abort", "Category": "Communication" },
     { "Type": "CommunicationLogin", "DisplayName": "Communication Login", "Category": "Communication" },
+    { "Type": "PlcSendCommand", "DisplayName": "PLC Send Command", "Category": "Communication" },
+    { "Type": "PlcReadBit", "DisplayName": "PLC Read Bit", "Category": "Communication" },
+    { "Type": "PlcWriteBit", "DisplayName": "PLC Write Bit", "Category": "Communication" },
+    { "Type": "PlcReadRegister", "DisplayName": "PLC Read Register", "Category": "Communication" },
+    { "Type": "PlcWriteRegister", "DisplayName": "PLC Write Register", "Category": "Communication" },
 
     { "Type": "Delay", "DisplayName": "Delay", "Category": "Logic" },
     { "Type": "Branch", "DisplayName": "Branch", "Category": "Logic" },
@@ -111,6 +116,7 @@
     { "Type": "SubFlow", "DisplayName": "Sub-Flow", "Category": "Logic", "DefaultWidth": 180, "DefaultHeight": 90 },
     { "Type": "Parallel", "DisplayName": "Parallel Execution", "Category": "Logic", "DefaultWidth": 200, "DefaultHeight": 100 },
     { "Type": "AppendToList", "DisplayName": "Append To List", "Category": "Logic" },
+    { "Type": "ListLookupByIndex", "DisplayName": "List Lookup By Index", "Category": "Logic" },
     { "Type": "SaveResultsToCsv", "DisplayName": "Save Results To CSV", "Category": "Logic" },
 
     { "Type": "SetSignal", "DisplayName": "Set Signal", "Category": "Synchronization" },

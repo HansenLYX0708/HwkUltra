@@ -40,6 +40,14 @@ namespace HWKUltra.Flow.Abstractions
         public IFlowNodeFactory? NodeFactory { get; set; }
 
         /// <summary>
+        /// Optional callback invoked for every node execution event (including sub-flows).
+        /// Signature: (flowName, nodeName, nodeType, isStart, result).
+        /// This allows the UI to log child-engine events without direct coupling.
+        /// Propagated automatically into child contexts.
+        /// </summary>
+        public Action<string, string, string, bool, FlowResult?>? OnNodeLog { get; set; }
+
+        /// <summary>
         /// Directory of the flow JSON file currently being executed.
         /// Used by SubFlowNode/ParallelNode to resolve relative sibling flow paths
         /// (e.g. a parent flow and its sub-flows sitting in the same folder can

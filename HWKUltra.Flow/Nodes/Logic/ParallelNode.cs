@@ -124,9 +124,18 @@ namespace HWKUltra.Flow.Nodes.Logic
             if (string.IsNullOrWhiteSpace(indexVar)) indexVar = "CurrentIndex";
             if (string.IsNullOrWhiteSpace(totalVar)) totalVar = "TotalCount";
 
-            var sourceObj = context.SharedContext!.GetVariable<object>(itemsSource);
+            // Poll for the ItemsSource to appear in SharedContext.
+            // In producer-consumer pipelines the producer (which creates the pool)
+            // and this consumer start in parallel — the pool may not exist yet.
+            object? sourceObj = null;
+            for (int retry = 0; retry < 100; retry++) // up to 10 seconds
+            {
+                sourceObj = context.SharedContext!.GetVariable<object>(itemsSource);
+                if (sourceObj != null) break;
+                await Task.Delay(100, context.CancellationToken);
+            }
             if (sourceObj == null)
-                return FlowResult.Fail($"ItemsSource '{itemsSource}' not found in SharedContext");
+                return FlowResult.Fail($"ItemsSource '{itemsSource}' not found in SharedContext after waiting 10s");
 
             IItemSource src = sourceObj switch
             {
@@ -219,8 +228,19 @@ namespace HWKUltra.Flow.Nodes.Logic
                 {
                     SharedContext = parentContext.SharedContext,
                     NodeFactory = parentContext.NodeFactory,
-                    CurrentFlowDirectory = Path.GetDirectoryName(Path.GetFullPath(flowPath))
+                    CurrentFlowDirectory = Path.GetDirectoryName(Path.GetFullPath(flowPath)),
+                    OnNodeLog = parentContext.OnNodeLog
                 };
+
+                // Wire child engine events to OnNodeLog callback
+                var flowName = definition.Name ?? Path.GetFileNameWithoutExtension(flowPath);
+                if (parentContext.OnNodeLog != null)
+                {
+                    engine.NodeExecuting += (_, e) =>
+                        parentContext.OnNodeLog(flowName, e.Node.Name, e.Node.NodeType, true, null);
+                    engine.NodeExecuted += (_, e) =>
+                        parentContext.OnNodeLog(flowName, e.Node.Name, e.Node.NodeType, false, e.Result);
+                }
 
                 // Inject node properties
                 foreach (var nodeDef in definition.Nodes)
