@@ -11,6 +11,7 @@ namespace HWKUltra.Flow.Abstractions
         private readonly ConcurrentDictionary<string, object> _variables = new();
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
         private readonly ConcurrentDictionary<string, SignalState> _signals = new();
+        private readonly ManualResetEventSlim _pauseGate = new(true); // initially unpaused
 
         #region Shared Variables
 
@@ -171,6 +172,39 @@ namespace HWKUltra.Flow.Abstractions
         public bool IsSignalSet(string name)
         {
             return _signals.TryGetValue(name, out var state) && state.IsSet;
+        }
+
+        #endregion
+
+        #region Shared Pause/Resume
+
+        /// <summary>
+        /// Whether the shared context is currently paused.
+        /// </summary>
+        public bool IsPaused => !_pauseGate.IsSet;
+
+        /// <summary>
+        /// Pause all flows sharing this context.
+        /// </summary>
+        public void Pause()
+        {
+            _pauseGate.Reset();
+        }
+
+        /// <summary>
+        /// Resume all flows sharing this context.
+        /// </summary>
+        public void Resume()
+        {
+            _pauseGate.Set();
+        }
+
+        /// <summary>
+        /// Wait if paused (should be called by FlowEngine before executing each node).
+        /// </summary>
+        public void WaitIfPaused(CancellationToken cancellationToken = default)
+        {
+            _pauseGate.Wait(cancellationToken);
         }
 
         #endregion

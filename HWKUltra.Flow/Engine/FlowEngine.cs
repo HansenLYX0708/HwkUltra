@@ -29,6 +29,7 @@ namespace HWKUltra.Flow.Engine
 
         /// <summary>
         /// Pause execution. The engine will block before executing the next node.
+        /// If a SharedContext exists, it will also be paused to propagate pause to parallel subflows.
         /// </summary>
         public void Pause()
         {
@@ -38,10 +39,31 @@ namespace HWKUltra.Flow.Engine
 
         /// <summary>
         /// Resume execution after a pause.
+        /// If a SharedContext exists, it will also be resumed to propagate resume to parallel subflows.
         /// </summary>
         public void Resume()
         {
             _pauseGate.Set();
+            FlowResumed?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Pause execution including SharedContext (for propagating pause to parallel subflows).
+        /// </summary>
+        public void PauseWithSharedContext(SharedFlowContext? sharedContext)
+        {
+            _pauseGate.Reset();
+            sharedContext?.Pause();
+            FlowPaused?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Resume execution including SharedContext (for propagating resume to parallel subflows).
+        /// </summary>
+        public void ResumeWithSharedContext(SharedFlowContext? sharedContext)
+        {
+            _pauseGate.Set();
+            sharedContext?.Resume();
             FlowResumed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -85,7 +107,9 @@ namespace HWKUltra.Flow.Engine
                     cancellationToken.ThrowIfCancellationRequested();
 
                     // Wait if paused (cancellation still honored)
+                    // Check both local pause gate and SharedContext pause state
                     _pauseGate.Wait(cancellationToken);
+                    context.SharedContext?.WaitIfPaused(cancellationToken);
 
                     if (!_nodes.TryGetValue(currentNodeId, out var node))
                     {

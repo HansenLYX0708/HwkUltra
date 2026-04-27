@@ -263,7 +263,7 @@ namespace HWKUltra.UI.ViewModels.Pages
         [RelayCommand(CanExecute = nameof(CanPause))]
         private void Pause()
         {
-            _engine?.Pause();
+            _engine?.PauseWithSharedContext(_sharedContext);
             RunState = FlowRunState.Paused;
             StatusText = "Paused";
         }
@@ -273,7 +273,7 @@ namespace HWKUltra.UI.ViewModels.Pages
         [RelayCommand(CanExecute = nameof(CanResume))]
         private void Resume()
         {
-            _engine?.Resume();
+            _engine?.ResumeWithSharedContext(_sharedContext);
             RunState = FlowRunState.Running;
             StatusText = "Running";
         }
@@ -283,7 +283,7 @@ namespace HWKUltra.UI.ViewModels.Pages
         [RelayCommand(CanExecute = nameof(CanStop))]
         private void Stop()
         {
-            _engine?.Resume(); // unblock if paused so cancellation can propagate
+            _engine?.ResumeWithSharedContext(_sharedContext); // unblock if paused so cancellation can propagate
             _cts?.Cancel();
             StatusText = "Stopping...";
         }
