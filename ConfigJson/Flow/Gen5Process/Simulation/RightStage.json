@@ -34,10 +34,23 @@
       }
     },
     {
+      "id": "loop-cycles",
+      "type": "Loop",
+      "name": "Cycle Loop",
+      "x": 250,
+      "y": 200,
+      "isFlipped": false,
+      "properties": {
+        "Iterations": "CycleCount",
+        "ConditionVariable": "FlowAbort",
+        "ContinueValue": "false"
+      }
+    },
+    {
       "id": "move-load-1",
       "type": "MoveToTeachPosition",
       "name": "Move LoadPos (Start)",
-      "x": 340,
+      "x": 450,
       "y": 200,
       "isFlipped": false,
       "properties": {
@@ -289,8 +302,14 @@
     {
       "id": "c-go",
       "sourceNodeId": "gate-enable",
-      "targetNodeId": "move-load-1",
+      "targetNodeId": "loop-cycles",
       "condition": "True"
+    },
+    {
+      "id": "c-loop-continue",
+      "sourceNodeId": "loop-cycles",
+      "targetNodeId": "move-load-1",
+      "condition": "Continue"
     },
     {
       "id": "c1",
@@ -392,6 +411,11 @@
       "id": "f61b94df-336d-43a8-918b-b9cfa4d05bfb",
       "sourceNodeId": "plc-pick-final",
       "targetNodeId": "8a0616d6-2644-4a0c-b1f3-bacf41d3b15c"
+    },
+    {
+      "id": "c-loop-back",
+      "sourceNodeId": "8a0616d6-2644-4a0c-b1f3-bacf41d3b15c",
+      "targetNodeId": "loop-cycles"
     }
   ],
   "startNodeId": "gate-enable",

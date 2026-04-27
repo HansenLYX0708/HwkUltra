@@ -12,6 +12,7 @@ namespace HWKUltra.Flow.Nodes.Logic
     /// </summary>
     public class SaveResultsToCsvNode : LogicNodeBase
     {
+        private static readonly object _gate = new();
         public override string Name { get; set; } = "Save Results To CSV";
         public override string NodeType => "SaveResultsToCsv";
 
@@ -42,12 +43,14 @@ namespace HWKUltra.Flow.Nodes.Logic
                 if (context.SharedContext == null)
                     return Task.FromResult(FlowResult.Fail("SaveResultsToCsv requires SharedContext"));
 
-                var list = context.SharedContext.GetVariable<List<Dictionary<string, object>>>(key);
-                if (list == null)
-                    return Task.FromResult(FlowResult.Fail($"Shared variable '{key}' not found or not a result list"));
-
                 List<Dictionary<string, object>> snapshot;
-                lock (list) snapshot = list.ToList();
+                lock (_gate)
+                {
+                    var list = context.SharedContext.GetVariable<List<Dictionary<string, object>>>(key);
+                    if (list == null)
+                        return Task.FromResult(FlowResult.Fail($"Shared variable '{key}' not found or not a result list"));
+                    snapshot = list.ToList();
+                }
 
                 // Resolve path (replace tokens; make relative paths go to Exports/).
                 var resolvedPath = ResolvePath(pathRaw);
@@ -93,7 +96,12 @@ namespace HWKUltra.Flow.Nodes.Logic
 
                 if (clearAfter)
                 {
-                    lock (list) list.Clear();
+                    lock (_gate)
+                    {
+                        var list = context.SharedContext.GetVariable<List<Dictionary<string, object>>>(key);
+                        if (list != null)
+                            list.Clear();
+                    }
                 }
 
                 context.SetNodeOutput(Id, "FilePath", resolvedPath);

@@ -85,25 +85,12 @@
       }
     },
     {
-      "id": "loop-cycles",
-      "type": "Loop",
-      "name": "Cycle Loop",
-      "x": 335,
-      "y": 296,
-      "isFlipped": false,
-      "properties": {
-        "Iterations": "CycleCount",
-        "ConditionVariable": "FlowAbort",
-        "ContinueValue": "false"
-      }
-    },
-    {
       "id": "run-stages",
       "type": "Parallel",
       "name": "Run Left \u002B Right",
-      "x": 373,
-      "y": 449,
-      "isFlipped": true,
+      "x": 335,
+      "y": 300,
+      "isFlipped": false,
       "properties": {
         "FlowPaths": "LeftStage.json, RightStage.json",
         "WaitMode": "All",
@@ -145,18 +132,7 @@
     {
       "id": "c6",
       "sourceNodeId": "set-abort",
-      "targetNodeId": "loop-cycles"
-    },
-    {
-      "id": "c7",
-      "sourceNodeId": "loop-cycles",
-      "targetNodeId": "run-stages",
-      "condition": "Continue"
-    },
-    {
-      "id": "de025f0c-8f7e-405a-ad8c-32cc815aa3b5",
-      "sourceNodeId": "run-stages",
-      "targetNodeId": "loop-cycles"
+      "targetNodeId": "run-stages"
     }
   ],
   "startNodeId": "set-enable-left",

@@ -59,7 +59,7 @@
       "y": 420,
       "properties": {
         "Key": "CycleCount",
-        "Value": "1"
+        "Value": "-1"
       }
     },
     {
@@ -74,39 +74,15 @@
       }
     },
     {
-      "id": "loop-cycles",
-      "type": "Loop",
-      "name": "Cycle Loop",
-      "x": 380,
-      "y": 300,
-      "properties": {
-        "Iterations": "CycleCount",
-        "ConditionVariable": "FlowAbort",
-        "ContinueValue": "false"
-      }
-    },
-    {
       "id": "run-stages",
       "type": "Parallel",
       "name": "Run Left + Right",
-      "x": 620,
+      "x": 380,
       "y": 300,
       "properties": {
         "FlowPaths": "LeftStage.json, RightStage.json",
         "WaitMode": "All",
         "TimeoutMs": "600000"
-      }
-    },
-    {
-      "id": "save-csv",
-      "type": "SaveResultsToCsv",
-      "name": "Save Combined CSV",
-      "x": 900,
-      "y": 300,
-      "properties": {
-        "Key": "FlowResults",
-        "Path": "gen5_sharpness_{yyyyMMdd_HHmmss}.csv",
-        "Encoding": "UTF8BOM"
       }
     }
   ],
@@ -139,23 +115,7 @@
     {
       "id": "c6",
       "sourceNodeId": "set-abort",
-      "targetNodeId": "loop-cycles"
-    },
-    {
-      "id": "c7",
-      "sourceNodeId": "loop-cycles",
-      "targetNodeId": "run-stages",
-      "condition": "Continue"
-    },
-    {
-      "id": "c8",
-      "sourceNodeId": "run-stages",
-      "targetNodeId": "save-csv"
-    },
-    {
-      "id": "c9",
-      "sourceNodeId": "save-csv",
-      "targetNodeId": "loop-cycles"
+      "targetNodeId": "run-stages"
     }
   ],
   "globalVariables": []
