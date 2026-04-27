@@ -3,15 +3,15 @@
   "name": "Gen5 Left Scan Producer (Simulation)",
   "description": "Producer: create LeftScanPool then iterate tray slots. For each slot: move to pocket, grab one frame into pool, and append {Index,Row,Col} to LeftPocketJobs list for the consumer to correlate with.",
   "createdAt": "2026-04-23T00:00:00",
-  "modifiedAt": "2026-04-24T14:48:20.7632785+08:00",
+  "modifiedAt": "2026-04-24T17:16:06.7134699+08:00",
   "version": "1.0.0",
   "nodes": [
     {
       "id": "pool-create",
       "type": "ImagePoolCreate",
       "name": "Create Scan Pool",
-      "x": 100,
-      "y": 200,
+      "x": 52,
+      "y": 197,
       "isFlipped": false,
       "properties": {
         "Name": "LeftScanPool",
@@ -22,8 +22,8 @@
       "id": "iter-reset",
       "type": "SetSharedVariable",
       "name": "Reset Iter",
-      "x": 300,
-      "y": 200,
+      "x": 274,
+      "y": 197,
       "isFlipped": false,
       "properties": {
         "Key": "LeftIterReset",
@@ -48,8 +48,8 @@
       "id": "move-pocket",
       "type": "MoveToTeachPosition",
       "name": "Move to Pocket",
-      "x": 740,
-      "y": 200,
+      "x": 773,
+      "y": 153,
       "isFlipped": false,
       "properties": {
         "PositionName": "LeftDefaultTrayLeftTop",
@@ -63,9 +63,9 @@
       "id": "capture",
       "type": "CameraStartCapture",
       "name": "Grab 1 Frame",
-      "x": 960,
-      "y": 200,
-      "isFlipped": false,
+      "x": 750,
+      "y": 27.99999999999997,
+      "isFlipped": true,
       "properties": {
         "CameraName": "LeftScanCam",
         "PoolName": "LeftScanPool",
@@ -80,9 +80,9 @@
       "id": "append-job",
       "type": "AppendToList",
       "name": "Record Pocket Job",
-      "x": 864.9999999999999,
-      "y": 37,
-      "isFlipped": true,
+      "x": 979,
+      "y": 199,
+      "isFlipped": false,
       "properties": {
         "Key": "LeftPocketJobs",
         "Columns": "Index=CurrentIndex;Row=Row;Col=Col"
@@ -92,8 +92,8 @@
       "id": "pool-complete",
       "type": "ImagePoolComplete",
       "name": "Complete Pool (no more frames)",
-      "x": 920.0000000000001,
-      "y": 466,
+      "x": 783.0000000000001,
+      "y": 356,
       "isFlipped": false,
       "properties": {
         "Name": "LeftScanPool"

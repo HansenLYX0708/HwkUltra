@@ -150,13 +150,12 @@
     {
       "id": "c8",
       "sourceNodeId": "run-stages",
-      "targetNodeId": "loop-cycles"
+      "targetNodeId": "save-csv"
     },
     {
       "id": "c9",
-      "sourceNodeId": "loop-cycles",
-      "targetNodeId": "save-csv",
-      "condition": "Exit"
+      "sourceNodeId": "save-csv",
+      "targetNodeId": "loop-cycles"
     }
   ],
   "globalVariables": []

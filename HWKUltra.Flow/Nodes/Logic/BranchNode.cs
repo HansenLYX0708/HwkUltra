@@ -15,7 +15,8 @@ namespace HWKUltra.Flow.Nodes.Logic
         {
             new FlowParameter { Name = "Condition", DisplayName = "Condition", Type = "string", Required = true, Description = "Variable name or expression to evaluate" },
             new FlowParameter { Name = "Operator", DisplayName = "Operator", Type = "string", Required = false, DefaultValue = "Equals", Description = "Equals, GreaterThan, LessThan, Contains, etc." },
-            new FlowParameter { Name = "CompareValue", DisplayName = "Compare Value", Type = "string", Required = false, Description = "Value to compare against" }
+            new FlowParameter { Name = "CompareValue", DisplayName = "Compare Value", Type = "string", Required = false, Description = "Value to compare against" },
+            new FlowParameter { Name = "SourceNodeId", DisplayName = "Source Node ID", Type = "string", Required = false, Description = "Node ID to read variable from (optional, uses FindVariable if not specified)" }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -32,9 +33,22 @@ namespace HWKUltra.Flow.Nodes.Logic
                 var condition = context.GetNodeInput<string>(Id, "Condition") ?? "";
                 var op = context.GetNodeInput<string>(Id, "Operator") ?? "Equals";
                 var compareValueRaw = context.GetNodeInput<string>(Id, "CompareValue") ?? "";
+                var sourceNodeId = context.GetNodeInput<string>(Id, "SourceNodeId");
 
-                // Get the value to evaluate from context (condition is a variable name, search all scopes)
-                var valueToEvaluate = context.FindVariable<object>(condition);
+                // Get the value to evaluate from context
+                object? valueToEvaluate;
+                if (!string.IsNullOrEmpty(sourceNodeId))
+                {
+                    // Read from specific node
+                    valueToEvaluate = context.GetNodeOutput<object>(sourceNodeId, condition);
+                    Console.WriteLine($"[Branch] Node '{Id}' reading from node '{sourceNodeId}', variable '{condition}', found: {valueToEvaluate?.ToString() ?? "null"}");
+                }
+                else
+                {
+                    // Use global search
+                    valueToEvaluate = context.FindVariable<object>(condition);
+                    Console.WriteLine($"[Branch] Node '{Id}' looking for variable '{condition}', found: {valueToEvaluate?.ToString() ?? "null"}");
+                }
 
                 // CompareValue: support literal OR variable name.
                 // Heuristic: if the literal cannot be parsed to double/bool AND a variable with that name exists, use the variable value.

@@ -16,7 +16,8 @@ namespace HWKUltra.Flow.Nodes.IO.Simulation
         {
             new FlowParameter { Name = "InputName", DisplayName = "Input Name", Type = "string", Required = true, Description = "IO point name (e.g., EMO, DoorSensor)" },
             new FlowParameter { Name = "WaitForTrue", DisplayName = "Wait For True", Type = "bool", Required = false, DefaultValue = false, Description = "Wait until input becomes true" },
-            new FlowParameter { Name = "Timeout", DisplayName = "Timeout", Type = "int", Required = false, DefaultValue = 5000, Description = "Wait timeout in ms (0 = no timeout)" }
+            new FlowParameter { Name = "Timeout", DisplayName = "Timeout", Type = "int", Required = false, DefaultValue = 5000, Description = "Wait timeout in ms (0 = no timeout)" },
+            new FlowParameter { Name = "MockValue", DisplayName = "Mock Value", Type = "bool", Required = false, DefaultValue = false, Description = "Override the simulated input value" }
         };
 
         public override List<FlowParameter> Outputs { get; } = new()
@@ -30,12 +31,13 @@ namespace HWKUltra.Flow.Nodes.IO.Simulation
         {
             var inputName = context.GetNodeInput<string>(Id, "InputName") ?? "Unknown";
             var waitForTrue = context.GetNodeInput<string>(Id, "WaitForTrue") != "false";
+            var mockValue = context.GetNodeInput<string>(Id, "MockValue") == "true";
 
-            // In simulation, inputs are always false, so WaitForTrue would timeout
-            bool value = false;
-            bool timedOut = waitForTrue;
+            // In simulation, use MockValue to override the actual input
+            bool value = mockValue;
+            bool timedOut = waitForTrue && !mockValue;
 
-            Console.WriteLine($"[SIMULATION] DigitalInput: {inputName} = {value}");
+            Console.WriteLine($"[SIMULATION] DigitalInput: {inputName} = {value} (MockValue={mockValue})");
             await Task.Delay(10, context.CancellationToken);
 
             context.SetNodeOutput(Id, "Value", value);

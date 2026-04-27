@@ -3,7 +3,7 @@
   "name": "Gen5 Right Stage (Simulation)",
   "description": "Right-stage full process: LoadPos -\u003E tray check/pick -\u003E tray place -\u003E 4-corner calibration -\u003E scan -\u003E return LoadPos -\u003E final pick. Short-circuits when EnableRightStage is false or FlowAbort is true.",
   "createdAt": "2026-04-23T00:00:00",
-  "modifiedAt": "2026-04-24T16:26:01.9226985+08:00",
+  "modifiedAt": "2026-04-27T15:26:41.7786553+08:00",
   "version": "1.0.0",
   "nodes": [
     {
@@ -16,7 +16,8 @@
       "properties": {
         "Condition": "EnableRightStage",
         "Operator": "Equals",
-        "CompareValue": "true"
+        "CompareValue": "true",
+        "SourceNodeId": ""
       }
     },
     {
@@ -49,27 +50,30 @@
     },
     {
       "id": "read-tray-state-1",
-      "type": "PlcReadBit",
+      "type": "DigitalInput",
       "name": "Read RightTrayState",
       "x": 560,
       "y": 200,
       "isFlipped": false,
       "properties": {
-        "BitName": "RightTrayState",
-        "MockValue": "False"
+        "InputName": "RightTrayState",
+        "MockValue": "false",
+        "WaitForTrue": "False",
+        "Timeout": "5000"
       }
     },
     {
       "id": "br-has-tray",
       "type": "Branch",
       "name": "Has Tray?",
-      "x": 780,
+      "x": 781,
       "y": 200,
       "isFlipped": false,
       "properties": {
         "Condition": "Value",
         "Operator": "Equals",
-        "CompareValue": "True"
+        "CompareValue": "False",
+        "SourceNodeId": "read-tray-state-1"
       }
     },
     {
@@ -86,27 +90,30 @@
     },
     {
       "id": "verify-empty",
-      "type": "PlcReadBit",
+      "type": "DigitalInput",
       "name": "Verify Empty",
       "x": 1220,
       "y": 120,
       "isFlipped": false,
       "properties": {
-        "BitName": "RightTrayState",
-        "MockValue": "False"
+        "InputName": "RightTrayState",
+        "MockValue": "false",
+        "WaitForTrue": "False",
+        "Timeout": "5000"
       }
     },
     {
       "id": "br-verify-empty",
       "type": "Branch",
       "name": "Empty?",
-      "x": 1440,
-      "y": 120,
+      "x": 1442,
+      "y": 121,
       "isFlipped": false,
       "properties": {
         "Condition": "Value",
         "Operator": "Equals",
-        "CompareValue": "True"
+        "CompareValue": "False",
+        "SourceNodeId": "verify-empty"
       }
     },
     {
@@ -123,14 +130,16 @@
     },
     {
       "id": "verify-placed",
-      "type": "PlcReadBit",
+      "type": "DigitalInput",
       "name": "Verify Placed",
       "x": 1880,
       "y": 200,
       "isFlipped": false,
       "properties": {
-        "BitName": "RightTrayState",
-        "MockValue": "False"
+        "InputName": "RightTrayState",
+        "MockValue": "true",
+        "WaitForTrue": "False",
+        "Timeout": "5000"
       }
     },
     {
@@ -143,7 +152,8 @@
       "properties": {
         "Condition": "Value",
         "Operator": "Equals",
-        "CompareValue": "True"
+        "CompareValue": "True",
+        "SourceNodeId": "verify-placed"
       }
     },
     {
@@ -219,7 +229,7 @@
       "type": "MoveToTeachPosition",
       "name": "Move LoadPos (End)",
       "x": 3420,
-      "y": 200,
+      "y": 201,
       "isFlipped": false,
       "properties": {
         "PositionName": "RightLoadPos",
@@ -253,6 +263,20 @@
         "Value": "true",
         "SourceVariable": ""
       }
+    },
+    {
+      "id": "8a0616d6-2644-4a0c-b1f3-bacf41d3b15c",
+      "type": "SaveResultsToCsv",
+      "name": "Save Results To CSV",
+      "x": 3505.7672418050042,
+      "y": 360.22,
+      "isFlipped": false,
+      "properties": {
+        "Key": "FlowResults",
+        "Path": "gen5_right_sharpness_{yyyyMMdd_HHmmss}.csv",
+        "Encoding": "UTF8BOM",
+        "Clear": "True"
+      }
     }
   ],
   "connections": [
@@ -282,13 +306,13 @@
       "id": "c3-t",
       "sourceNodeId": "br-has-tray",
       "targetNodeId": "plc-pick-initial",
-      "condition": "True"
+      "condition": "False"
     },
     {
       "id": "c3-f",
       "sourceNodeId": "br-has-tray",
       "targetNodeId": "plc-place",
-      "condition": "False"
+      "condition": "True"
     },
     {
       "id": "c4",
@@ -363,6 +387,11 @@
       "id": "c15",
       "sourceNodeId": "move-load-2",
       "targetNodeId": "plc-pick-final"
+    },
+    {
+      "id": "f61b94df-336d-43a8-918b-b9cfa4d05bfb",
+      "sourceNodeId": "plc-pick-final",
+      "targetNodeId": "8a0616d6-2644-4a0c-b1f3-bacf41d3b15c"
     }
   ],
   "startNodeId": "gate-enable",

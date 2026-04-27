@@ -44,12 +44,12 @@
     },
     {
       "id": "read-tray-state-1",
-      "type": "PlcReadBit",
+      "type": "DigitalInput",
       "name": "Read RightTrayState",
       "x": 560,
       "y": 200,
       "properties": {
-        "BitName": "RightTrayState"
+        "InputName": "RightTrayState"
       }
     },
     {
@@ -61,7 +61,8 @@
       "properties": {
         "Condition": "Value",
         "Operator": "Equals",
-        "CompareValue": "True"
+        "CompareValue": "True",
+        "SourceNodeId": "read-tray-state-1"
       }
     },
     {
@@ -77,12 +78,12 @@
     },
     {
       "id": "verify-empty",
-      "type": "PlcReadBit",
+      "type": "DigitalInput",
       "name": "Verify Empty",
       "x": 1220,
       "y": 120,
       "properties": {
-        "BitName": "RightTrayState"
+        "InputName": "RightTrayState"
       }
     },
     {
@@ -94,7 +95,8 @@
       "properties": {
         "Condition": "Value",
         "Operator": "Equals",
-        "CompareValue": "False"
+        "CompareValue": "False",
+        "SourceNodeId": "verify-empty"
       }
     },
     {
@@ -110,12 +112,12 @@
     },
     {
       "id": "verify-placed",
-      "type": "PlcReadBit",
+      "type": "DigitalInput",
       "name": "Verify Placed",
       "x": 1880,
       "y": 200,
       "properties": {
-        "BitName": "RightTrayState"
+        "InputName": "RightTrayState"
       }
     },
     {
@@ -127,7 +129,8 @@
       "properties": {
         "Condition": "Value",
         "Operator": "Equals",
-        "CompareValue": "True"
+        "CompareValue": "True",
+        "SourceNodeId": "verify-placed"
       }
     },
     {

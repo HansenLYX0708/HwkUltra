@@ -32,12 +32,15 @@ namespace HWKUltra.Flow.Nodes.Logic
                 if (context.SharedContext == null)
                     return Task.FromResult(FlowResult.Fail("ImagePoolCreate requires SharedContext"));
 
-                // If a pool with the same name already exists, dispose and replace.
+                // If a pool with the same name already exists, reset it instead of disposing.
+                // This allows Loop nodes to reuse the same ImagePool across iterations.
                 var existing = context.SharedContext.GetPool(name!);
                 if (existing != null)
                 {
-                    existing.Dispose();
-                    context.SharedContext.RemoveVariable(name!);
+                    existing.Reset();
+                    Console.WriteLine($"[ImagePoolCreate] Reset existing pool '{name}' for reuse");
+                    context.SetNodeOutput(Id, "Created", false);
+                    return Task.FromResult(FlowResult.Ok());
                 }
 
                 context.SharedContext.CreatePool(name!, capacity);
