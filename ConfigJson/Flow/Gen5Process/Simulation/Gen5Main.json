@@ -3,7 +3,7 @@
   "name": "Gen5 Main (Simulation)",
   "description": "Top-level Gen5 AOI flow. Runs Left and Right stages in parallel; each stage short-circuits if its Enable flag is false. Controls are shared variables set at the top of the flow and can be modified at runtime before Run.",
   "createdAt": "2026-04-23T00:00:00",
-  "modifiedAt": "2026-04-27T15:29:38.7065298+08:00",
+  "modifiedAt": "2026-04-27T16:47:57.4664715+08:00",
   "version": "1.0.0",
   "nodes": [
     {
@@ -67,7 +67,7 @@
       "isFlipped": false,
       "properties": {
         "Key": "CycleCount",
-        "Value": "1",
+        "Value": "-1",
         "SourceVariable": ""
       }
     },
@@ -92,7 +92,7 @@
       "y": 296,
       "isFlipped": false,
       "properties": {
-        "Iterations": "-1",
+        "Iterations": "CycleCount",
         "ConditionVariable": "FlowAbort",
         "ContinueValue": "false"
       }

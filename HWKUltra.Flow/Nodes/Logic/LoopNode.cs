@@ -29,9 +29,26 @@ namespace HWKUltra.Flow.Nodes.Logic
         {
             try
             {
-                var iterations = context.GetNodeInput<int>(Id, "Iterations");
+                var iterationsRaw = context.GetNodeInput<string>(Id, "Iterations") ?? "1";
                 var conditionVar = context.GetNodeInput<string>(Id, "ConditionVariable");
                 var continueValue = context.GetNodeInput<string>(Id, "ContinueValue") ?? "true";
+
+                // Iterations can be a literal number OR a variable name (e.g. "CycleCount").
+                int iterations;
+                if (!int.TryParse(iterationsRaw, out iterations))
+                {
+                    // Treat as variable reference
+                    var resolved = context.FindVariable<object>(iterationsRaw);
+                    if (resolved != null)
+                    {
+                        try { iterations = Convert.ToInt32(resolved); }
+                        catch { return Task.FromResult(FlowResult.Fail($"Iterations variable '{iterationsRaw}' resolved to '{resolved}' which is not an integer")); }
+                    }
+                    else
+                    {
+                        return Task.FromResult(FlowResult.Fail($"Iterations '{iterationsRaw}' is neither a number nor a defined variable"));
+                    }
+                }
 
                 // Get current iteration from node output (maintained across executions)
                 var currentIteration = context.GetNodeInput<int>(Id, "CurrentIteration");
@@ -40,7 +57,7 @@ namespace HWKUltra.Flow.Nodes.Logic
                 // Check if we should continue looping
                 bool shouldContinue = true;
 
-                // Check iteration count
+                // Check iteration count (0 or negative = infinite)
                 if (iterations > 0 && currentIteration >= iterations)
                 {
                     shouldContinue = false;

@@ -272,7 +272,7 @@
       "y": 360.22,
       "isFlipped": false,
       "properties": {
-        "Key": "FlowResults",
+        "Key": "FlowResults_Right",
         "Path": "gen5_right_sharpness_{yyyyMMdd_HHmmss}.csv",
         "Encoding": "UTF8BOM",
         "Clear": "True"

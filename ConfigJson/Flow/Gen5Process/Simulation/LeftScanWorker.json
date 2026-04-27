@@ -56,7 +56,7 @@
       "y": 200,
       "isFlipped": false,
       "properties": {
-        "Key": "FlowResults",
+        "Key": "FlowResults_Left",
         "Columns": "Stage=Left;Row=Row;Col=Col;Score=SharpnessScore;File=SavedPath"
       }
     },

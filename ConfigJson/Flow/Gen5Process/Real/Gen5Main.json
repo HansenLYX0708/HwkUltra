@@ -80,7 +80,7 @@
       "x": 380,
       "y": 300,
       "properties": {
-        "Iterations": "1",
+        "Iterations": "CycleCount",
         "ConditionVariable": "FlowAbort",
         "ContinueValue": "false"
       }

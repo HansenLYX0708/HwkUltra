@@ -50,7 +50,7 @@
       "x": 760,
       "y": 200,
       "properties": {
-        "Key": "FlowResults",
+        "Key": "FlowResults_Right",
         "Columns": "Stage=Right;Row=Row;Col=Col;Score=SharpnessScore;File=SavedPath"
       }
     },
