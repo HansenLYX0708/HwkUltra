@@ -3,7 +3,7 @@
   "name": "Gen5 Right Scan Producer (Simulation)",
   "description": "Producer: create RightScanPool then iterate tray slots. For each slot: move to pocket, grab one frame into pool, and append {Index,Row,Col} to RightPocketJobs list for the consumer to correlate with.",
   "createdAt": "2026-04-23T00:00:00",
-  "modifiedAt": "2026-04-28T09:33:52.1927964+08:00",
+  "modifiedAt": "2026-04-28T10:22:45.314086+08:00",
   "version": "1.0.0",
   "nodes": [
     {
@@ -35,8 +35,8 @@
       "id": "clear-jobs",
       "type": "ClearList",
       "name": "Clear Pocket Jobs",
-      "x": 415,
-      "y": 199,
+      "x": 423,
+      "y": 341,
       "isFlipped": false,
       "properties": {
         "Key": "RightPocketJobs"

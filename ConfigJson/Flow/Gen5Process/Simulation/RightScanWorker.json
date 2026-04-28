@@ -27,7 +27,10 @@
       "y": 200,
       "properties": {
         "Image": "CurrentItem",
-        "OutputVariable": "SharpnessScore"
+        "OutputVariable": "SharpnessScore",
+        "Width": "",
+        "Height": "",
+        "Channels": "1"
       }
     },
     {

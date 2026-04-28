@@ -3,7 +3,7 @@
   "name": "Gen5 Left Scan Producer (Simulation)",
   "description": "Producer: create LeftScanPool then iterate tray slots. For each slot: move to pocket, grab one frame into pool, and append {Index,Row,Col} to LeftPocketJobs list for the consumer to correlate with.",
   "createdAt": "2026-04-23T00:00:00",
-  "modifiedAt": "2026-04-24T17:16:06.7134699+08:00",
+  "modifiedAt": "2026-04-28T10:37:00.4496863+08:00",
   "version": "1.0.0",
   "nodes": [
     {
@@ -35,8 +35,8 @@
       "id": "clear-jobs",
       "type": "ClearList",
       "name": "Clear Pocket Jobs",
-      "x": 388,
-      "y": 197,
+      "x": 405,
+      "y": 343,
       "isFlipped": false,
       "properties": {
         "Key": "LeftPocketJobs"
