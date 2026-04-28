@@ -64,12 +64,14 @@ namespace HWKUltra.Flow.Nodes.Logic
                         list = new List<Dictionary<string, object>>();
                         context.SharedContext.SetVariable(key!, list);
                     }
+                    int beforeCount = list.Count;
                     list.Add(row);
                     newCount = list.Count;
+                    Console.WriteLine($"[AppendToList] Key='{key}', Before={beforeCount}, After={newCount}");
                 }
 
                 context.SetNodeOutput(Id, "NewCount", newCount);
-                Console.WriteLine($"[AppendToList] {key}[{newCount - 1}] = {{ {string.Join(", ", row.Select(kv => $"{kv.Key}={kv.Value}"))} }}");
+                Console.WriteLine($"[AppendToList] Row: {string.Join(", ", row.Select(kv => $"{kv.Key}={kv.Value}"))}");
                 return Task.FromResult(FlowResult.Ok());
             }
             catch (Exception ex)

@@ -3,38 +3,52 @@
   "name": "Gen5 Right Scan Producer (Simulation)",
   "description": "Producer: create RightScanPool then iterate tray slots. For each slot: move to pocket, grab one frame into pool, and append {Index,Row,Col} to RightPocketJobs list for the consumer to correlate with.",
   "createdAt": "2026-04-23T00:00:00",
-  "modifiedAt": "2026-04-23T00:00:00",
+  "modifiedAt": "2026-04-28T09:33:52.1927964+08:00",
   "version": "1.0.0",
-  "startNodeId": "pool-create",
   "nodes": [
     {
       "id": "pool-create",
       "type": "ImagePoolCreate",
       "name": "Create Scan Pool",
-      "x": 100,
+      "x": 102,
       "y": 200,
+      "isFlipped": false,
       "properties": {
         "Name": "RightScanPool",
-        "Capacity": "8"
+        "Capacity": "6"
       }
     },
     {
       "id": "iter-reset",
       "type": "SetSharedVariable",
       "name": "Reset Iter",
-      "x": 300,
-      "y": 200,
+      "x": 301,
+      "y": 199,
+      "isFlipped": false,
       "properties": {
         "Key": "RightIterReset",
-        "Value": "true"
+        "Value": "true",
+        "SourceVariable": ""
+      }
+    },
+    {
+      "id": "clear-jobs",
+      "type": "ClearList",
+      "name": "Clear Pocket Jobs",
+      "x": 415,
+      "y": 199,
+      "isFlipped": false,
+      "properties": {
+        "Key": "RightPocketJobs"
       }
     },
     {
       "id": "iter",
       "type": "TrayIterator",
       "name": "Next Pocket",
-      "x": 520,
+      "x": 530,
       "y": 200,
+      "isFlipped": false,
       "properties": {
         "InstanceName": "RightTray",
         "FilterState": "-1",
@@ -47,32 +61,39 @@
       "name": "Move to Pocket",
       "x": 740,
       "y": 200,
+      "isFlipped": false,
       "properties": {
         "PositionName": "RightDefaultTrayRightTop",
         "GroupName": "RXYZ",
-        "WaitForComplete": "true"
+        "WaitForComplete": "true",
+        "Velocity": "30000",
+        "Acceleration": "500000"
       }
     },
     {
       "id": "capture",
       "type": "CameraStartCapture",
       "name": "Grab 1 Frame",
-      "x": 960,
-      "y": 200,
+      "x": 521.0000000000001,
+      "y": 72,
+      "isFlipped": true,
       "properties": {
         "CameraName": "RightScanCam",
         "PoolName": "RightScanPool",
         "MaxFrames": "1",
         "TimeoutMs": "5000",
-        "AutoComplete": "false"
+        "AutoComplete": "false",
+        "StopSignal": "",
+        "AddTimeoutMs": "100"
       }
     },
     {
       "id": "append-job",
       "type": "AppendToList",
       "name": "Record Pocket Job",
-      "x": 1180,
-      "y": 200,
+      "x": 735.9999999999999,
+      "y": 72,
+      "isFlipped": true,
       "properties": {
         "Key": "RightPocketJobs",
         "Columns": "Index=CurrentIndex;Row=Row;Col=Col"
@@ -82,8 +103,9 @@
       "id": "pool-complete",
       "type": "ImagePoolComplete",
       "name": "Complete Pool (no more frames)",
-      "x": 1400,
-      "y": 320,
+      "x": 736.9999999999999,
+      "y": 324,
+      "isFlipped": false,
       "properties": {
         "Name": "RightScanPool"
       }
@@ -98,35 +120,41 @@
     {
       "id": "c2",
       "sourceNodeId": "iter-reset",
-      "targetNodeId": "iter"
+      "targetNodeId": "clear-jobs"
     },
     {
       "id": "c3",
+      "sourceNodeId": "clear-jobs",
+      "targetNodeId": "iter"
+    },
+    {
+      "id": "c4",
       "sourceNodeId": "iter",
       "targetNodeId": "move-pocket",
       "condition": "Next"
     },
     {
-      "id": "c4",
+      "id": "c5",
       "sourceNodeId": "move-pocket",
       "targetNodeId": "append-job"
     },
     {
-      "id": "c5",
+      "id": "c6",
       "sourceNodeId": "append-job",
       "targetNodeId": "capture"
     },
     {
-      "id": "c6",
+      "id": "c7",
       "sourceNodeId": "capture",
       "targetNodeId": "iter"
     },
     {
-      "id": "c7",
+      "id": "c8",
       "sourceNodeId": "iter",
       "targetNodeId": "pool-complete",
       "condition": "Done"
     }
   ],
+  "startNodeId": "pool-create",
   "globalVariables": []
 }

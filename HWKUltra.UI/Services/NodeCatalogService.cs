@@ -237,6 +237,14 @@ namespace HWKUltra.UI.Services
                     new() { Type = "Loop", DisplayName = "Loop", Category = "Logic" },
                     new() { Type = "SubFlow", DisplayName = "Sub-Flow", Category = "Logic", DefaultWidth = 180, DefaultHeight = 90 },
                     new() { Type = "Parallel", DisplayName = "Parallel Execution", Category = "Logic", DefaultWidth = 200, DefaultHeight = 100 },
+                    new() { Type = "IncrementSharedVariable", DisplayName = "Increment Shared Variable", Category = "Logic" },
+                    new() { Type = "AppendToList", DisplayName = "Append To List", Category = "Logic" },
+                    new() { Type = "ClearList", DisplayName = "Clear List", Category = "Logic" },
+                    new() { Type = "ListLookupByIndex", DisplayName = "List Lookup By Index", Category = "Logic" },
+                    new() { Type = "SaveResultsToCsv", DisplayName = "Save Results To CSV", Category = "Logic" },
+                    new() { Type = "ImagePoolCreate", DisplayName = "Image Pool Create", Category = "Logic" },
+                    new() { Type = "ImagePoolComplete", DisplayName = "Image Pool Complete", Category = "Logic" },
+                    new() { Type = "ImagePoolClose", DisplayName = "Image Pool Close", Category = "Logic" },
 
                     // Synchronization
                     new() { Type = "SetSignal", DisplayName = "Set Signal", Category = "Synchronization" },

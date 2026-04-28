@@ -15,7 +15,7 @@
       "isFlipped": false,
       "properties": {
         "Name": "LeftScanPool",
-        "Capacity": "8"
+        "Capacity": "6"
       }
     },
     {
@@ -29,6 +29,17 @@
         "Key": "LeftIterReset",
         "Value": "true",
         "SourceVariable": ""
+      }
+    },
+    {
+      "id": "clear-jobs",
+      "type": "ClearList",
+      "name": "Clear Pocket Jobs",
+      "x": 388,
+      "y": 197,
+      "isFlipped": false,
+      "properties": {
+        "Key": "LeftPocketJobs"
       }
     },
     {
@@ -109,31 +120,36 @@
     {
       "id": "c2",
       "sourceNodeId": "iter-reset",
-      "targetNodeId": "iter"
+      "targetNodeId": "clear-jobs"
     },
     {
       "id": "c3",
+      "sourceNodeId": "clear-jobs",
+      "targetNodeId": "iter"
+    },
+    {
+      "id": "c4",
       "sourceNodeId": "iter",
       "targetNodeId": "move-pocket",
       "condition": "Next"
     },
     {
-      "id": "c4",
+      "id": "c5",
       "sourceNodeId": "move-pocket",
       "targetNodeId": "append-job"
     },
     {
-      "id": "c5",
+      "id": "c6",
       "sourceNodeId": "append-job",
       "targetNodeId": "capture"
     },
     {
-      "id": "c6",
+      "id": "c7",
       "sourceNodeId": "capture",
       "targetNodeId": "iter"
     },
     {
-      "id": "c7",
+      "id": "c8",
       "sourceNodeId": "iter",
       "targetNodeId": "pool-complete",
       "condition": "Done"

@@ -3,15 +3,15 @@
   "name": "Gen5 Right Stage (Simulation)",
   "description": "Right-stage full process: LoadPos -\u003E tray check/pick -\u003E tray place -\u003E 4-corner calibration -\u003E scan -\u003E return LoadPos -\u003E final pick. Short-circuits when EnableRightStage is false or FlowAbort is true.",
   "createdAt": "2026-04-23T00:00:00",
-  "modifiedAt": "2026-04-27T15:26:41.7786553+08:00",
+  "modifiedAt": "2026-04-28T09:16:24.0810067+08:00",
   "version": "1.0.0",
   "nodes": [
     {
       "id": "gate-enable",
       "type": "Branch",
       "name": "Enable?",
-      "x": 100,
-      "y": 200,
+      "x": 45,
+      "y": 152,
       "isFlipped": false,
       "properties": {
         "Condition": "EnableRightStage",
@@ -24,8 +24,8 @@
       "id": "skip-end",
       "type": "SetSharedVariable",
       "name": "Skipped",
-      "x": 100,
-      "y": 60,
+      "x": 199,
+      "y": 8,
       "isFlipped": false,
       "properties": {
         "Key": "RightStageSkipped",
@@ -37,8 +37,8 @@
       "id": "loop-cycles",
       "type": "Loop",
       "name": "Cycle Loop",
-      "x": 250,
-      "y": 200,
+      "x": 255,
+      "y": 238,
       "isFlipped": false,
       "properties": {
         "Iterations": "CycleCount",
@@ -50,8 +50,8 @@
       "id": "move-load-1",
       "type": "MoveToTeachPosition",
       "name": "Move LoadPos (Start)",
-      "x": 450,
-      "y": 200,
+      "x": 401,
+      "y": 104,
       "isFlipped": false,
       "properties": {
         "PositionName": "RightLoadPos",
@@ -256,9 +256,9 @@
       "id": "plc-pick-final",
       "type": "PlcSendCommand",
       "name": "Pick Final Tray",
-      "x": 3640,
-      "y": 200,
-      "isFlipped": false,
+      "x": 3420,
+      "y": 339,
+      "isFlipped": true,
       "properties": {
         "CommandName": "RightRobotPickTray",
         "TimeoutMs": "15000"
@@ -281,9 +281,9 @@
       "id": "8a0616d6-2644-4a0c-b1f3-bacf41d3b15c",
       "type": "SaveResultsToCsv",
       "name": "Save Results To CSV",
-      "x": 3505.7672418050042,
-      "y": 360.22,
-      "isFlipped": false,
+      "x": 251.8,
+      "y": 342.22,
+      "isFlipped": true,
       "properties": {
         "Key": "FlowResults_Right",
         "Path": "gen5_right_sharpness_{yyyyMMdd_HHmmss}.csv",

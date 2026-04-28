@@ -3,7 +3,7 @@
   "name": "Gen5 Main (Simulation)",
   "description": "Top-level Gen5 AOI flow. Runs Left and Right stages in parallel; each stage short-circuits if its Enable flag is false. Controls are shared variables set at the top of the flow and can be modified at runtime before Run.",
   "createdAt": "2026-04-23T00:00:00",
-  "modifiedAt": "2026-04-27T16:47:57.4664715+08:00",
+  "modifiedAt": "2026-04-28T09:16:48.6012224+08:00",
   "version": "1.0.0",
   "nodes": [
     {
@@ -15,7 +15,7 @@
       "isFlipped": false,
       "properties": {
         "Key": "EnableLeftStage",
-        "Value": "true",
+        "Value": "false",
         "SourceVariable": ""
       }
     },
@@ -62,12 +62,12 @@
       "id": "set-cycle-count",
       "type": "SetSharedVariable",
       "name": "Cycle Count",
-      "x": 100,
-      "y": 420,
+      "x": 101,
+      "y": 419,
       "isFlipped": false,
       "properties": {
         "Key": "CycleCount",
-        "Value": "-1",
+        "Value": "10",
         "SourceVariable": ""
       }
     },
@@ -88,13 +88,13 @@
       "id": "run-stages",
       "type": "Parallel",
       "name": "Run Left \u002B Right",
-      "x": 335,
+      "x": 337,
       "y": 300,
       "isFlipped": false,
       "properties": {
         "FlowPaths": "LeftStage.json, RightStage.json",
         "WaitMode": "All",
-        "TimeoutMs": "600000",
+        "TimeoutMs": "0",
         "ItemsSource": "",
         "WorkerCount": "0",
         "ItemVariable": "CurrentItem",

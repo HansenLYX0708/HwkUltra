@@ -30,7 +30,7 @@ namespace HWKUltra.Flow.Nodes.Logic
             new FlowParameter { Name = "RowCount", DisplayName = "Row Count", Type = "int" }
         };
 
-        public override Task<FlowResult> ExecuteAsync(FlowContext context)
+        public override async Task<FlowResult> ExecuteAsync(FlowContext context)
         {
             try
             {
@@ -41,15 +41,45 @@ namespace HWKUltra.Flow.Nodes.Logic
                 bool clearAfter = clearStr != null && clearStr.Equals("true", StringComparison.OrdinalIgnoreCase);
 
                 if (context.SharedContext == null)
-                    return Task.FromResult(FlowResult.Fail("SaveResultsToCsv requires SharedContext"));
+                    return FlowResult.Fail("SaveResultsToCsv requires SharedContext");
 
-                List<Dictionary<string, object>> snapshot;
-                lock (_gate)
+                List<Dictionary<string, object>> snapshot = new();
+                int rowCount = 0;
+                int retryCount = 0;
+                const int maxRetries = 5;
+                const int retryDelayMs = 50;
+
+                // Retry mechanism to handle timing issues with Parallel worker completion
+                while (retryCount < maxRetries)
                 {
-                    var list = context.SharedContext.GetVariable<List<Dictionary<string, object>>>(key);
-                    if (list == null)
-                        return Task.FromResult(FlowResult.Fail($"Shared variable '{key}' not found or not a result list"));
-                    snapshot = list.ToList();
+                    lock (_gate)
+                    {
+                        var list = context.SharedContext.GetVariable<List<Dictionary<string, object>>>(key);
+                        if (list == null)
+                            return FlowResult.Fail($"Shared variable '{key}' not found or not a result list");
+                        snapshot = list.ToList();
+                        rowCount = snapshot.Count;
+                    }
+
+                    if (rowCount > 0)
+                        break;
+
+                    retryCount++;
+                    if (retryCount < maxRetries)
+                    {
+                        await Task.Delay(retryDelayMs);
+                    }
+                }
+
+                Console.WriteLine($"[SaveResultsToCsv] Key='{key}', RowCount={rowCount}, ClearAfter={clearAfter}, Retries={retryCount}");
+
+                // If list is empty after retries, skip saving and return success
+                if (rowCount == 0)
+                {
+                    Console.WriteLine($"[SaveResultsToCsv] WARNING: List '{key}' is still empty after {maxRetries} retries, skipping CSV save");
+                    context.SetNodeOutput(Id, "FilePath", "");
+                    context.SetNodeOutput(Id, "RowCount", 0);
+                    return FlowResult.Ok();
                 }
 
                 // Resolve path (replace tokens; make relative paths go to Exports/).
@@ -110,11 +140,11 @@ namespace HWKUltra.Flow.Nodes.Logic
                 context.SharedContext.SetVariable($"{key}_CsvPath", resolvedPath);
 
                 Console.WriteLine($"[SaveResultsToCsv] Wrote {snapshot.Count} row(s) x {columns.Count} col(s) -> {resolvedPath}");
-                return Task.FromResult(FlowResult.Ok());
+                return FlowResult.Ok();
             }
             catch (Exception ex)
             {
-                return Task.FromResult(FlowResult.Fail($"SaveResultsToCsv failed: {ex.Message}"));
+                return FlowResult.Fail($"SaveResultsToCsv failed: {ex.Message}");
             }
         }
 

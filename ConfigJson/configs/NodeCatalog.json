@@ -116,6 +116,7 @@
     { "Type": "SubFlow", "DisplayName": "Sub-Flow", "Category": "Logic", "DefaultWidth": 180, "DefaultHeight": 90 },
     { "Type": "Parallel", "DisplayName": "Parallel Execution", "Category": "Logic", "DefaultWidth": 200, "DefaultHeight": 100 },
     { "Type": "AppendToList", "DisplayName": "Append To List", "Category": "Logic" },
+    { "Type": "ClearList", "DisplayName": "Clear List", "Category": "Logic" },
     { "Type": "ListLookupByIndex", "DisplayName": "List Lookup By Index", "Category": "Logic" },
     { "Type": "SaveResultsToCsv", "DisplayName": "Save Results To CSV", "Category": "Logic" },
 
