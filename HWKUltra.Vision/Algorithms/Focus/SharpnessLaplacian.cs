@@ -11,8 +11,8 @@ namespace HWKUltra.Vision.Algorithms.Focus
     {
         public static double Get(Bitmap bmp)
         {
-            Mat source = OpenCvSharp.Extensions.BitmapConverter.ToMat(bmp);
-            Mat laplacian = new Mat();
+            using Mat source = OpenCvSharp.Extensions.BitmapConverter.ToMat(bmp);
+            using Mat laplacian = new Mat();
             Cv2.Laplacian(source, laplacian, MatType.CV_16U);
             return Cv2.Mean(laplacian)[0];
         }

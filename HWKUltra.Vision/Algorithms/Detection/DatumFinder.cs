@@ -44,20 +44,19 @@ namespace HWKUltra.Vision.Algorithms.Detection
         public static System.Drawing.Point Find(Bitmap bmp, bool saveImg = false)
         {
             var templateImg = GetTemplate();
-            Mat source = OpenCvSharp.Extensions.BitmapConverter.ToMat(bmp);
-            Mat pro = new Mat();
+            using Mat source = OpenCvSharp.Extensions.BitmapConverter.ToMat(bmp);
+            using Mat pro = new Mat();
+            using Mat matchResult = new Mat();
 
-            Mat matchResult = new Mat();
             if (source.Channels() == 3)
             {
                 Cv2.CvtColor(source, source, ColorConversionCodes.BGR2GRAY);
             }
 
-
             Cv2.GaussianBlur(source, pro, new OpenCvSharp.Size(3, 3), 1.5);
             Cv2.Threshold(pro, pro, 0, 255, ThresholdTypes.Otsu);
             int size = 9;
-            Mat se = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(size, size), new OpenCvSharp.Point(-1, -1));
+            using Mat se = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(size, size), new OpenCvSharp.Point(-1, -1));
             Cv2.Dilate(pro, pro, se);
 
             Cv2.MatchTemplate(pro, templateImg, matchResult, TemplateMatchModes.SqDiff);

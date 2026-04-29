@@ -5,6 +5,7 @@
   "createdAt": "2026-04-23T00:00:00",
   "modifiedAt": "2026-04-28T10:37:00.4496863+08:00",
   "version": "1.0.0",
+  "startNodeId": "pool-create",
   "nodes": [
     {
       "id": "pool-create",
@@ -33,13 +34,15 @@
     },
     {
       "id": "clear-jobs",
-      "type": "ClearList",
+      "type": "SetSharedVariable",
       "name": "Clear Pocket Jobs",
       "x": 405,
       "y": 343,
       "isFlipped": false,
       "properties": {
-        "Key": "LeftPocketJobs"
+        "Key": "LeftPocketJobs",
+        "Value": "[]",
+        "SourceVariable": ""
       }
     },
     {
@@ -96,7 +99,7 @@
       "isFlipped": false,
       "properties": {
         "Key": "LeftPocketJobs",
-        "Columns": "Index=CurrentIndex;Row=Row;Col=Col"
+        "Columns": "Row=Row;Col=Col"
       }
     },
     {
@@ -155,6 +158,5 @@
       "condition": "Done"
     }
   ],
-  "startNodeId": "pool-create",
   "globalVariables": []
 }

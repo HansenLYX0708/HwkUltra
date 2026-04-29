@@ -466,6 +466,13 @@ namespace HWKUltra.UI.ViewModels.Pages
                 Message = message
             };
             LogEntries.Add(entry);
+            // Cap log size to prevent unbounded UI memory growth during long runs
+            // (each per-node Executing/Executed event adds an entry; a multi-cycle
+            // flow with parallel workers can otherwise accumulate hundreds of
+            // thousands of entries).
+            const int MaxLogEntries = 5000;
+            while (LogEntries.Count > MaxLogEntries)
+                LogEntries.RemoveAt(0);
         }
 
         private static void Dispatch(Action action)

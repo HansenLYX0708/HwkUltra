@@ -11,9 +11,9 @@ namespace HWKUltra.Vision.Algorithms.Focus
     {
         public static double Get(Bitmap bmp)
         {
-            Mat source = OpenCvSharp.Extensions.BitmapConverter.ToMat(bmp);
-            Mat var = new Mat();
-            Mat mean = new Mat();
+            using Mat source = OpenCvSharp.Extensions.BitmapConverter.ToMat(bmp);
+            using Mat var = new Mat();
+            using Mat mean = new Mat();
             Cv2.MeanStdDev(source, mean, var);
             return Cv2.Mean(var)[0];
         }

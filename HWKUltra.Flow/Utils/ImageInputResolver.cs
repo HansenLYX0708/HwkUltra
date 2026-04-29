@@ -185,14 +185,15 @@ namespace HWKUltra.Flow.Utils
 
         /// <summary>
         /// Dequeue one frame from an <see cref="ImagePool"/> and return it as a Bitmap.
-        /// The bitmap is NOT owned — the caller should NOT dispose it (the PoolItem owns it).
+        /// The bitmap IS owned by the caller (the pool hands off ownership on dequeue,
+        /// per the <see cref="PoolItem"/> contract) — the caller must dispose it.
         /// Useful for single-capture patterns (MaxFrames=1 + FindDatum).
         /// </summary>
         private static ResolvedBitmap DequeueFromPool(ImagePool pool, string inputName)
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             foreach (var item in pool.GetConsumingEnumerable(cts.Token))
-                return new ResolvedBitmap(item.Bitmap, false);
+                return new ResolvedBitmap(item.Bitmap, true);
             throw new InvalidOperationException(
                 $"ImagePool '{inputName}' is empty or completed — no frames available for vision node.");
         }
@@ -201,7 +202,12 @@ namespace HWKUltra.Flow.Utils
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             foreach (var item in pool.GetConsumingEnumerable(cts.Token))
-                return new ResolvedMat(BitmapConverter.ToMat(item.Bitmap), true);
+            {
+                // Pool hands off Bitmap ownership on dequeue; convert to Mat and
+                // dispose the source Bitmap so we don't leak the GDI+ buffer.
+                using var bmp = item.Bitmap;
+                return new ResolvedMat(BitmapConverter.ToMat(bmp), true);
+            }
             throw new InvalidOperationException(
                 $"ImagePool '{inputName}' is empty or completed — no frames available for vision node.");
         }

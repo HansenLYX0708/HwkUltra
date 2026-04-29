@@ -127,6 +127,9 @@ namespace HWKUltra.Flow.Abstractions
                     _queue.Dispose();
                     _queue = new BlockingCollection<PoolItem>(Capacity);
                 }
+                // Reset the per-cycle index so consumers (e.g. ListLookupByIndex) can
+                // address into freshly-rebuilt per-cycle lists starting from 0.
+                Interlocked.Exchange(ref _nextIndex, 0);
             }
         }
 

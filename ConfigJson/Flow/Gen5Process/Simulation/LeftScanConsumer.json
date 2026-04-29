@@ -22,8 +22,25 @@
         "TotalVariable": "TotalCount",
         "TimeoutMs": "300000"
       }
+    },
+    {
+      "id": "pool-close",
+      "type": "ImagePoolClose",
+      "name": "Close Pool",
+      "x": 300,
+      "y": 200,
+      "isFlipped": false,
+      "properties": {
+        "Name": "LeftScanPool"
+      }
     }
   ],
-  "connections": [],
+  "connections": [
+    {
+      "id": "c1",
+      "sourceNodeId": "workers",
+      "targetNodeId": "pool-close"
+    }
+  ],
   "globalVariables": []
 }
