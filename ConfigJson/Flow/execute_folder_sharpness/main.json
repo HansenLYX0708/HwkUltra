@@ -1,1 +1,87 @@
-{"id":"folder-sharpness-batch-001","name":"Folder Sharpness Batch","description":"Enumerate a folder of images \u2192 parallel sharpness analysis via SharpnessWorker.json. Edit the Folder property to point at your image directory.","createdAt":"2026-04-22T00:00:00","modifiedAt":"2026-04-22T11:05:23.8630879+08:00","version":"1.0.0","nodes":[{"id":"node-enum","type":"EnumerateFolder","name":"Enumerate Folder","x":100,"y":200,"isFlipped":false,"properties":{"Folder":"G:\\data\\gen5\\test","Pattern":"*.bmp;*.png;*.jpg;*.jpeg;*.tiff","Recursive":"false","SortBy":"Name","OutputVariable":"FileList"}},{"id":"node-parallel","type":"Parallel","name":"Parallel Sharpness","x":380,"y":200,"isFlipped":false,"properties":{"FlowPaths":"execute_folder_sharpness/SharpnessWorker.json","ItemsSource":"FileList","WorkerCount":"4","ItemVariable":"CurrentItem","IndexVariable":"CurrentIndex","TotalVariable":"TotalCount","WaitMode":"All","TimeoutMs":"0"}},{"id":"node-save","type":"SaveResultsToCsv","name":"Save CSV","x":660,"y":200,"isFlipped":false,"properties":{"Key":"FlowResults","Path":"sharpness_{yyyyMMdd_HHmmss}.csv","Encoding":"UTF8BOM","Clear":"False"}}],"connections":[{"id":"c1","sourceNodeId":"node-enum","targetNodeId":"node-parallel"},{"id":"c2","sourceNodeId":"node-parallel","targetNodeId":"node-save"}],"startNodeId":"node-enum","globalVariables":[]}
+{
+  "id": "folder-sharpness-batch-001",
+  "name": "Folder Sharpness Batch",
+  "description": "Enumerate a folder of images \u2192 parallel sharpness analysis via SharpnessWorker.json. Edit the Folder property to point at your image directory.",
+  "createdAt": "2026-04-22T00:00:00",
+  "modifiedAt": "2026-04-29T14:12:43.1741041+08:00",
+  "version": "1.0.0",
+  "nodes": [
+    {
+      "id": "node-enum",
+      "type": "EnumerateFolder",
+      "name": "Enumerate Folder",
+      "x": 100,
+      "y": 200,
+      "isFlipped": false,
+      "properties": {
+        "Folder": "G:\\data\\gen5\\test",
+        "Pattern": "*.bmp;*.png;*.jpg;*.jpeg;*.tiff",
+        "Recursive": "false",
+        "SortBy": "Name",
+        "OutputVariable": "FileList"
+      }
+    },
+    {
+      "id": "node-parallel",
+      "type": "Parallel",
+      "name": "Parallel Sharpness",
+      "x": 384,
+      "y": 199,
+      "isFlipped": false,
+      "properties": {
+        "FlowPaths": "SharpnessWorker.json",
+        "ItemsSource": "FileList",
+        "WorkerCount": "4",
+        "ItemVariable": "CurrentItem",
+        "IndexVariable": "CurrentIndex",
+        "TotalVariable": "TotalCount",
+        "WaitMode": "All",
+        "TimeoutMs": "0"
+      }
+    },
+    {
+      "id": "node-save",
+      "type": "SaveResultsToCsv",
+      "name": "Save CSV",
+      "x": 660,
+      "y": 200,
+      "isFlipped": false,
+      "properties": {
+        "Key": "FlowResults",
+        "Path": "sharpness_{yyyyMMdd_HHmmss}.csv",
+        "Encoding": "UTF8BOM",
+        "Clear": "False"
+      }
+    },
+    {
+      "id": "19959dbb-20d1-462c-a186-8374274f77bc",
+      "type": "ImagePoolClose",
+      "name": "Image Pool Close",
+      "x": 890.2547601411704,
+      "y": 193.22,
+      "isFlipped": false,
+      "properties": {
+        "Name": "ImagePool"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "sourceNodeId": "node-enum",
+      "targetNodeId": "node-parallel"
+    },
+    {
+      "id": "c2",
+      "sourceNodeId": "node-parallel",
+      "targetNodeId": "node-save"
+    },
+    {
+      "id": "91d5ec6c-20aa-480d-9826-f3cf969f2e6d",
+      "sourceNodeId": "node-save",
+      "targetNodeId": "19959dbb-20d1-462c-a186-8374274f77bc"
+    }
+  ],
+  "startNodeId": "node-enum",
+  "globalVariables": []
+}
