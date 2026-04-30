@@ -101,26 +101,47 @@ namespace HWKUltra.Flow.Nodes.Logic
                     }
                 }
 
-                // Wire child engine events to OnNodeLog callback
+                // Wire child engine events to OnNodeLog callback.
+                // Use named handlers so we can unsubscribe after execution (prevents
+                // the engine + its delegate chain from being held by the parent context,
+                // which would retain FlowContext/Variables in Gen2).
                 var flowName = definition.Name ?? flowPath;
+                EventHandler<FlowNodeEventArgs>? executingHandler = null;
+                EventHandler<FlowNodeEventArgs>? executedHandler = null;
                 if (context.OnNodeLog != null)
                 {
-                    engine.NodeExecuting += (_, e) =>
-                        context.OnNodeLog(flowName, e.Node.Name, e.Node.NodeType, true, null);
-                    engine.NodeExecuted += (_, e) =>
-                        context.OnNodeLog(flowName, e.Node.Name, e.Node.NodeType, false, e.Result);
+                    executingHandler = (_, e) =>
+                    {
+                        // Extract primitive values BEFORE calling OnNodeLog to avoid
+                        // capturing the FlowNodeEventArgs (which pins FlowContext).
+                        var nodeName = e.Node.Name;
+                        var nodeType = e.Node.NodeType;
+                        context.OnNodeLog(flowName, nodeName, nodeType, true, null);
+                    };
+                    executedHandler = (_, e) =>
+                    {
+                        // Extract values up front (see comment above).
+                        var nodeName = e.Node.Name;
+                        var nodeType = e.Node.NodeType;
+                        var result = e.Result;
+                        context.OnNodeLog(flowName, nodeName, nodeType, false, result);
+                    };
+                    engine.NodeExecuting += executingHandler;
+                    engine.NodeExecuted += executedHandler;
                 }
 
                 // Execute child flow
                 var startTime = DateTime.UtcNow;
                 Console.WriteLine($"[SubFlow] Starting: {definition.Name} ({flowPath})");
 
-                var result = await engine.ExecuteAsync(childContext, context.CancellationToken);
+                try
+                {
+                    var result = await engine.ExecuteAsync(childContext, context.CancellationToken);
 
-                var duration = (int)(DateTime.UtcNow - startTime).TotalMilliseconds;
-                Console.WriteLine($"[SubFlow] Completed: {definition.Name} in {duration}ms, Success={result.Success}");
+                    var duration = (int)(DateTime.UtcNow - startTime).TotalMilliseconds;
+                    Console.WriteLine($"[SubFlow] Completed: {definition.Name} in {duration}ms, Success={result.Success}");
 
-                // Return specified variables from child to parent
+                    // Return specified variables from child to parent
                 if (!string.IsNullOrWhiteSpace(returnVars))
                 {
                     foreach (var varName in returnVars.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -136,6 +157,17 @@ namespace HWKUltra.Flow.Nodes.Logic
                 context.SetNodeOutput(Id, "Duration", duration);
 
                 return result.Success ? FlowResult.Ok() : FlowResult.Fail(result.ErrorMessage ?? "Sub-flow failed");
+                }
+                finally
+                {
+                    // Unsubscribe event handlers so the engine can be GC'd promptly.
+                    // Without this, the delegate chain (which may capture FlowContext via
+                    // OnNodeLog) prevents the engine from being collected.
+                    if (executingHandler != null)
+                        engine.NodeExecuting -= executingHandler;
+                    if (executedHandler != null)
+                        engine.NodeExecuted -= executedHandler;
+                }
             }
             catch (OperationCanceledException)
             {

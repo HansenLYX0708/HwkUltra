@@ -352,6 +352,30 @@ namespace HWKUltra.UI.ViewModels.Pages
         /// </summary>
         public void LoadFromDefinition(FlowDefinition definition)
         {
+            // Clear all UI-bound properties first to prevent holding references
+            // to old objects that are about to be removed. Without this, the
+            // property panel, toolbox selection, zoom level, breadcrumb, etc.
+            // keep old objects alive even after clearing the collections.
+            ClearSelection();
+            SelectedNode = null;
+            SelectedConnection = null;
+            SelectedNodes.Clear();
+            ZoomLevel = 1.0;
+            Breadcrumb.Clear();
+            SelectedCatalogEntry = null;
+            SearchText = string.Empty;
+
+            // Unsubscribe all event handlers before clearing to prevent memory leaks.
+            // Without this, the delegate chains (which capture FlowNodeViewModel/FlowConnectionViewModel)
+            // prevent the old nodes/connections from being GC'd after clearing the collections.
+            foreach (var node in Nodes)
+                node.UnsubscribePropertyHandlers();
+            foreach (var conn in Connections)
+            {
+                conn.SourceNode = null;  // This triggers unsubscription of old handler
+                conn.TargetNode = null;  // This triggers unsubscription of old handler
+            }
+
             Nodes.Clear();
             Connections.Clear();
             StartNodeId = definition.StartNodeId;
@@ -708,6 +732,8 @@ namespace HWKUltra.UI.ViewModels.Pages
     /// </summary>
     public partial class FlowNodeViewModel : ObservableObject
     {
+        private readonly List<System.ComponentModel.PropertyChangedEventHandler> _propertyHandlers = new();
+
         [ObservableProperty]
         private string _id = string.Empty;
 
@@ -773,6 +799,22 @@ namespace HWKUltra.UI.ViewModels.Pages
         /// Refresh SubFlowTargets based on current NodeType + Properties.
         /// Call after properties change.
         /// </summary>
+        /// <summary>
+        /// Unsubscribe all property event handlers to prevent memory leaks.
+        /// Call this when the node is being removed from the canvas.
+        /// </summary>
+        public void UnsubscribePropertyHandlers()
+        {
+            foreach (var prop in Properties)
+            {
+                foreach (var handler in _propertyHandlers)
+                {
+                    prop.PropertyChanged -= handler;
+                }
+            }
+            _propertyHandlers.Clear();
+        }
+
         public void RefreshSubFlowTargets()
         {
             SubFlowTargets.Clear();
@@ -857,11 +899,13 @@ namespace HWKUltra.UI.ViewModels.Pages
             // Keep SubFlowTargets in sync when properties change value
             foreach (var prop in vm.Properties)
             {
-                prop.PropertyChanged += (_, args) =>
+                System.ComponentModel.PropertyChangedEventHandler handler = (_, args) =>
                 {
                     if (args.PropertyName == nameof(NodePropertyViewModel.Value))
                         vm.RefreshSubFlowTargets();
                 };
+                prop.PropertyChanged += handler;
+                vm._propertyHandlers.Add(handler);
             }
 
             return vm;
@@ -933,16 +977,25 @@ namespace HWKUltra.UI.ViewModels.Pages
 
         private FlowNodeViewModel? _sourceNode;
         private FlowNodeViewModel? _targetNode;
+        private System.ComponentModel.PropertyChangedEventHandler? _sourceNodeHandler;
+        private System.ComponentModel.PropertyChangedEventHandler? _targetNodeHandler;
 
         public FlowNodeViewModel? SourceNode
         {
             get => _sourceNode;
             set
             {
+                if (_sourceNode != null && _sourceNodeHandler != null)
+                {
+                    _sourceNode.PropertyChanged -= _sourceNodeHandler;
+                    _sourceNodeHandler = null;
+                }
+
                 _sourceNode = value;
+
                 if (value != null)
                 {
-                    value.PropertyChanged += (s, e) =>
+                    _sourceNodeHandler = (s, e) =>
                     {
                         if (e.PropertyName is nameof(FlowNodeViewModel.X) or nameof(FlowNodeViewModel.Y)
                             or nameof(FlowNodeViewModel.Width) or nameof(FlowNodeViewModel.Height)
@@ -956,6 +1009,7 @@ namespace HWKUltra.UI.ViewModels.Pages
                             OnPropertyChanged(nameof(PathData));
                         }
                     };
+                    value.PropertyChanged += _sourceNodeHandler;
                 }
             }
         }
@@ -965,10 +1019,17 @@ namespace HWKUltra.UI.ViewModels.Pages
             get => _targetNode;
             set
             {
+                if (_targetNode != null && _targetNodeHandler != null)
+                {
+                    _targetNode.PropertyChanged -= _targetNodeHandler;
+                    _targetNodeHandler = null;
+                }
+
                 _targetNode = value;
+
                 if (value != null)
                 {
-                    value.PropertyChanged += (s, e) =>
+                    _targetNodeHandler = (s, e) =>
                     {
                         if (e.PropertyName is nameof(FlowNodeViewModel.X) or nameof(FlowNodeViewModel.Y)
                             or nameof(FlowNodeViewModel.Width) or nameof(FlowNodeViewModel.Height)
@@ -982,6 +1043,7 @@ namespace HWKUltra.UI.ViewModels.Pages
                             OnPropertyChanged(nameof(PathData));
                         }
                     };
+                    value.PropertyChanged += _targetNodeHandler;
                 }
             }
         }

@@ -142,6 +142,22 @@ namespace HWKUltra.UI.ViewModels.Pages
             EnsureFactory();
             if (_nodeFactory == null) { AddLog("ERROR", "Node factory not available"); return; }
 
+            // Clean up any leftover state from previous runs to prevent memory leaks.
+            // This ensures that if Execute is called multiple times, old references
+            // to engine, context, cancellation token, etc. are properly released.
+            if (_engine != null)
+            {
+                _engine.NodeExecuting -= OnNodeExecuting;
+                _engine.NodeExecuted -= OnNodeExecuted;
+                _engine.FlowError -= OnFlowError;
+                _engine = null;
+            }
+            _sharedContext = null;
+            _cts?.Dispose();
+            _cts = null;
+            _stopwatch = null;
+
+            // Clear UI-bound state
             RunState = FlowRunState.Running;
             ExecutedNodes = 0;
             CurrentNodeName = "";
@@ -182,8 +198,13 @@ namespace HWKUltra.UI.ViewModels.Pages
             _engine.NodeExecuting += OnNodeExecuting;
             _engine.NodeExecuted += OnNodeExecuted;
             _engine.FlowError += OnFlowError;
-            _engine.FlowPaused += (_, _) => Dispatch(() => AddLog("INFO", "Flow paused"));
-            _engine.FlowResumed += (_, _) => Dispatch(() => AddLog("INFO", "Flow resumed"));
+            // Use named handlers so we can unsubscribe on completion (prevents the
+            // engine + its dispatcher-queued closures from being held by the VM
+            // beyond the run, which retains FlowContext / SharedContext in Gen2).
+            EventHandler pausedHandler = (_, _) => Dispatch(() => AddLog("INFO", "Flow paused"));
+            EventHandler resumedHandler = (_, _) => Dispatch(() => AddLog("INFO", "Flow resumed"));
+            _engine.FlowPaused += pausedHandler;
+            _engine.FlowResumed += resumedHandler;
 
             // Build context
             _sharedContext = new SharedFlowContext();
@@ -249,10 +270,43 @@ namespace HWKUltra.UI.ViewModels.Pages
             finally
             {
                 // Final refresh so any last-minute rows are displayed.
+                // Must run BEFORE we drop _sharedContext (it reads from it).
                 RefreshFlowResults();
                 RefreshActivePools();
+
+                // Unsubscribe all engine events so the engine + its delegate chain
+                // (which transitively holds FlowContext via dispatcher-queued closures)
+                // can be GC'd promptly after the run.
+                if (_engine != null)
+                {
+                    _engine.NodeExecuting -= OnNodeExecuting;
+                    _engine.NodeExecuted -= OnNodeExecuted;
+                    _engine.FlowError -= OnFlowError;
+                    _engine.FlowPaused -= pausedHandler;
+                    _engine.FlowResumed -= resumedHandler;
+                }
+
+                // Sever the OnNodeLog closure (captures `this`) so the FlowContext
+                // and any nested child contexts can be released.
+                context.OnNodeLog = null;
+
+                // Clear all temporary variables to enable prompt GC.
+                // These local variables hold references to large objects (FlowDefinition,
+                // FlowContext, event handlers). Setting them to null allows the GC
+                // to reclaim memory immediately after the run completes.
+                executionDef = null;
+                context = null;
+                pausedHandler = null;
+                resumedHandler = null;
+
                 RunState = FlowRunState.Idle;
                 _engine = null;
+                // Release SharedContext so its accumulated variables (LeftPocketJobs,
+                // FlowResults lists, signals, etc.) become eligible for GC. Without
+                // this, the previous run's data lingers in Gen2 until the next run
+                // overwrites the field.
+                _sharedContext = null;
+                _stopwatch = null;
                 _cts?.Dispose();
                 _cts = null;
             }
@@ -316,21 +370,32 @@ namespace HWKUltra.UI.ViewModels.Pages
 
         private void OnNodeExecuting(object? sender, FlowNodeEventArgs e)
         {
+            // Extract primitive values BEFORE Dispatch so the queued lambda does not
+            // capture the FlowNodeEventArgs (which transitively pins FlowContext +
+            // its Variables dictionary). This was a major Gen2 retention source under
+            // high-frequency loops (e.g. Gen5 100-cycle scans).
+            var nodeName = e.Node.Name;
+            var nodeType = e.Node.NodeType;
             Dispatch(() =>
             {
-                CurrentNodeName = e.Node.Name;
-                AddLog("NODE", $"▶ Executing: {e.Node.Name} ({e.Node.NodeType})");
+                CurrentNodeName = nodeName;
+                AddLog("NODE", $"▶ Executing: {nodeName} ({nodeType})");
             });
         }
 
         private void OnNodeExecuted(object? sender, FlowNodeEventArgs e)
         {
+            // Extract values up front (see OnNodeExecuting comment).
+            var nodeName = e.Node.Name;
+            var success = e.Result?.Success == true;
+            var errorMsg = e.Result?.ErrorMessage;
+            var branchLabel = e.Result?.BranchLabel;
             Dispatch(() =>
             {
                 ExecutedNodes++;
-                var status = e.Result?.Success == true ? "OK" : $"FAIL: {e.Result?.ErrorMessage}";
-                var branch = !string.IsNullOrEmpty(e.Result?.BranchLabel) ? $" → {e.Result!.BranchLabel}" : "";
-                AddLog("NODE", $"✓ Completed: {e.Node.Name}{branch} [{status}]");
+                var status = success ? "OK" : $"FAIL: {errorMsg}";
+                var branch = !string.IsNullOrEmpty(branchLabel) ? $" → {branchLabel}" : "";
+                AddLog("NODE", $"✓ Completed: {nodeName}{branch} [{status}]");
             });
         }
 
@@ -390,9 +455,13 @@ namespace HWKUltra.UI.ViewModels.Pages
 
         private void OnFlowError(object? sender, FlowErrorEventArgs e)
         {
+            // Extract values up front so the queued lambda does not capture the
+            // FlowErrorEventArgs / FlowContext.
+            var nodeName = e.Node?.Name ?? "?";
+            var errorMsg = e.ErrorMessage;
             Dispatch(() =>
             {
-                AddLog("ERROR", $"✗ Error at {e.Node?.Name ?? "?"}: {e.ErrorMessage}");
+                AddLog("ERROR", $"✗ Error at {nodeName}: {errorMsg}");
             });
         }
 

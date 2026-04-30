@@ -232,34 +232,66 @@ namespace HWKUltra.Flow.Nodes.Logic
                     OnNodeLog = parentContext.OnNodeLog
                 };
 
-                // Wire child engine events to OnNodeLog callback
+                // Wire child engine events to OnNodeLog callback.
+                // Use named handlers so we can unsubscribe after execution (prevents
+                // the engine + its delegate chain from being held by the parent context,
+                // which would retain FlowContext/Variables in Gen2).
                 var flowName = definition.Name ?? Path.GetFileNameWithoutExtension(flowPath);
+                EventHandler<FlowNodeEventArgs>? executingHandler = null;
+                EventHandler<FlowNodeEventArgs>? executedHandler = null;
                 if (parentContext.OnNodeLog != null)
                 {
-                    engine.NodeExecuting += (_, e) =>
-                        parentContext.OnNodeLog(flowName, e.Node.Name, e.Node.NodeType, true, null);
-                    engine.NodeExecuted += (_, e) =>
-                        parentContext.OnNodeLog(flowName, e.Node.Name, e.Node.NodeType, false, e.Result);
+                    executingHandler = (_, e) =>
+                    {
+                        // Extract primitive values BEFORE calling OnNodeLog to avoid
+                        // capturing the FlowNodeEventArgs (which pins FlowContext).
+                        var nodeName = e.Node.Name;
+                        var nodeType = e.Node.NodeType;
+                        parentContext.OnNodeLog(flowName, nodeName, nodeType, true, null);
+                    };
+                    executedHandler = (_, e) =>
+                    {
+                        // Extract values up front (see comment above).
+                        var nodeName = e.Node.Name;
+                        var nodeType = e.Node.NodeType;
+                        var result = e.Result;
+                        parentContext.OnNodeLog(flowName, nodeName, nodeType, false, result);
+                    };
+                    engine.NodeExecuting += executingHandler;
+                    engine.NodeExecuted += executedHandler;
                 }
 
-                // Inject node properties
-                foreach (var nodeDef in definition.Nodes)
-                    foreach (var prop in nodeDef.Properties)
-                        childContext.Variables[$"{nodeDef.Id}:{prop.Key}"] = prop.Value;
-
-                // Inject per-item variables (item-source mode only)
-                if (item != null && !string.IsNullOrEmpty(varNames.item))
+                try
                 {
-                    // Unwrap PoolItem → Bitmap for downstream vision nodes that expect Bitmap/path/etc.
-                    childContext.Variables[varNames.item] = item is PoolItem pi ? pi.Bitmap : item;
-                    childContext.Variables[varNames.index] = itemIndex;
-                    childContext.Variables[varNames.total] = totalCount;
-                    // Also publish the raw PoolItem (for nodes that need access to metadata / Dispose).
-                    if (item is PoolItem pi2) childContext.Variables[varNames.item + "_Item"] = pi2;
-                }
+                    // Inject node properties
+                    foreach (var nodeDef in definition.Nodes)
+                        foreach (var prop in nodeDef.Properties)
+                            childContext.Variables[$"{nodeDef.Id}:{prop.Key}"] = prop.Value;
 
-                var result = await engine.ExecuteAsync(childContext, cancellationToken);
-                return new SubFlowResult { Index = index, Success = result.Success, Error = result.ErrorMessage };
+                    // Inject per-item variables (item-source mode only)
+                    if (item != null && !string.IsNullOrEmpty(varNames.item))
+                    {
+                        // Unwrap PoolItem → Bitmap for downstream vision nodes that expect Bitmap/path/etc.
+                        childContext.Variables[varNames.item] = item is PoolItem pi ? pi.Bitmap : item;
+                        childContext.Variables[varNames.index] = itemIndex;
+                        childContext.Variables[varNames.total] = totalCount;
+                        // Also publish the raw PoolItem (for nodes that need access to metadata / Dispose).
+                        if (item is PoolItem pi2) childContext.Variables[varNames.item + "_Item"] = pi2;
+                    }
+
+                    var result = await engine.ExecuteAsync(childContext, cancellationToken);
+                    return new SubFlowResult { Index = index, Success = result.Success, Error = result.ErrorMessage };
+                }
+                finally
+                {
+                    // Unsubscribe event handlers so the engine can be GC'd promptly.
+                    // Without this, the delegate chain (which may capture FlowContext via
+                    // OnNodeLog) prevents the engine from being collected.
+                    if (executingHandler != null)
+                        engine.NodeExecuting -= executingHandler;
+                    if (executedHandler != null)
+                        engine.NodeExecuted -= executedHandler;
+                }
             }
             catch (OperationCanceledException)
             {
